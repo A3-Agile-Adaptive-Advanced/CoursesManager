@@ -31,6 +31,16 @@
     </Window.Triggers>
 
     <Window.Resources>
+        <Storyboard x:Key="EnterStory">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                Duration="0:0:0.5" From="0" To="1" />
+        </Storyboard>
+
+        <Storyboard x:Key="ExitAnimation">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                Duration="0:0:0.06" From="1" To="0" />
+        </Storyboard>
+
         <Style TargetType="Border" x:Key="WindowBorder">
             <Setter Property="CornerRadius" Value="15" />
             <Setter Property="Background" Value="{StaticResource SecondaryGradient}" />
@@ -567,6 +577,41 @@
             </Grid>
 
             <Grid Grid.Row="1">
+                    <Grid.Style>
+                        <Style TargetType="Grid">
+                            <Setter Property="Opacity" Value="1"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsStartAnimationTriggeredTest}" Value="True">
+                                    <DataTrigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                    Duration="0:0:0.1" From="0" To="1" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </DataTrigger.EnterActions>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsEndAnimationTriggered}" Value="True">
+                                    <DataTrigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                    Duration="0:0:0.1" From="1" To="0" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </DataTrigger.EnterActions>
+                                    <DataTrigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                    Duration="0:0:0.4" From="0" To="1" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </DataTrigger.ExitActions>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Grid.Style>
                     <ContentControl Content="{Binding NavigationService.NavigationStore.CurrentViewModel}" Panel.ZIndex="0" />
                     <Border Style="{DynamicResource DarkOverlay}"  Panel.ZIndex="1"
                     x:Name="OverlayBorder"

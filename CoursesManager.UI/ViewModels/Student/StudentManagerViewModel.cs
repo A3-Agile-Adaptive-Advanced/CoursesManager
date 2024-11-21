@@ -47,13 +47,6 @@ namespace CoursesManager.UI.ViewModels
             }
         }
 
-        private bool _isDialogOpen;
-        public bool IsDialogOpen
-        {
-            get => _isDialogOpen;
-            set => SetProperty(ref _isDialogOpen, value);
-        }
-
         private ObservableCollection<CourseStudentPayment> _coursePaymentList;
         public ObservableCollection<CourseStudentPayment> CoursePaymentList
         {
@@ -127,9 +120,7 @@ namespace CoursesManager.UI.ViewModels
                 .Where(r => r.StudentID == SelectedStudent.Id)
                 .ToList();
 
-            var coursePayments = registrations.Select(r => new CourseStudentPayment(
-                _courseRepository.GetById(r.CourseID), r))
-                .ToList();
+            var coursePayments = registrations.Select(r => new CourseStudentPayment(_courseRepository.GetById(r.CourseID), r)).ToList();
 
             DisplayedCourses = new ObservableCollection<CourseStudentPayment>(coursePayments);
             OnPropertyChanged(nameof(DisplayedCourses));

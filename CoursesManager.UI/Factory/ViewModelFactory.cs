@@ -49,7 +49,7 @@ namespace CoursesManager.UI.Factory
                     new StudentManagerViewModel(_dialogService, _studentRepository, _courseRepository,
                         _registrationRepository, _messageBroker) as T,
                 Type vmType when vmType == typeof(CourseOverViewViewModel) =>
-                    new CourseOverViewViewModel() as T,
+                    new CourseOverViewViewModel(_messageBroker) as T,
                 Type vmType when vmType == typeof(EditStudentViewModel) =>
                     new EditStudentViewModel(
                         _studentRepository,

@@ -1,9 +1,12 @@
 ﻿using CoursesManager.MVVM.Data;
+using CoursesManager.MVVM.Messages;
+
 
 namespace CoursesManager.MVVM.Navigation;
 
 public class NavigationService : INavigationService
 {
+
     public NavigationStore NavigationStore { get; } = new();
 
     private readonly Stack<ViewModel> _forwardViewModels = new();

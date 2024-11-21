@@ -29,26 +29,33 @@ public class ConfirmationDialogViewModel : DialogViewModel<DialogResultType>
 
     public ConfirmationDialogViewModel(DialogResultType? initialData) : base(initialData)
     {
+        IsStartAnimationTriggered = true;
         if (initialData is not null)
         {
             Message = initialData.DialogText;
             Title = initialData.DialogTitle;
         }
 
-        YesCommand = new RelayCommand(() =>
+        YesCommand = new RelayCommand(async () =>
         {
+            IsEndAnimationTriggered = true;
+            await Task.Delay(100);
             InvokeResponseCallback(DialogResult<DialogResultType>.Builder().SetSuccess(new DialogResultType
             {
                 Result = true
             }).Build());
+            
         });
 
-        NoCommand = new RelayCommand(() =>
+        NoCommand = new RelayCommand(async () =>
         {
+            IsEndAnimationTriggered = true;
+            await Task.Delay(100);
             InvokeResponseCallback(DialogResult<DialogResultType>.Builder().SetSuccess(new DialogResultType
             {
                 Result = false
             }).Build());
+            
         });
     }
 

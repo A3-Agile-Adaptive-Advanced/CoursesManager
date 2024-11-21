@@ -10,11 +10,6 @@ public class NotifyDialogViewModel : DialogViewModel<DialogResultType>
     private string _title = null!;
     private bool _IsDialogOpen;
 
-    public bool IsDialogOpen
-    {
-        get => _IsDialogOpen;
-        set => SetProperty(ref _IsDialogOpen, value);
-    }
     public string Title
     {
         get => _title;
@@ -32,14 +27,17 @@ public class NotifyDialogViewModel : DialogViewModel<DialogResultType>
 
     public NotifyDialogViewModel(DialogResultType? initialData) : base(initialData)
     {
+        IsStartAnimationTriggered = true;
         if (initialData is not null)
         {
             Message = initialData.DialogText;
             Title = initialData.DialogTitle;
         }
 
-        ConfirmationCommand = new RelayCommand(() =>
+        ConfirmationCommand = new RelayCommand(async () =>
         {
+            IsEndAnimationTriggered = true;
+            await Task.Delay(100);
             InvokeResponseCallback(DialogResult<DialogResultType>.Builder()
                 .SetSuccess(new DialogResultType
                 {

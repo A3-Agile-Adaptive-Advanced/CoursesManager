@@ -45,4 +45,5 @@ public abstract class ViewModel : IsObservable, INotifyDataErrorInfo
     }
 
     public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
+
 }

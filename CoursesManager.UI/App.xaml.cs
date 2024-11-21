@@ -37,9 +37,10 @@ public partial class App : Application
     public static IStudentRepository StudentRepository { get; private set; }
     public static IAddressRepository AddressRepository { get; private set; }
 
-    public static INavigationService NavigationService { get; set; } = new NavigationService();
+
     public static IMessageBroker MessageBroker { get; set; } = new MessageBroker();
     public static IDialogService DialogService { get; set; } = new DialogService();
+    public static INavigationService NavigationService { get; set; } = new NavigationService();
 
     protected override void OnStartup(StartupEventArgs e)
     {

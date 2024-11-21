@@ -6,6 +6,7 @@ using CoursesManager.MVVM.Data;
 using CoursesManager.UI.Messages;
 using CoursesManager.UI.ViewModels.Courses;
 using System.Windows.Navigation;
+using System.Diagnostics;
 
 namespace CoursesManager.UI.ViewModels;
 
@@ -64,11 +65,29 @@ public class MainWindowViewModel : NavigatableViewModel
         set => SetProperty(ref _isDialogOpen, value);
     }
 
+
+    private bool _isEndAnimationTriggered;
+
+    public bool IsEndAnimationTriggered
+    {
+        get => _isEndAnimationTriggered;
+        set => SetProperty(ref _isEndAnimationTriggered, value);
+    }
+
+    private bool _isStartAnimationTriggered;
+
+    public bool IsStartAnimationTriggeredTest
+    {
+        get => _isStartAnimationTriggered;
+        set => SetProperty(ref _isStartAnimationTriggered, value);
+    }
+
     public MainWindowViewModel(INavigationService navigationService, IMessageBroker messageBroker) : base(navigationService)
     {
         _navigationService = navigationService;
         _messageBroker = messageBroker;
         _messageBroker.Subscribe<OverlayActivationMessage, MainWindowViewModel>(OverlayActivationHandler, this);
+        _messageBroker.Subscribe<AnimationProcedureMessage, MainWindowViewModel>(AnimationProcedureHandler, this);
 
         CloseCommand = new RelayCommand(() =>
         {
@@ -80,14 +99,14 @@ public class MainWindowViewModel : NavigatableViewModel
             IsSidebarHidden = !IsSidebarHidden;
         });
 
-        GoForwardCommand = new RelayCommand(() =>
+        GoForwardCommand = new RelayCommand(async () =>
         {
-            NavigationService.GoForward();
+            GoForward();
         }, NavigationService.CanGoForward);
 
-        GoBackCommand = new RelayCommand(() =>
+        GoBackCommand = new RelayCommand( () =>
         {
-            NavigationService.GoBack();
+            GoBack();
         }, NavigationService.CanGoBack);
 
         MouseEnterButtonCommand = new RelayCommand(() =>
@@ -112,13 +131,49 @@ public class MainWindowViewModel : NavigatableViewModel
         });
         GoToStudentManagementView = new RelayCommand(() =>
         {
-            NavigationService.NavigateTo<StudentManagerViewModel>();
-            IsSidebarHidden = false;
+            GoToStudentManagement();
         });
         GoToCourseManagementView = new RelayCommand(() =>
         {
-            NavigationService.NavigateTo<CoursesManagerViewModel>();
+            GoToCourseManagement();
+        });
+    }
+
+    private async void GoBack()
+    {
+        await ExecuteWithAnimation(async () =>
+        {
+            await Task.Delay(60);
+            NavigationService.GoBack();
+        });
+    }
+
+    private async void GoForward()
+    {
+        await ExecuteWithAnimation(async () =>
+        {
+            await Task.Delay(100);
+            NavigationService.GoForward();
+        });
+    }
+
+    private async void GoToStudentManagement()
+    {
+        await ExecuteWithAnimation(async () =>
+        {
             IsSidebarHidden = false;
+            await Task.Delay(100);
+            NavigationService.NavigateTo<StudentManagerViewModel>();
+        });
+    }
+
+    private async void GoToCourseManagement()
+    {
+        await ExecuteWithAnimation(async () =>
+        {
+            IsSidebarHidden = false;
+            await Task.Delay(100);
+            NavigationService.NavigateTo<CoursesManagerViewModel>();
         });
     }
 
@@ -139,5 +194,24 @@ public class MainWindowViewModel : NavigatableViewModel
     {
         OverlayActivationMessage overlayActivationMessage = obj as OverlayActivationMessage;
         IsDialogOpen = overlayActivationMessage.IsVisible;
+    }
+
+    private async void AnimationProcedureHandler(AnimationProcedureMessage ob)
+    {
+        AnimationProcedureMessage animationProcedureMessage = ob as AnimationProcedureMessage;
+        IsEndAnimationTriggered = animationProcedureMessage.animationTrigger;
+    }
+
+    private async Task ExecuteWithAnimation(Func<Task> action)
+    {
+        IsEndAnimationTriggered = true;
+        try
+        {
+            await action();
+        }
+        finally
+        {
+            IsEndAnimationTriggered = false;
+        }
     }
 }

@@ -7,7 +7,31 @@ namespace CoursesManager.MVVM.Dialogs;
 /// </summary>
 /// <typeparam name="TDialogResultType">The type of the result data returned by the dialog.</typeparam>
 public abstract class DialogViewModel<TDialogResultType>(TDialogResultType? dialogResultType) : ViewModel
+
 {
+    private bool _isEndAnimationTriggered;
+
+    public bool IsEndAnimationTriggered
+    {
+        get => _isEndAnimationTriggered;
+        set => SetProperty(ref _isEndAnimationTriggered, value);
+    }
+
+    private bool _isStartAnimationTriggered;
+
+    public bool IsStartAnimationTriggered
+    {
+        get => _isStartAnimationTriggered;
+        set => SetProperty(ref _isStartAnimationTriggered, value);
+    }
+
+    private bool _isDialogOpen;
+    public bool IsDialogOpen
+    {
+        get => _isDialogOpen;
+        set => SetProperty(ref _isDialogOpen, value);
+    }
+
     protected TDialogResultType? InitialData = dialogResultType;
 
     /// <summary>

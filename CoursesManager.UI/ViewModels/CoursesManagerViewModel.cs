@@ -9,6 +9,7 @@ using CoursesManager.UI.ViewModels.Courses;
 using CoursesManager.UI.Models.Repositories.RegistrationRepository;
 using System.Diagnostics;
 using CoursesManager.MVVM.Messages;
+using CoursesManager.UI.Messages;
 
 namespace CoursesManager.UI.ViewModels
 {
@@ -87,10 +88,28 @@ namespace CoursesManager.UI.ViewModels
             foreach (var course in filteredCourses) FilteredCourses.Add(course);
         }
 
-        private void OpenCourseOptions(Course parameter)
+        private async void OpenCourseOptions(Course parameter)
         {
             GlobalCache.Instance.Put("Opened Course", parameter, true);
-            _navigationService.NavigateTo<CourseOverViewViewModel>();
+
+            await ExecuteAnimationProcedure(async () =>
+            {
+                _navigationService.NavigateTo<CourseOverViewViewModel>();
+            });
+
         }
+        private async Task ExecuteAnimationProcedure(Func<Task> action)
+        {
+            _messageBroker.Publish(new AnimationProcedureMessage(true));
+            try
+            {
+                await action();
+            }
+            finally
+            {
+                _messageBroker.Publish(new AnimationProcedureMessage(false));
+            }
+        }
+
     }
 }

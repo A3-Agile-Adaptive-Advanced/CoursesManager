@@ -26,37 +26,6 @@ public class AddStudentViewModel : DialogViewModel<bool>, INotifyPropertyChanged
     private readonly IRegistrationRepository _registrationRepository;
     private readonly IDialogService _dialogService;
 
-    private bool _isDialogOpen;
-
-    public bool IsDialogOpen
-    {
-        get => _isDialogOpen;
-        set => SetProperty(ref _isDialogOpen, value);
-    }
-
-    private bool _isEndAnimationTriggered;
-
-    public bool IsEndAnimationTriggered
-    {
-        get => _isEndAnimationTriggered;
-        set => SetProperty(ref _isEndAnimationTriggered, value);
-    }
-
-    private bool _isStartAnimationTriggered;
-
-    public bool IsStartAnimationTriggered
-    {
-        get => _isStartAnimationTriggered;
-        set => SetProperty(ref _isStartAnimationTriggered, value);
-    }
-
-    private bool _isReadyToClose;
-    public bool IsReadyToClose
-    {
-        get => _isReadyToClose;
-        set => SetProperty(ref _isReadyToClose, value);
-    }
-
     public Student Student { get; set; }
     public ObservableCollection<string> Courses { get; set; }
     public string SelectedCourse { get; set; } = string.Empty;

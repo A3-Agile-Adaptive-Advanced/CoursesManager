@@ -22,28 +22,6 @@ namespace CoursesManager.UI.ViewModels
         private readonly IDialogService _dialogService;
         private bool _isDialogOpen;
 
-        public bool IsDialogOpen
-        {
-            get => _isDialogOpen;
-            set => SetProperty(ref _isDialogOpen, value);
-        }
-
-        private bool _isEndAnimationTriggered;
-
-        public bool IsEndAnimationTriggered
-        {
-            get => _isEndAnimationTriggered;
-            set => SetProperty(ref _isEndAnimationTriggered, value);
-        }
-
-        private bool _isStartAnimationTriggered;
-
-        public bool IsStartAnimationTriggered
-        {
-            get => _isStartAnimationTriggered;
-            set => SetProperty(ref _isStartAnimationTriggered, value);
-        }
-
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
 

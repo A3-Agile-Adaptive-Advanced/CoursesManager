@@ -14,6 +14,7 @@
                 <ScaleTransform ScaleY="1"/>
             </Setter.Value>
         </Setter>
+        <Setter Property="IsHitTestVisible" Value="{Binding IsSidebarHidden}"/>
         <Style.Triggers>
        <DataTrigger Binding="{Binding IsSidebarHidden}" Value="True">
                 <DataTrigger.EnterActions>
