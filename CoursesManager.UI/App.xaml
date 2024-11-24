@@ -5,8 +5,8 @@
              xmlns:viewModels="clr-namespace:CoursesManager.UI.ViewModels"
              xmlns:courseViewModels="clr-namespace:CoursesManager.UI.ViewModels.Courses"
              xmlns:views="clr-namespace:CoursesManager.UI.Views"
-             xmlns:CourseViews="clr-namespace:CoursesManager.UI.Views.Courses"
-             xmlns:converters="clr-namespace:CoursesManager.UI.Converters">
+             xmlns:courseViews="clr-namespace:CoursesManager.UI.Views.Courses"
+             xmlns:converters="clr-namespace:CoursesManager.UI.Helpers.Converters">
     <Application.Resources>
         <ResourceDictionary>
             <!-- Merged Dictionaries -->
@@ -33,7 +33,7 @@
             </DataTemplate>
 
             <DataTemplate DataType="{x:Type courseViewModels:CourseOverViewViewModel}">
-                <CourseViews:CourseOverView />
+                <courseViews:CourseOverView />
             </DataTemplate>
 
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></converters:BoolToVisibilityConverter>

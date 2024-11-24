@@ -2,7 +2,7 @@
 using System.Windows.Data;
 using System.Windows;
 
-namespace CoursesManager.UI.Converters;
+namespace CoursesManager.UI.Helpers.Converters;
 
 public class BoolToVisibilityConverter : IValueConverter
 {

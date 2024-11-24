@@ -1,8 +1,10 @@
-﻿namespace CoursesManager.UI.Models.Repositories.AddressRepository;
+﻿using CoursesManager.UI.Models;
 
-public class AddressRepository : IAddressRepository
+namespace CoursesManager.UI.Repositories.AddressRepository;
+
+public class DummyAddressRepository : IAddressRepository
 {
-    public IEnumerable<Address> GetAll()
+    public List<Address> GetAll()
     {
         throw new NotImplementedException();
     }
@@ -18,6 +20,11 @@ public class AddressRepository : IAddressRepository
     }
 
     public void Update(Address course)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Delete(Address data)
     {
         throw new NotImplementedException();
     }

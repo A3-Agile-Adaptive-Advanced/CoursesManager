@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using CoursesManager.UI.Models;
 using System.Collections.ObjectModel;
-using System.Linq;
-using CoursesManager.UI.Models;
 
-namespace CoursesManager.UI.Models.Repositories.StudentRepository
+namespace CoursesManager.UI.Repositories.StudentRepository
 {
-    public class StudentRepository : IStudentRepository
+    public class DummyStudentRepository : IStudentRepository
     {
         private readonly ObservableCollection<Student> _students;
 
-        public StudentRepository(ObservableCollection<Student> students)
+        public DummyStudentRepository(ObservableCollection<Student> students)
         {
             _students = students ?? throw new ArgumentNullException(nameof(students), "Students collection cannot be null.");
         }
 
-        public IEnumerable<Student> GetAll()
+        public List<Student> GetAll()
         {
             return _students.Where(s => !s.Is_deleted).ToList();
         }
@@ -48,6 +45,11 @@ namespace CoursesManager.UI.Models.Repositories.StudentRepository
             existingStudent.PostCode = student.PostCode;
             existingStudent.HouseNumber = student.HouseNumber;
             existingStudent.HouseNumberExtension = student.HouseNumberExtension;
+        }
+
+        public void Delete(Student data)
+        {
+            throw new NotImplementedException();
         }
 
         public void Delete(int id)

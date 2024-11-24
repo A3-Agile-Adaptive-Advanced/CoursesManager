@@ -2,9 +2,6 @@
 using Moq;
 using CoursesManager.UI.ViewModels;
 using CoursesManager.UI.Models;
-using CoursesManager.UI.Models.Repositories.StudentRepository;
-using CoursesManager.UI.Models.Repositories.CourseRepository;
-using CoursesManager.UI.Models.Repositories.RegistrationRepository;
 using CoursesManager.UI.Services;
 using CoursesManager.UI.Dialogs.Enums;
 using System.Collections.ObjectModel;
@@ -15,6 +12,9 @@ using System.Windows;
 using System.Linq;
 using CoursesManager.UI.Dialogs.ViewModels;
 using CoursesManager.MVVM.Messages;
+using CoursesManager.UI.Repositories.RegistrationRepository;
+using CoursesManager.UI.Repositories.StudentRepository;
+using CoursesManager.UI.Repositories.CourseRepository;
 
 namespace CoursesManager.Tests
 {

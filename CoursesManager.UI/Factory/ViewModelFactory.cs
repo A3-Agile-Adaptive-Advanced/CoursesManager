@@ -3,11 +3,11 @@ using CoursesManager.MVVM.Dialogs;
 using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Models;
-using CoursesManager.UI.Models.Repositories.AddressRepository;
-using CoursesManager.UI.Models.Repositories.CourseRepository;
-using CoursesManager.UI.Models.Repositories.LocationRepository;
-using CoursesManager.UI.Models.Repositories.RegistrationRepository;
-using CoursesManager.UI.Models.Repositories.StudentRepository;
+using CoursesManager.UI.Repositories.AddressRepository;
+using CoursesManager.UI.Repositories.CourseRepository;
+using CoursesManager.UI.Repositories.LocationRepository;
+using CoursesManager.UI.Repositories.RegistrationRepository;
+using CoursesManager.UI.Repositories.StudentRepository;
 using CoursesManager.UI.ViewModels;
 using CoursesManager.UI.ViewModels.Courses;
 

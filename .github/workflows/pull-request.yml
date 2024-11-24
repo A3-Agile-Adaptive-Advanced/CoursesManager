@@ -24,11 +24,8 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@main
-        with:
-          java-version: 17
-          distribution: "zulu"
+      - name: Write .env file
+        run: echo "${{ secrets.ENV }}" > CoursesManager.UI/.env
 
       - name: Run unit tests
         env:

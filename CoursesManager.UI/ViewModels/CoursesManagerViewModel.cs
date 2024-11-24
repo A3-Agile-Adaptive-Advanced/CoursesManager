@@ -4,11 +4,11 @@ using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Data;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Models;
-using CoursesManager.UI.Models.Repositories.CourseRepository;
 using CoursesManager.UI.ViewModels.Courses;
-using CoursesManager.UI.Models.Repositories.RegistrationRepository;
 using System.Diagnostics;
 using CoursesManager.MVVM.Messages;
+using CoursesManager.UI.Repositories.RegistrationRepository;
+using CoursesManager.UI.Repositories.CourseRepository;
 
 namespace CoursesManager.UI.ViewModels
 {

@@ -12,16 +12,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove=".env" />
     <None Remove="Resources\Icons\A3Logo.ico" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include=".env">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Resources\Icons\A3Logo.ico" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="MaterialDesignThemes" Version="5.1.0" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
+    <PackageReference Include="Mysql.Data" Version="9.1.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -55,7 +60,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\Repositories\AddressRepository\" />
+    <Folder Include="Repositories\AddressRepository\" />
     <Folder Include="ViewModels\Design\" />
   </ItemGroup>
 

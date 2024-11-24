@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Windows.Data;
 
-namespace CoursesManager.UI.Converters
+namespace CoursesManager.UI.Helpers.Converters
 {
     public class StartDateToBooleanConverter : IValueConverter
     {

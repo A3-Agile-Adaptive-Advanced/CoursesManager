@@ -11,13 +11,13 @@ using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Factory;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Models.CoursesManager.UI.Models;
-using CoursesManager.UI.Models.Repositories.AddressRepository;
-using CoursesManager.UI.Models.Repositories.CourseRepository;
-using CoursesManager.UI.Models.Repositories.LocationRepository;
-using CoursesManager.UI.Models.Repositories.RegistrationRepository;
-using CoursesManager.UI.Models.Repositories.StudentRepository;
+using CoursesManager.UI.Repositories.LocationRepository;
+using CoursesManager.UI.Repositories.RegistrationRepository;
+using CoursesManager.UI.Repositories.StudentRepository;
 using CoursesManager.UI.Views.Students;
 using CoursesManager.UI.ViewModels.Courses;
+using CoursesManager.UI.Repositories.AddressRepository;
+using CoursesManager.UI.Repositories.CourseRepository;
 
 namespace CoursesManager.UI;
 
@@ -86,11 +86,11 @@ public partial class App : Application
 
     private void InitializeRepositories()
     {
-        CourseRepository = new CourseRepository(Courses);
-        StudentRepository = new StudentRepository(Students);
-        RegistrationRepository = new RegistrationRepository(Registrations);
-        AddressRepository = new AddressRepository();
-        LocationRepository = new LocationRepository();
+        CourseRepository = new DummyCourseRepository(Courses);
+        StudentRepository = new DummyStudentRepository(Students);
+        RegistrationRepository = new DummyRegistrationRepository(Registrations);
+        AddressRepository = new DummyAddressRepository();
+        LocationRepository = new DummyLocationRepository();
     }
 
     private static void SetupDummyDataTemporary()

@@ -4,13 +4,13 @@ using System.Windows.Input;
 using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Dialogs;
 using CoursesManager.UI.Models;
-using CoursesManager.UI.Models.Repositories.StudentRepository;
-using CoursesManager.UI.Models.Repositories.CourseRepository;
-using CoursesManager.UI.Models.Repositories.RegistrationRepository;
 using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Dialogs.ViewModels;
 using CoursesManager.UI.Dialogs.Enums;
 using CoursesManager.UI.Services;
+using CoursesManager.UI.Repositories.RegistrationRepository;
+using CoursesManager.UI.Repositories.StudentRepository;
+using CoursesManager.UI.Repositories.CourseRepository;
 
 namespace CoursesManager.UI.ViewModels
 {

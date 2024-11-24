@@ -87,7 +87,7 @@ namespace CoursesManager.UI.Models
                     {
                         Id = i + 1,
                         Name = $"Location{i + 1}",
-                        Address = $"Address for Location{i + 1}",
+                        Address = GenerateRandomAddress(),
                         Capacity = $"{_random.Next(10, 100)}",
                         DateCreated = DateTime.Now
                     };
@@ -96,6 +96,19 @@ namespace CoursesManager.UI.Models
                 }
 
                 return locations;
+            }
+
+            private static Address GenerateRandomAddress()
+            {
+                return new Address
+                {
+                    Id = _random.Next(1, 1000),
+                    Country = "Nederland",
+                    Zipcode = GenerateRandomPostCode(),
+                    City = $"City{_random.Next(1, 100)}",
+                    Street = $"Street{_random.Next(1, 100)}",
+                    HouseNumber = _random.Next(1, 300).ToString()
+                };
             }
 
             public static ObservableCollection<Registration> GenerateRegistrations(int studentCount, int courseCount)

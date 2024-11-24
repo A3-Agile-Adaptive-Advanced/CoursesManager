@@ -89,6 +89,7 @@
                                                 </DataTrigger>
                                                 <MultiDataTrigger>
                                                     <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding IsActive}" Value="true" />
                                                         <Condition Binding="{Binding IsPayed}" Value="false" />
                                                         <Condition Binding="{Binding StartDate, Converter={StaticResource StartDateToBooleanConverter}}" Value="true" />
                                                     </MultiDataTrigger.Conditions>

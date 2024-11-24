@@ -1,21 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using CoursesManager.UI.Models;
 using System.Collections.ObjectModel;
-using System.Linq;
-using CoursesManager.UI.Models;
 
-namespace CoursesManager.UI.Models.Repositories.RegistrationRepository
+namespace CoursesManager.UI.Repositories.RegistrationRepository
 {
-    public class RegistrationRepository : IRegistrationRepository
+    public class DummyRegistrationRepository : IRegistrationRepository
     {
         private readonly ObservableCollection<Registration> _registrations;
 
-        public RegistrationRepository(ObservableCollection<Registration> registrations)
+        public DummyRegistrationRepository(ObservableCollection<Registration> registrations)
         {
             _registrations = registrations ?? throw new ArgumentNullException(nameof(registrations), "Registrations collection cannot be null.");
         }
 
-        public IEnumerable<Registration> GetAll()
+        public List<Registration> GetAll()
         {
             return _registrations.ToList();
         }
@@ -46,6 +43,11 @@ namespace CoursesManager.UI.Models.Repositories.RegistrationRepository
             existingRegistration.RegistrationDate = registration.RegistrationDate;
             existingRegistration.PaymentStatus = registration.PaymentStatus;
             existingRegistration.IsActive = registration.IsActive;
+        }
+
+        public void Delete(Registration data)
+        {
+            throw new NotImplementedException();
         }
 
         public void Delete(int id)

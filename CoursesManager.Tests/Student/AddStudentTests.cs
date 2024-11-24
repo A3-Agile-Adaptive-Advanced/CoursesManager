@@ -1,7 +1,4 @@
 ﻿using CoursesManager.UI.Models;
-using CoursesManager.UI.Models.Repositories.CourseRepository;
-using CoursesManager.UI.Models.Repositories.RegistrationRepository;
-using CoursesManager.UI.Models.Repositories.StudentRepository;
 using CoursesManager.UI.ViewModels;
 using CoursesManager.MVVM.Dialogs;
 using Moq;
@@ -14,6 +11,9 @@ using CoursesManager.UI.Dialogs.ViewModels;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using CoursesManager.UI.Repositories.RegistrationRepository;
+using CoursesManager.UI.Repositories.StudentRepository;
+using CoursesManager.UI.Repositories.CourseRepository;
 
 namespace CoursesManager.Tests
 {

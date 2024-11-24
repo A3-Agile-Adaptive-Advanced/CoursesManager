@@ -1,8 +1,5 @@
 ﻿using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Dialogs;
-using CoursesManager.UI.Models.Repositories.CourseRepository;
-using CoursesManager.UI.Models.Repositories.RegistrationRepository;
-using CoursesManager.UI.Models.Repositories.StudentRepository;
 using CoursesManager.UI.Models;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -17,6 +14,9 @@ using CoursesManager.UI.Messages;
 using CoursesManager.UI.ViewModels;
 using CoursesManager.MVVM.Messages;
 using System.Windows.Media.Animation;
+using CoursesManager.UI.Repositories.RegistrationRepository;
+using CoursesManager.UI.Repositories.StudentRepository;
+using CoursesManager.UI.Repositories.CourseRepository;
 
 public class AddStudentViewModel : DialogViewModel<bool>, INotifyPropertyChanged
 {
