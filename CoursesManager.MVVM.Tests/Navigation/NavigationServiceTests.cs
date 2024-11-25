@@ -16,12 +16,10 @@ internal class ViewModelWithNavigate : NavigatableViewModel
 
 internal class ViewModelWithoutNavigate : ViewModel
 {
-
 }
 
 internal class UnregisteredViewModelWithoutNavigate : ViewModel
 {
-
 }
 
 public class NavigationServiceTests
@@ -70,7 +68,7 @@ public class NavigationServiceTests
     {
         Assert.Throws<ArgumentNullException>(() =>
         {
-            Func<NavigationService, ViewModelWithNavigate> factory = null;
+            Func<INavigationService, ViewModelWithNavigate> factory = null;
 
             INavigationService.RegisterViewModelFactory<ViewModelWithNavigate>(factory);
         });
@@ -95,7 +93,7 @@ public class NavigationServiceTests
         Assert.That(INavigationService.ViewModelFactories.Count, Is.AtMost(1));
     }
 
-    [Test] 
+    [Test]
     public void CanGoBack_ReturnsFalse_WhenNoForwardNavigationHasOccured()
     {
         Assert.IsFalse(_navigationService.CanGoBack());

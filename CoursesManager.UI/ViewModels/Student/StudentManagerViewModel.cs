@@ -18,7 +18,7 @@ using CoursesManager.UI.Views.Students;
 
 namespace CoursesManager.UI.ViewModels
 {
-    public class StudentManagerViewModel : ViewModel
+    public class StudentManagerViewModel : NavigatableViewModel
     {
         private readonly IDialogService _dialogService;
         private readonly IMessageBroker _messageBroker;
@@ -26,11 +26,12 @@ namespace CoursesManager.UI.ViewModels
         private readonly ICourseRepository _courseRepository;
         private readonly IRegistrationRepository _registrationRepository;
         private readonly INavigationService _navigationService;
-        public ObservableCollection<Student> Students { get;  set; }
+        public ObservableCollection<Student> Students { get; set; }
         public ObservableCollection<Student> FilteredStudentRecords { get; set; }
         public ObservableCollection<CourseStudentPayment> DisplayedCourses { get; private set; }
 
         private string _searchText;
+
         public string SearchText
         {
             get => _searchText;
@@ -38,6 +39,7 @@ namespace CoursesManager.UI.ViewModels
         }
 
         private Student _selectedStudent;
+
         public Student SelectedStudent
         {
             get => _selectedStudent;
@@ -51,6 +53,7 @@ namespace CoursesManager.UI.ViewModels
         }
 
         private bool _isDialogOpen;
+
         public bool IsDialogOpen
         {
             get => _isDialogOpen;
@@ -58,6 +61,7 @@ namespace CoursesManager.UI.ViewModels
         }
 
         private ObservableCollection<CourseStudentPayment> _coursePaymentList;
+
         public ObservableCollection<CourseStudentPayment> CoursePaymentList
         {
             get => _coursePaymentList;
@@ -72,7 +76,7 @@ namespace CoursesManager.UI.ViewModels
         public ICommand SearchCommand { get; }
         public ICommand StudentDetailCommand { get; }
 
-        #endregion
+        #endregion Commands
 
         public StudentManagerViewModel(
             IDialogService dialogService,
@@ -80,7 +84,7 @@ namespace CoursesManager.UI.ViewModels
             ICourseRepository courseRepository,
             IRegistrationRepository registrationRepository,
             IMessageBroker messageBroker,
-            INavigationService navigationService)
+            INavigationService navigationService) : base(navigationService)
         {
             _messageBroker = messageBroker;
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
@@ -89,7 +93,6 @@ namespace CoursesManager.UI.ViewModels
             _registrationRepository = registrationRepository ?? throw new ArgumentNullException(nameof(registrationRepository));
             _navigationService = navigationService;
             CoursePaymentList = new ObservableCollection<CourseStudentPayment>();
-
 
             // Initialize students
             LoadStudents();
@@ -145,7 +148,6 @@ namespace CoursesManager.UI.ViewModels
         {
             await ExecuteWithOverlayAsync(async () =>
             {
-
                 var dialogResult = await _dialogService.ShowDialogAsync<AddStudentViewModel, bool>(true);
 
                 if (dialogResult?.Data == true && dialogResult.Outcome == DialogOutcome.Success)
@@ -216,13 +218,12 @@ namespace CoursesManager.UI.ViewModels
 
         private void OpenStudentDetailViewModel()
         {
-
             if (_navigationService == null)
             {
                 throw new InvalidOperationException("Navigation service is not initialized.");
             }
 
-            _navigationService.NavigateTableViewModels<StudentDetailViewModel>(SelectedStudent);
+            _navigationService.NavigateTo<StudentDetailViewModel>(SelectedStudent);
         }
 
         private async Task ExecuteWithOverlayAsync(Func<Task> action)

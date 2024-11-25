@@ -11,6 +11,7 @@ using CoursesManager.UI.Models.Repositories.StudentRepository;
 using CoursesManager.UI.ViewModels;
 using CoursesManager.UI.ViewModels.Courses;
 using CoursesManager.UI.ViewModels.Students;
+using System.Windows.Navigation;
 
 namespace CoursesManager.UI.Factory
 {
@@ -23,7 +24,6 @@ namespace CoursesManager.UI.Factory
         private readonly IAddressRepository _addressRepository;
         private readonly IMessageBroker _messageBroker;
         private readonly IDialogService _dialogService;
-        public readonly INavigationService _navigationService;
 
         public ViewModelFactory(
             ICourseRepository courseRepository,
@@ -32,8 +32,7 @@ namespace CoursesManager.UI.Factory
             IStudentRepository studentRepository,
             IAddressRepository addressRepository,
             IMessageBroker messageBroker,
-            IDialogService dialogService,
-            INavigationService navigationService)
+            IDialogService dialogService)
         {
             _courseRepository = courseRepository;
             _locationRepository = locationRepository;
@@ -42,55 +41,42 @@ namespace CoursesManager.UI.Factory
             _addressRepository = addressRepository;
             _messageBroker = messageBroker;
             _dialogService = dialogService;
-            _navigationService = navigationService;
         }
 
-        public T CreateViewModel<T>(object parameter = null) where T : class
+        public T CreateViewModel<T>(object? parameter = null) where T : class
+        {
+            return typeof(T) switch
+            {
+                Type vmType when vmType == typeof(CourseOverViewViewModel) =>
+                    new CourseOverViewViewModel() as T,
+                Type vmType when vmType == typeof(AddStudentViewModel) =>
+                    new AddStudentViewModel(false, _studentRepository, _courseRepository, _registrationRepository,
+                        _dialogService) as T,
+
+                _ => throw new ArgumentException($"Unknown ViewModel type: {typeof(T)}")
+            };
+        }
+
+        // If the viewmodel wants a navigation service put it in here
+        public T CreateViewModel<T>(INavigationService navigationService, object? parameter = null)
+            where T : NavigatableViewModel
         {
             return typeof(T) switch
             {
                 Type vmType when vmType == typeof(StudentManagerViewModel) =>
                     new StudentManagerViewModel(_dialogService, _studentRepository, _courseRepository,
-                        _registrationRepository, _messageBroker, _navigationService) as T,
-                Type vmType when vmType == typeof(CourseOverViewViewModel) =>
-                    new CourseOverViewViewModel() as T,
-                Type vmType when vmType == typeof(EditStudentViewModel) =>
-                    new EditStudentViewModel(
-                        _studentRepository,
-                        _courseRepository,
-                        _registrationRepository,
-                        _dialogService,
-                        parameter as Student) as T,
-                Type vmType when vmType == typeof(AddStudentViewModel) =>
-                    new AddStudentViewModel(false, _studentRepository, _courseRepository, _registrationRepository,
-                        _dialogService) as T,
+                        _registrationRepository, _messageBroker, navigationService) as T,
                 Type vmType when vmType == typeof(StudentDetailViewModel) =>
                     new StudentDetailViewModel(
                         _registrationRepository,
-                        _navigationService,
-                        parameter as Student 
-                    ) as T,
-
-                _ => throw new ArgumentException($"Unknown ViewModel type: {typeof(T)}")
-            };
-        }
-
-        public T NavigateTableViewModels<T>(INavigationService navigationService, object parameter = null)
-            where T : NavigatableViewModel
-        {
-            return typeof(T) switch
-            {
-                // Parameterized factory for StudentDetailViewModel
-                Type vmType when vmType == typeof(StudentDetailViewModel) =>
-                    new StudentDetailViewModel(
-                        _registrationRepository,
-                        _navigationService,
+                        navigationService,
                         parameter as Student) as T,
+                Type vmType when vmType == typeof(CoursesManagerViewModel) =>
+                    new CoursesManagerViewModel(_courseRepository, _registrationRepository, navigationService, _messageBroker) as T,
 
                 // Add other view model cases here...
                 _ => throw new ArgumentException($"Unknown ViewModel type: {typeof(T)}")
             };
         }
-
     }
 }

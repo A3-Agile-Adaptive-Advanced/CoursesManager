@@ -1,5 +1,7 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Windows;
+using CoursesManager.MVVM.Data;
 using CoursesManager.MVVM.Dialogs;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.ViewModels;
@@ -65,13 +67,12 @@ public partial class App : Application
             StudentRepository,
             AddressRepository,
             MessageBroker,
-            DialogService,
-            NavigationService);
+            DialogService);
 
         // Register ViewModel
 
         RegisterViewModels(viewModelFactory);
-   
+
         // Register Dialogs
         RegisterDialogs();
 
@@ -81,10 +82,7 @@ public partial class App : Application
         // Navigate to the Initial ViewModel
         NavigationService.NavigateTo<StudentManagerViewModel>();
 
-
         mw.Show();
-
-        NavigationService.NavigateTo<StudentManagerViewModel>();
     }
 
     private void InitializeRepositories()
@@ -121,22 +119,6 @@ public partial class App : Application
     {
         DialogService.RegisterDialog<ConfirmationDialogViewModel, YesNoDialogWindow, DialogResultType>((initial) => new ConfirmationDialogViewModel(initial));
         DialogService.RegisterDialog<NotifyDialogViewModel, ConfirmationDialogWindow, DialogResultType>((initial) => new NotifyDialogViewModel(initial));
-    }
-
-    private void RegisterViewModels(ViewModelFactory viewModelFactory)
-    {
-        // Register StudentManagerViewModel
-        INavigationService.RegisterViewModelFactory(() => viewModelFactory.CreateViewModel<StudentManagerViewModel>());
-        //INavigationService.RegisterViewModelFactory(() => viewModelFactory.CreateViewModel2<StudentDetailViewModel>());
-        INavigationService.RegisterViewModelFactory<StudentDetailViewModel>(
-            parameter => viewModelFactory.CreateViewModel<StudentDetailViewModel>(parameter as Student)
-        );
-
-
-        INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<CoursesManagerViewModel>(nav));
-
-        // Register CourseOverViewViewModel
-        INavigationService.RegisterViewModelFactory(() => viewModelFactory.CreateViewModel<CourseOverViewViewModel>());
 
         // Register Dialogs using the factory
         DialogService.RegisterDialog<EditStudentViewModel, EditStudentPopup, Student>(
@@ -146,6 +128,19 @@ public partial class App : Application
                 RegistrationRepository,
                 DialogService,
                 student));
+    }
+
+    private void RegisterViewModels(ViewModelFactory viewModelFactory)
+    {
+        // Register StudentManagerViewModel
+        INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<StudentManagerViewModel>(nav));
+
+        INavigationService.RegisterViewModelFactoryWithParameters((parameter, nav) => viewModelFactory.CreateViewModel<StudentDetailViewModel>(nav, parameter as Student));
+
+        INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<CoursesManagerViewModel>(nav));
+
+        // Register CourseOverViewViewModel
+        INavigationService.RegisterViewModelFactory(() => viewModelFactory.CreateViewModel<CourseOverViewViewModel>());
 
         DialogService.RegisterDialog<AddStudentViewModel, AddStudentPopup, bool>(
             initial => viewModelFactory.CreateViewModel<AddStudentViewModel>());
