@@ -111,6 +111,23 @@
                                     <!-- Placeholder Image -->
                                     <Rectangle Width="100" Height="100" Fill="#E0E0E0" RadiusX="5" RadiusY="5" Grid.Column="0" />
 
+                                    <Border Grid.Column="0" Width="100" Height="100" CornerRadius="10" BorderBrush="Transparent" BorderThickness="1">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Style.Triggers>
+                                                    <!-- Trigger voor als Image null is -->
+                                                    <DataTrigger Binding="{Binding Image}" Value="{x:Null}">
+                                                        <Setter Property="BorderBrush" Value="Red" />
+                                                        <Setter Property="BorderThickness" Value="2" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+
+                                        <!-- Afbeelding -->
+                                        <Image Source="{Binding Image , FallbackValue={x:Null}, UpdateSourceTrigger=PropertyChanged}" Stretch="UniformToFill" />
+                                    </Border>
+
                                     <!-- Title and Subtitle -->
                                     <StackPanel Grid.Column="1" Margin="15,0,0,0">
                                         <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="20" Foreground="#02008C" />

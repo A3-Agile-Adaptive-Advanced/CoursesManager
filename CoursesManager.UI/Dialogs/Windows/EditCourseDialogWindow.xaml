@@ -1,0 +1,219 @@
+﻿<Window x:Class="CoursesManager.UI.Dialogs.Windows.EditCourseDialogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:CoursesManager.UI.Dialogs.Windows" xmlns:controls="clr-namespace:CoursesManager.UI.Views.Controls"  xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        AllowsTransparency="True"
+        WindowStyle="None" Background="Transparent"
+        
+        WindowStartupLocation="CenterScreen"
+        d:DesignHeight="700" d:DesignWidth="1600">
+    <Border Background="{StaticResource SecondaryGradient}" CornerRadius="15">
+
+        <Grid  Margin="0" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="50"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="50" />
+            </Grid.RowDefinitions>
+            <controls:PrimaryDialogHeader HeaderTitle="Cursus Toevoegen" Grid.ColumnSpan="3" />
+            <Border Grid.Row="1" Grid.Column="1" CornerRadius="15 15 15 15" Background="White" Height="Auto" Width="Auto">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="25"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="25"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="15"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="15"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="25"/>
+                    </Grid.RowDefinitions>
+
+
+
+                    <Grid Grid.Column="1" Grid.Row="2" VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="15"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Placeholder Image -->
+                        <Rectangle Width="150" Height="150" Fill="#E0E0E0" RadiusX="10" RadiusY="10" Grid.Column="0" />
+                        <Viewbox Width="140" Height="140">
+                            <materialDesign:PackIcon Kind="Picture" Height="140" Width="140" VerticalAlignment="Center" Foreground="DarkGray"/>
+                        </Viewbox>
+
+                        <Button Style="{StaticResource IconButtonWithShadowStyle}" Command="{Binding UploadCommand}" Background="Transparent" BorderThickness="0" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-130,-140,0">
+                            <materialDesign:PackIcon Kind="PlusCircleOutline" Width="50" Height="50" Foreground="#02008C" />
+                        </Button>
+
+                        <!-- Stackpanel with code, dates and location-->
+                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                            <Grid>
+
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="5"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="5"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="5"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0" HorizontalAlignment="Left" Height="69" Grid.RowSpan="2" VerticalAlignment="Top">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="100"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock HorizontalAlignment="Right" Grid.Row="0" Grid.Column="0" Text="Cursus naam:" FontWeight="Bold" FontSize="22" Foreground="#02008C" Margin="0,0,0,5" />
+                                    <TextBlock HorizontalAlignment="Right" Grid.Row="1" Grid.Column="0" Text="Cursus code:" FontWeight="Bold" FontSize="22" Foreground="#02008C" Margin="0,0,7,5"/>
+                                    <TextBox Grid.Column="2" Grid.Row="0" Text="{Binding Course.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" FontWeight="Bold" FontSize="22" Foreground="Black" />
+                                    <TextBox Grid.Column="2" Grid.Row="1" Text="{Binding Course.Code, UpdateSourceTrigger=PropertyChanged}" FontWeight="Bold" FontSize="22" Foreground="Black" />
+
+                                </Grid>
+
+                                <Grid Grid.Row="2" HorizontalAlignment="Left">
+
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Row="0" HorizontalAlignment="Left"  Text="Begin datum:" FontWeight="Bold" FontSize="22" Foreground="#02008C" />
+                                    <DatePicker Style="{StaticResource RoundedDatePickerStyle}" SelectedDate="{Binding Course.StartDate, UpdateSourceTrigger=PropertyChanged}" Width="200" Height="30" Tag="DatePicker"  Grid.Column="2" Margin="0,0,5,0" VerticalAlignment="Top" HorizontalAlignment="Left" />
+
+
+
+                                    <TextBlock Grid.Row="1"  HorizontalAlignment="Left"  Text="Eind datum:" FontWeight="Bold" FontSize="22" Foreground="#02008C" />
+                                    <DatePicker Grid.Row="1" Style="{StaticResource RoundedDatePickerStyle}" SelectedDate="{Binding Course.EndDate, UpdateSourceTrigger=PropertyChanged}" Width="200" Height="30" Tag="DatePicker"  Grid.Column="2" Margin="0,0,5,0" VerticalAlignment="Top" HorizontalAlignment="Left" />
+
+                                </Grid>
+
+                                <Grid  Grid.Row="4" HorizontalAlignment="Left">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock HorizontalAlignment="Right" Text="Locatie:" FontWeight="Bold" FontSize="22" Foreground="#02008C" />
+                                    <ComboBox Style="{DynamicResource ComboBoxStyle}" ItemsSource="{Binding Locations}" DisplayMemberPath="Name" SelectedItem="{Binding Course.Location, UpdateSourceTrigger=PropertyChanged}" Width="180" Height="30"  Grid.Column="2" Margin="0,0,0,0">
+
+                                    </ComboBox>
+                                </Grid>
+
+                                <Grid Grid.Row="6" HorizontalAlignment="Left">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="10"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock HorizontalAlignment="Center"  Grid.Column="0" Text="Cursus Activeren?" FontWeight="Bold" FontSize="22" Foreground="#02008C" Margin="0,0,0,5" />
+                                    <CheckBox Style="{DynamicResource CheckBoxStyle10}" IsChecked="{Binding Course.IsActive, UpdateSourceTrigger=PropertyChanged}" Tag="IsActive"  Grid.Column="2" Margin="0,0,10,0" Grid.ColumnSpan="3">
+                                        <CheckBox.ToolTip>
+                                            Wilt u de cursus direct op actief zetten? Vink de box aan indien van toepassing.
+                                        </CheckBox.ToolTip>
+                                    </CheckBox>
+
+                                </Grid>
+                            </Grid>
+                        </StackPanel>
+
+                        <Grid Grid.Column="0">
+                            <!-- Placeholder (zichtbaar als er geen afbeelding is) -->
+                            <Rectangle Width="150" Height="150" Fill="#E0E0E0" RadiusX="10" RadiusY="10">
+                                <Rectangle.Style>
+                                    <Style TargetType="Rectangle">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                        <Style.Triggers>
+                                            <!-- Verberg placeholder als afbeelding geladen is -->
+                                            <DataTrigger Binding="{Binding ImageSource}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding ImageSource}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Rectangle.Style>
+                            </Rectangle>
+
+                            <Viewbox Width="140" Height="140" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <materialDesign:PackIcon Kind="Picture" Height="140" Width="140" Foreground="DarkGray" />
+                            </Viewbox>
+
+                            <!-- Border met afgeronde hoeken voor de afbeelding -->
+                            <Border Width="150" Height="150" CornerRadius="10" ClipToBounds="True" Panel.ZIndex="1">
+                                <Image Source="{Binding ImageSource}" Stretch="UniformToFill" />
+                            </Border>
+                        </Grid>
+
+                    </Grid>
+                    <Grid Grid.Column="1" Grid.Row="4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="15"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock  HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0" Text="Beschrijving:" FontWeight="Bold" FontSize="22" Foreground="#02008C" Grid.ColumnSpan="3" />
+                        <Border Style="{DynamicResource BorderStyle1}" Grid.Row="2" Grid.ColumnSpan="2" Padding="10 5 10 5">
+                            <ScrollViewer Style="{DynamicResource ScrollViewerStyle1}" Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+                                <TextBox AcceptsReturn="True" TextWrapping="Wrap" 
+                                 VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" 
+                                 MaxLength="5000" Text="{Binding Course.Description, UpdateSourceTrigger=PropertyChanged}" 
+                                 Style="{DynamicResource TextBoxEditStudentStyle1}" 
+                                     />
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                    <Grid  Grid.Row="6" Grid.Column="1" VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Button Grid.Row="0" Grid.Column="1" MinWidth="100" MinHeight="50" Content="Opslaan Cursus" Style="{StaticResource PrimaryButton}" Command="{Binding SaveCommand}" />
+                        <Button Grid.Row="0" Grid.Column="3" MinWidth="100" MinHeight="50" Content="Annuleren" Style="{StaticResource SecondaryButton}" Command="{Binding CancelCommandd}" />
+                    </Grid>
+
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

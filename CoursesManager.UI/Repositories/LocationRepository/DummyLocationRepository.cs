@@ -1,10 +1,22 @@
-﻿using CoursesManager.UI.Models;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using CoursesManager.UI.Models;
 
 namespace CoursesManager.UI.Repositories.LocationRepository
 {
     public class DummyLocationRepository : ILocationRepository
     {
-        private readonly List<Location> _locations = new List<Location>();
+        private readonly ObservableCollection<Location> _locations;
+
+
+        public DummyLocationRepository()
+        {
+            _locations = App.Locations;
+        }
 
         public List<Location> GetAll()
         {

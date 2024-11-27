@@ -8,3 +8,4 @@ public class DialogResultType : ViewModel
     public string DialogText { get; set; }
     public string DialogTitle { get; set; }
 }
+

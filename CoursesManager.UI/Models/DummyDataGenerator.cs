@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CoursesManager.UI.Models
 {
-    // This class is used to generate dummy data for the students.
+    // This class is used to generate dummy data for the Students.
     // We can use this one until we have a database to store the data.
     using System;
     using System.Collections.Generic;
@@ -69,7 +69,7 @@ namespace CoursesManager.UI.Models
                         EndDate = DateTime.Now.AddDays(_random.Next(31, 60)),
                         LocationId = _random.Next(1, count),
                         DateCreated = DateTime.Now,
-                        students = GenerateStudents(i + 1) 
+                        Students = GenerateStudents(i + 1) 
                     };
                     courses.Add(course);
                 }

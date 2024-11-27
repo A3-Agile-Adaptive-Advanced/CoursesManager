@@ -1,8 +1,7 @@
-﻿namespace CoursesManager.UI.Dialogs.Enums
+﻿namespace CoursesManager.UI.Dialogs.Enums;
+
+public enum DialogType
 {
-    public enum DialogType
-    {
-        Notify = 0,
-        Confirmation = 1
-    }
+    Notify = 0,
+    Confirmation = 1
 }

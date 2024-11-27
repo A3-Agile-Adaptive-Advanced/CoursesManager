@@ -119,6 +119,7 @@ public partial class App : Application
     {
         DialogService.RegisterDialog<ConfirmationDialogViewModel, YesNoDialogWindow, DialogResultType>((initial) => new ConfirmationDialogViewModel(initial));
         DialogService.RegisterDialog<NotifyDialogViewModel, ConfirmationDialogWindow, DialogResultType>((initial) => new NotifyDialogViewModel(initial));
+        DialogService.RegisterDialog<ErrorDialogViewModel, ErrorDialogWindow, DialogResultType>((initial) => new ErrorDialogViewModel(initial));
 
         // Register Dialogs using the factory
         DialogService.RegisterDialog<EditStudentViewModel, EditStudentPopup, Student>(
@@ -137,6 +138,8 @@ public partial class App : Application
                 RegistrationRepository,
                 DialogService
             ));
+
+        DialogService.RegisterDialog<CourseDialogViewModel, CourseDialogWindow, Course>((initial) => new CourseDialogViewModel(CourseRepository, DialogService, LocationRepository, initial));
     }
 
     private void RegisterViewModels(ViewModelFactory viewModelFactory)
@@ -147,7 +150,7 @@ public partial class App : Application
 
         INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<CoursesManagerViewModel>(nav));
 
-        INavigationService.RegisterViewModelFactory(() => viewModelFactory.CreateViewModel<CourseOverViewViewModel>());
+        INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<CourseOverViewViewModel>(nav));
     }
 
     /// <summary>

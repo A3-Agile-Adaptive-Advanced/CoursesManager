@@ -1,4 +1,7 @@
 ﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Printing;
+using System.Windows;
 using System.Windows.Input;
 using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Data;
@@ -91,7 +94,7 @@ namespace CoursesManager.UI.ViewModels.Students
             _navigationService = navigationService;
             CoursePaymentList = new ObservableCollection<CourseStudentPayment>();
 
-            // Initialize students
+            // Initialize Students
             LoadStudents();
 
             // Commands
@@ -218,11 +221,11 @@ namespace CoursesManager.UI.ViewModels.Students
             await ExecuteWithOverlayAsync(async () =>
             {
                 var confirmation = await _dialogService.ShowDialogAsync<ConfirmationDialogViewModel, DialogResultType>(
-            new DialogResultType
-            {
-                DialogTitle = "Bevestiging",
-                DialogText = "Wilt u deze cursist verwijderen?"
-            });
+                    new DialogResultType
+                    {
+                        DialogTitle = "Bevestiging",
+                        DialogText = "Wilt u deze cursist verwijderen?"
+                    });
 
                 if (confirmation?.Data?.Result == true)
                 {

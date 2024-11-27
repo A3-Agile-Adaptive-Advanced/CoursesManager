@@ -19,6 +19,10 @@ namespace CoursesManager.UI.Views.Controls
             set => SetValue(HeaderTitleProperty, value);
         }
 
-        public static readonly DependencyProperty HeaderTitleProperty = DependencyProperty.Register(nameof(HeaderTitle), typeof(string), typeof(TextBlock));
+        public static readonly DependencyProperty HeaderTitleProperty = DependencyProperty.Register(
+            nameof(HeaderTitle),
+            typeof(string),
+            typeof(ErrorDialogHeader),
+            new PropertyMetadata(string.Empty));
     }
 }

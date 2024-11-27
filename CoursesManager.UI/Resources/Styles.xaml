@@ -7,10 +7,36 @@
         <ResourceDictionary Source="Colors/Gradients.xaml"/>
     </ResourceDictionary.MergedDictionaries>
 
-    <SolidColorBrush x:Key="TextBox.Static.Border" Color="#FFABAdB3"/>
-    <SolidColorBrush x:Key="TextBox.MouseOver.Border" Color="#FF7EB4EA"/>
-    <SolidColorBrush x:Key="TextBox.Focus.Border" Color="#FF569DE5"/>
-    
+    <LinearGradientBrush x:Key="ErrorButtonHoverGradient" StartPoint="0.5,0" EndPoint="0.5,1">
+        <GradientStop Color="#CCD85653" Offset="0" />
+        <GradientStop Color="#CC7C3130" Offset="1" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="ErrorButtonPressedGradient" StartPoint="0.5,0" EndPoint="0.5,1">
+        <GradientStop Color="#CC7C3130" Offset="0" />
+        <GradientStop Color="#CCD85653" Offset="1" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="SecondaryGradient" StartPoint="0.5,0" EndPoint="0.5,1">
+        <GradientStop Color="#51BAF7" Offset="0" />
+        <GradientStop Color="#D5F0FF" Offset="1" />
+    </LinearGradientBrush>
+
+    <RadialGradientBrush x:Key="SphericalBlueGradient"
+                         GradientOrigin="0.3, 0.3" Center="0.5, 0.5" RadiusX="0.5" RadiusY="0.5">
+        <GradientStop Color="#4DA6FF" Offset="0" />
+        <GradientStop Color="#0066CC" Offset="1" />
+    </RadialGradientBrush>
+
+    <RadialGradientBrush x:Key="SphericalRedGradient"
+                         GradientOrigin="0.3, 0.3" Center="0.5, 0.5" RadiusX="0.5" RadiusY="0.5">
+        <GradientStop Color="#D85653" Offset="0" />
+        <GradientStop Color="#7C3130" Offset="1" />
+    </RadialGradientBrush>
+
+    <SolidColorBrush x:Key="TextBox.Static.Border" Color="#FFABAdB3" />
+    <SolidColorBrush x:Key="TextBox.MouseOver.Border" Color="#FF7EB4EA" />
+    <SolidColorBrush x:Key="TextBox.Focus.Border" Color="#FF569DE5" />
     <Style x:Key="TextBoxEditStudentStyle1" TargetType="{x:Type TextBox}">
         <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"/>
         <Setter Property="BorderBrush" Value="{StaticResource TextBox.Static.Border}"/>
@@ -31,18 +57,18 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TextBoxBase}">
-                    <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10" SnapsToDevicePixels="True">
-                        <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
+                    <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" SnapsToDevicePixels="True">
+                        <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsEnabled" Value="false">
-                            <Setter Property="Opacity" TargetName="border" Value="0.56"/>
+                            <Setter Property="Opacity" TargetName="border" Value="0.56" />
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="true">
-                            <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource TextBox.MouseOver.Border}"/>
+                            <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource TextBox.MouseOver.Border}" />
                         </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="true">
-                            <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource TextBox.Focus.Border}"/>
+                            <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource TextBox.Focus.Border}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -51,13 +77,58 @@
         <Style.Triggers>
             <MultiTrigger>
                 <MultiTrigger.Conditions>
-                    <Condition Property="IsInactiveSelectionHighlightEnabled" Value="true"/>
-                    <Condition Property="IsSelectionActive" Value="false"/>
+                    <Condition Property="IsInactiveSelectionHighlightEnabled" Value="true" />
+                    <Condition Property="IsSelectionActive" Value="false" />
                 </MultiTrigger.Conditions>
-                <Setter Property="SelectionBrush" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}"/>
+                <Setter Property="SelectionBrush" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}" />
             </MultiTrigger>
         </Style.Triggers>
     </Style>
+
+
+
+
+    <Style x:Key="TextBoxEditCourseStyle1" TargetType="{x:Type TextBox}">
+        <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource TextBox.Static.Border}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="4"/>
+        <Setter Property="Width" Value="250"/>
+        <Setter Property="Height" Value="40"/>
+        <!-- Verhoogde hoogte -->
+        <Setter Property="FontSize" Value="20"/>
+        <!-- Kleine aanpassing van FontSize -->
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="AllowDrop" Value="true"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="Black" Opacity="0.3" BlurRadius="3" ShadowDepth="1" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TextBox}">
+                    <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="10" SnapsToDevicePixels="True">
+                        <ScrollViewer x:Name="PART_ContentHost" Focusable="false" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Validation.HasError" Value="True">
+                            <Setter Property="BorderBrush" TargetName="border" Value="Red"/>
+                            <Setter Property="BorderThickness" TargetName="border" Value="2"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
+
+
+
 
     <Style x:Key="DatePickerStyle" TargetType="DatePicker">
     <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"/>
@@ -137,32 +208,32 @@
     
     <Style x:Key="ListBoxEditStudentStyle1" TargetType="{x:Type ListBox}">
         <Style.Resources>
-            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
-            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Black"/>
-            <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Black" />
+            <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent" />
         </Style.Resources>
-        <Setter Property="Background" Value="White"/>
-        <Setter Property="BorderBrush" Value="Transparent"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
-        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
-        <Setter Property="ScrollViewer.CanContentScroll" Value="true"/>
-        <Setter Property="ScrollViewer.PanningMode" Value="Both"/>
-        <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
-        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Background" Value="White" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" />
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+        <Setter Property="ScrollViewer.CanContentScroll" Value="true" />
+        <Setter Property="ScrollViewer.PanningMode" Value="Both" />
+        <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
 
         <!-- Voeg ItemContainerStyle toe om marge voor elk ListBoxItem in te stellen -->
         <Setter Property="ItemContainerStyle">
             <Setter.Value>
                 <Style TargetType="ListBoxItem">
                     <Style.Resources>
-                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
-                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Black"/>
-                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent" />
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="Black" />
+                        <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent" />
                     </Style.Resources>
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
                 </Style>
             </Setter.Value>
         </Setter>
@@ -172,7 +243,7 @@
                 <ControlTemplate TargetType="{x:Type ListBox}">
                     <Border x:Name="Bd" Background="White" BorderBrush="Transparent" BorderThickness="0" CornerRadius="15" Padding="0 0 0 15" SnapsToDevicePixels="true">
                         <ScrollViewer Focusable="false">
-                            <ItemsPresenter SnapsToDevicePixels="True"/>
+                            <ItemsPresenter SnapsToDevicePixels="True" />
                         </ScrollViewer>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -181,19 +252,19 @@
                             <Setter Property="BorderBrush" Value="Transparent"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter Property="Background" Value="White"/>
-                            <Setter Property="BorderBrush" Value="Transparent"/>
+                            <Setter Property="Background" Value="White" />
+                            <Setter Property="BorderBrush" Value="Transparent" />
                         </Trigger>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter Property="Background" Value="White"/>
-                            <Setter Property="BorderBrush" Value="Transparent"/>
+                            <Setter Property="Background" Value="White" />
+                            <Setter Property="BorderBrush" Value="Transparent" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="false">
-                            <Setter Property="Background" TargetName="Bd" Value="White"/>
-                            <Setter Property="BorderBrush" TargetName="Bd" Value="Transparent"/>
+                            <Setter Property="Background" TargetName="Bd" Value="White" />
+                            <Setter Property="BorderBrush" TargetName="Bd" Value="Transparent" />
                         </Trigger>
                         <MultiTrigger>
-                            <Setter Property="ScrollViewer.CanContentScroll" Value="false"/>
+                            <Setter Property="ScrollViewer.CanContentScroll" Value="false" />
                         </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -403,14 +474,8 @@
         </Setter>
     </Style>
 
-    <Style x:Key="ErrorDialogHeaderBorder" TargetType="Border">
+    <Style x:Key="ErrorDialogHeaderBorder" TargetType="Border" BasedOn="{StaticResource PrimaryDialogHeaderBorder}">
         <Setter Property="Background" Value="{StaticResource ErrorGradient}" />
-        <Setter Property="Panel.ZIndex" Value="2" />
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect Color="Black" Opacity="0.5" BlurRadius="10" ShadowDepth="5" />
-            </Setter.Value>
-        </Setter>
     </Style>
 
     <LinearGradientBrush x:Key="ButtonHoverGradient" StartPoint="0.5,0" EndPoint="0.5,1">
@@ -466,7 +531,6 @@
         </Style.Triggers>
     </Style>
 
-    
     <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
         <Setter Property="Background" Value="{StaticResource ErrorGradient}" />
         <!--<Setter Property="Background" Value="{StaticResource PrimaryGradient}" />-->
@@ -518,7 +582,6 @@
         </Setter>
         <Setter Property="Padding" Value="10,5" />
     </Style>
-    
 
     <Style x:Key="ErrorDialogButton" TargetType="Button" BasedOn="{StaticResource PrimaryDialogButton}">
         <Setter Property="Background" Value="{StaticResource ErrorGradient}" />
@@ -629,7 +692,277 @@
             </Setter.Value>
         </Setter>
     </Style>
+    
+    <!-- Checkbox style 10-->
 
+    <Style x:Key="CheckBoxStyle10" TargetType="CheckBox">
+        <Setter Property="SnapsToDevicePixels" Value="False" />
+        <Setter Property="OverridesDefaultStyle" Value="true" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="BorderBrush" Value="#02008C" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <Grid>
+                        <Ellipse x:Name="HighlightCircle"
+                                 Width="32" Height="32"
+                                 Fill="White"
+                                 Opacity="0"
+                                 HorizontalAlignment="Left"
+                                 VerticalAlignment="Center" />
+
+                        <BulletDecorator Background="Transparent"
+                                         VerticalAlignment="Center"
+                                         Margin="6,0,0,0">
+                            <BulletDecorator.Bullet>
+                                <Border x:Name="Border"
+                                        Width="20"
+                                        Height="20"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="2"
+                                        CornerRadius="3"
+                                        Background="White"
+                                        ClipToBounds="True">
+                                    <Path x:Name="CheckMark"
+                                          Width="13"
+                                          Height="13"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Stretch="Fill"
+                                          Stroke="White"
+                                          StrokeEndLineCap="Round"
+                                          StrokeStartLineCap="Round"
+                                          StrokeThickness="2"
+                                          Data="M 0 5 L 3 8 L 8 0"
+                                          Visibility="Collapsed"/>
+                                </Border>
+                            </BulletDecorator.Bullet>
+                            <ContentPresenter Margin="4,0,0,0"
+                                              HorizontalAlignment="Left"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True" />
+                        </BulletDecorator>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <!-- Neutrale staat (unchecked) -->
+                        <Trigger Property="IsChecked" Value="false">
+                            <Setter TargetName="CheckMark" Property="Visibility" Value="Hidden" />
+                            <Setter TargetName="CheckMark" Property="Stroke" Value="#02008C" />
+                            <Setter TargetName="Border" Property="Background" Value="White" />
+                            <Setter TargetName="Border" Property="BorderBrush" Value="#02008C" />
+                        </Trigger>
+
+                        <!-- Geselecteerde staat (checked) -->
+                        <Trigger Property="IsChecked" Value="true">
+                            <Setter TargetName="CheckMark" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="Border" Property="Background" Value="#02008C" />
+                            <Setter TargetName="CheckMark" Property="Stroke" Value="White" />
+                        </Trigger>
+
+                        <!-- Hover staat voor zowel checked als unchecked -->
+                        <Trigger Property="IsMouseOver" Value="true">
+                            <Setter TargetName="HighlightCircle" Property="Opacity" Value="0.5" />
+                            <Setter TargetName="HighlightCircle" Property="Fill" Value="#BCE6FD" />
+                        </Trigger>
+
+                        <!-- Ingedrukte staat voor zowel checked als unchecked -->
+                        <Trigger Property="IsPressed" Value="true">
+                            <Setter TargetName="HighlightCircle" Property="Opacity" Value="1" />
+                            <Setter TargetName="HighlightCircle" Property="Fill" Value="#83CEFA" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
+    <Style x:Key="ComboBoxEditCourseStyle2" TargetType="ComboBox">
+        <Setter Property="Background" Value="White" />
+        <Setter Property="Foreground" Value="Black" />
+        <Setter Property="BorderBrush" Value="{StaticResource TextBox.Static.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid>
+                        <!-- Achtergrond en rand -->
+                        <Border x:Name="BackgroundBorder"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="8" />
+
+                        <!-- Inhoud en pijltje -->
+                        <Grid>
+                            <!-- Geselecteerde inhoud -->
+                            <ContentPresenter x:Name="ContentSite"
+                                      Margin="10,0,40,0" 
+                                HorizontalAlignment="Left"
+                                      VerticalAlignment="Center"
+                                      Content="{TemplateBinding SelectionBoxItem}"
+                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                      ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" />
+
+                                <!-- Pijltje -->
+                                <ToggleButton x:Name="DropDownButton"
+                                  Background="Transparent"
+                                  BorderBrush="Transparent"
+                                  Focusable="false"
+                                  HorizontalAlignment="Right"
+                                  VerticalAlignment="Center"
+                                  Width="30"
+                                  Height="30"
+                                  IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}">
+                                    <Path Data="M 0 0 L 4 4 L 8 0 Z"
+                              Width="10"
+                              Height="6"
+                              Fill="Black"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center" />
+                                </ToggleButton>
+                        </Grid>
+
+                        <!-- Popup voor de items -->
+                        <Popup x:Name="Popup"
+                       Placement="Bottom"
+                       IsOpen="{TemplateBinding IsDropDownOpen}"
+                       AllowsTransparency="True"
+                       Focusable="False">
+                            <Border x:Name="PopupBorder"
+                            Background="White"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="15"
+                            SnapsToDevicePixels="True">
+                                <ScrollViewer Margin="4">
+                                    <ItemsPresenter />
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <!-- Hover-effect -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{StaticResource TextBox.MouseOver.Border}" />
+                        </Trigger>
+
+                        <!-- Focus-effect -->
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{StaticResource TextBox.Focus.Border}" />
+                        </Trigger>
+
+                        <!-- Uitgeschakelde staat -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="BackgroundBorder" Property="Opacity" Value="0.56" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="RoundedImageStyle" TargetType="Border">
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="BorderBrush" Value="{StaticResource TextBox.Static.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Background" Value="White" />
+        <Setter Property="Width" Value="300" />
+        <Setter Property="Height" Value="300" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="5" Opacity="0.5" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+
+    <Style x:Key="RoundedDatePickerStyle" TargetType="DatePicker">
+        <Setter Property="Background" Value="White" />
+        <Setter Property="Foreground" Value="Black" />
+        <Setter Property="BorderBrush" Value="{StaticResource TextBox.Static.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DatePicker">
+                    <Grid>
+                        <!-- Achtergrond en rand -->
+                        <Border x:Name="BackgroundBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8">
+                            <DockPanel>
+                                <!-- Datumtekst -->
+                                <DatePickerTextBox x:Name="PART_TextBox"
+                                               Background="Transparent"
+                                               BorderThickness="0"
+                                               HorizontalAlignment="Stretch"
+                                               VerticalAlignment="Center"
+                                               Padding="10,0,0,0" />
+
+                                <!-- Knop voor kalender -->
+                                <Button x:Name="PART_Button"
+                                    DockPanel.Dock="Right"
+                                    Focusable="False"
+                                    Background="Transparent"
+                                    BorderBrush="Transparent"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Width="30"
+                                    Height="30"
+                                    Margin="0,0,5,0">
+                                    <Path Data="M 0 0 L 10 0 L 10 10 L 0 10 Z M 2 2 L 8 2 L 8 8 L 2 8 Z"
+                                      Fill="Gray"
+                                      Stretch="Uniform"
+                                      Width="16"
+                                      Height="16"
+                                      Margin="7" />
+                                </Button>
+                            </DockPanel>
+                        </Border>
+
+                        <!-- Kalender-popup -->
+                        <Popup x:Name="PART_Popup"
+                           Placement="Bottom"
+                           StaysOpen="False"
+                           IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}">
+                            <Border Background="White"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="15"
+                                Padding="5">
+                                <Calendar x:Name="PART_Calendar" />
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <!-- Hover-effect -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{StaticResource TextBox.MouseOver.Border}" />
+                        </Trigger>
+
+                        <!-- Focus-effect -->
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{StaticResource TextBox.Focus.Border}" />
+                        </Trigger>
+
+                        <!-- Uitgeschakelde staat -->
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="BackgroundBorder" Property="Opacity" Value="0.56" />
+                            <Setter TargetName="PART_Button" Property="Opacity" Value="0.56" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
     <Style TargetType="Button" x:Key="SmallIconButtonWithShadowStyle" BasedOn="{StaticResource IconButtonWithShadowStyle}">
         <!-- Override the Foreground to make the icon blue -->

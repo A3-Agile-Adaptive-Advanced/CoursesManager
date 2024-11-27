@@ -121,5 +121,7 @@ public sealed class DialogResult<TDialogResultType>
         {
             return _dialogResult;
         }
+
+        
     }
 }

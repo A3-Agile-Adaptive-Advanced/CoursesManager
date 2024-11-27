@@ -33,6 +33,11 @@ public interface INavigationService
     void GoBack();
 
     /// <summary>
+    /// Navigates back to the previous view model in the navigation history but also ensures you can't go forward again.
+    /// </summary>
+    void GoBackAndClearForward();
+
+    /// <summary>
     /// Determines whether it is possible to navigate back to the previous view model.
     /// </summary>
     /// <returns><c>true</c> if it is possible to go back; otherwise, <c>false</c>.</returns>

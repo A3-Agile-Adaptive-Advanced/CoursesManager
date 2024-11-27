@@ -3,7 +3,6 @@ using CoursesManager.MVVM.Dialogs;
 using CoursesManager.UI.Models;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using CoursesManager.UI.Dialogs.ResultTypes;

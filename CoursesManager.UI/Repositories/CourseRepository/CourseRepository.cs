@@ -37,5 +37,15 @@ namespace CoursesManager.UI.Repositories.CourseRepository
         }
 
         public void Delete(int id) => _courseDataAccess.Delete(id);
+
+        public bool HasActiveRegistrations(Course course)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetInactive(Course course)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -74,6 +74,12 @@ public class NavigationService : INavigationService
         NavigationStore.CurrentViewModel = _backwardViewModels.Pop();
     }
 
+    public void GoBackAndClearForward()
+    {
+        GoBack();
+        _forwardViewModels.Clear();
+    }
+
     public bool CanGoBack() => _backwardViewModels.Any();
 
     public void GoForward()

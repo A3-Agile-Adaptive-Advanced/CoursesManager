@@ -15,11 +15,11 @@ namespace CoursesManager.UI.ViewModels.Design
 
         public DesignStudentManagerViewModel()
         {
-            // Generate some random students for design-time
+            // Generate some random Students for design-time
             FilteredStudentRecords = GenerateRandomStudents(100); 
         }
 
-        // Method to generate random students
+        // Method to generate random Students
         public static ObservableCollection<Student> GenerateRandomStudents(int count)
         {
             ObservableCollection<Student> students = new ObservableCollection<Student>();
