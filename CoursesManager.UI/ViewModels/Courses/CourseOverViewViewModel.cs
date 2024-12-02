@@ -152,7 +152,7 @@ namespace CoursesManager.UI.ViewModels.Courses
 
         private async void DeleteCourse()
         {
-            await ExecuteWithOverlayAsync(async () =>
+            await ExecuteWithOverlayAsync(_messageBroker, async () =>
             {
                 if (_registrationRepository.GetAllRegistrationsByCourse(CurrentCourse).Any())
                 {
@@ -198,7 +198,7 @@ namespace CoursesManager.UI.ViewModels.Courses
 
         private async void ChangeCourse()
         {
-            await ExecuteWithOverlayAsync(async () =>
+            await ExecuteWithOverlayAsync(_messageBroker, async () =>
             {
                 var dialogResult = await _dialogService.ShowDialogAsync<CourseDialogViewModel, Course>(CurrentCourse);
 
@@ -207,19 +207,6 @@ namespace CoursesManager.UI.ViewModels.Courses
                     CurrentCourse = dialogResult.Data;
                 }
             });
-        }
-
-        private async Task ExecuteWithOverlayAsync(Func<Task> action)
-        {
-            _messageBroker.Publish(new OverlayActivationMessage(true));
-            try
-            {
-                await action();
-            }
-            finally
-            {
-                _messageBroker.Publish(new OverlayActivationMessage(false));
-            }
         }
     }
 }

@@ -1,6 +1,8 @@
-﻿using System;
+﻿using CoursesManager.MVVM.Exceptions;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 public class GlobalCache
 {
@@ -40,31 +42,56 @@ public class GlobalCache
 
     public void Put(string key, object value, bool isPermanent)
     {
+        ArgumentNullException.ThrowIfNull(value, nameof(value));
+
+
         lock (_lock)
         {
-            if (_cacheMap.TryGetValue(key, out var existingNode))
+            if (_cacheMap.TryGetValue(key, out var existingNode) && existingNode != null)
             {
+                if (existingNode.Value.IsPermanent)
+                {
+                    throw new CantBeOverwrittenException($"The item with key '{key}' is permanent and cannot be overwritten.");
+                }
+
+                // Update the value if the item is not permanent
                 existingNode.Value = new CacheItem(key, value, isPermanent);
                 _usageOrder.Remove(existingNode);
                 _usageOrder.AddFirst(existingNode);
+                return;
             }
-            else
-            {
-                // Check if cache is full and only full of permanent items
-                if (_cacheMap.Count >= _capacity && _permanentItemCount == _capacity)
-                {
-                    IncreaseCapacity();
-                }
 
-                // Create and add the new node to the cache
-                var newNode = new LinkedListNode<CacheItem>(new CacheItem(key, value, isPermanent));
-                _usageOrder.AddFirst(newNode);
-                _cacheMap[key] = newNode;
+            EnsureCapacity();
 
-                // The permanent item count will be updated in the CacheItem class itself
-            }
+
+            // Create and add the new node to the cache
+            var newNode = new LinkedListNode<CacheItem>(new CacheItem(key, value, isPermanent));
+            _usageOrder.AddFirst(newNode);
+            _cacheMap[key] = newNode;
+
+            // The permanent item count will be updated in the CacheItem class itself
         }
     }
+
+    private void OverwritingExistingNode(CacheItem existingNode) 
+    { 
+
+    }
+    private void EnsureCapacity()
+    {
+        if (_cacheMap.Count < _capacity)
+            return; // No action needed if there's room
+
+        if (_permanentItemCount == _capacity)
+        {
+            IncreaseCapacity(); // All items are permanent; increase capacity
+        }
+        else
+        {
+            EvictNonPermanentItem(); // Evict the least recently used non-permanent item
+        }
+    }
+
 
     private void IncreaseCapacity()
     {
@@ -134,17 +161,11 @@ public class GlobalCache
             }
         }
     }
-    // For testing purposes
-    public int CurrentCapacity
+    public int getCapactiy()
     {
-        get
-        {
-            lock (_lock)
-            {
-                return _capacity;
-            }
-        }
+        return _capacity;
     }
+
 
 #if DEBUG
     /// <summary>
@@ -172,6 +193,8 @@ public class GlobalCache
     public static GlobalCache CreateForTesting()
     {
         return new GlobalCache(_testCapacity);
+        Debug.WriteLine(_testCapacity);
     }
+
 #endif
 }
