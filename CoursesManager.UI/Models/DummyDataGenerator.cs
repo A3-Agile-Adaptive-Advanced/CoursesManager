@@ -97,8 +97,8 @@ namespace CoursesManager.UI.Models
                         EndDate = DateTime.Now.AddDays(_random.Next(91, 180)),
                         LocationId = _random.Next(1, count),
                         DateCreated = DateTime.Now,
-                        Students = students,
-                        Image = getImage()
+                        Students = students
+                        //Image = getImage()
                     };
                     courses.Add(course);
                 }

@@ -220,7 +220,7 @@
                                             <ComboBox Grid.Column="2" 
                                               ItemsSource="{Binding Locations}" 
                                               DisplayMemberPath="Name" 
-                                              SelectedItem="{Binding Course.Location, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" 
+                                              SelectedItem="{Binding SelectedLocation, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" 
                                               Width="180" Height="30">
 
                                                 <ComboBox.Style>

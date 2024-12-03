@@ -12,6 +12,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<None Remove=".env" />
 		<None Remove="Resources\Icons\A3Logo.ico" />
 		<None Remove="Resources\Images\background.jpg" />
 		<None Remove="Resources\Images\CourseManagerA3.png" />
@@ -26,10 +27,10 @@
 	</ItemGroup>
 
 	<!-- Conditional inclusion of the .env file -->
-	<ItemGroup Condition="Exists('.env')">
-		<Content Include=".env">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
+	<ItemGroup>
+	  <Content Include=".env">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	</ItemGroup>
 
 	<ItemGroup>

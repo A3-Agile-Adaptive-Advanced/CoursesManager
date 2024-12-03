@@ -11,6 +11,8 @@ using CoursesManager.UI.Dialogs.ViewModels;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Repositories.LocationRepository;
 using CoursesManager.UI.Messages;
+using CoursesManager.UI.Repositories;
+using System.IO;
 
 namespace CoursesManager.UI.ViewModels.Students
 {
@@ -19,7 +21,8 @@ namespace CoursesManager.UI.ViewModels.Students
         private readonly ICourseRepository _courseRepository;
         private readonly IDialogService _dialogService;
         private readonly ILocationRepository _locationRepository;
-        
+
+
         
 
         private bool _isDialogOpen;
@@ -79,7 +82,11 @@ namespace CoursesManager.UI.ViewModels.Students
                     };
 
             OriginalCourse = course;
-            Locations = new ObservableCollection<Location>(_locationRepository.GetAll());
+            var allLocations = _locationRepository.GetAll();
+            Locations = new ObservableCollection<Location>(allLocations);
+
+            // Stel de geselecteerde locatie in
+            SelectedLocation = Locations.FirstOrDefault(l => l.Id == Course.LocationId);
 
             Courses = new ObservableCollection<string>(_courseRepository.GetAll().Select(c => c.Name));
             SaveCommand = new RelayCommand(ExecuteSave, CanExecuteSave);
@@ -120,23 +127,26 @@ namespace CoursesManager.UI.ViewModels.Students
         {
             try
             {
-                
                 if (Course == null)
                 {
                     throw new InvalidOperationException("Cursusgegevens ontbreken. Opslaan is niet mogelijk.");
                 }
 
-                
+                LogUtil.Log($"Attempting to save course: {Course.Name}, {Course.Code}, {Course.LocationId}");
+
                 if (OriginalCourse == null)
                 {
                     _courseRepository.Add(Course);
+                    LogUtil.Log("Course added successfully via repository.");
                 }
                 else
                 {
                     _courseRepository.Update(Course);
+                    LogUtil.Log("Course updated successfully via repository.");
                 }
 
-                
+
+
                 var successDialogResult = DialogResult<Course>.Builder()
                     .SetSuccess(
                         Course,
@@ -150,8 +160,8 @@ namespace CoursesManager.UI.ViewModels.Students
             }
             catch (Exception ex)
             {
-                
-                LogUtil.Error(ex.Message);
+                LogUtil.Error($"Error in OnSaveAsync: {ex.Message}");
+
                 await _dialogService.ShowDialogAsync<ErrorDialogViewModel, DialogResultType>(new DialogResultType
                 {
                     DialogText = "Er is iets fout gegaan. Probeer het later opnieuw.",
@@ -159,6 +169,7 @@ namespace CoursesManager.UI.ViewModels.Students
                 });
             }
         }
+
 
 
         public async void OnCancel()
@@ -182,8 +193,40 @@ namespace CoursesManager.UI.ViewModels.Students
 
             if (openDialog.ShowDialog() == true)
             {
-                Course!.Image = new BitmapImage(new Uri(openDialog.FileName));
+                
+                var bitmap = new BitmapImage(new Uri(openDialog.FileName));
+
+              
+                Course.Image = ConvertImageToByteArray(bitmap);
+
+                
+                ImageSource = bitmap;
             }
         }
+
+
+
+        public static byte[] ConvertImageToByteArray(BitmapImage image)
+        {
+            if (image == null) throw new ArgumentNullException(nameof(image));
+
+            using (var memoryStream = new MemoryStream())
+            {
+                var encoder = new JpegBitmapEncoder
+                {
+                    QualityLevel = 90 
+                };
+
+                encoder.Frames.Add(BitmapFrame.Create(image));
+                encoder.Save(memoryStream);
+
+                return memoryStream.ToArray();
+            }
+        }
+
+        private object selectedLocation;
+
+        public object SelectedLocation { get => selectedLocation; set => SetProperty(ref selectedLocation, value); }
+
     }
 }
