@@ -30,14 +30,17 @@ public class LocationDataAccess : BaseDataAccess<Location>
             {
                 Address = new Address
                 {
-                    Id = Convert.ToInt32(row["id"]),
+                    Id = Convert.ToInt32(row["adress_id"]),
                     City = row["city"]?.ToString() ?? string.Empty,
                     Country = row["country"]?.ToString() ?? string.Empty,
                     HouseNumber = row["house_number"]?.ToString() ?? string.Empty,
                     Street = row["street"]?.ToString() ?? string.Empty,
                     Zipcode = row["zipcode"]?.ToString() ?? string.Empty
-                }
+                },
+                Name = row["name"]?.ToString() ?? string.Empty,
+                Id = Convert.ToInt32(row["location_id"])
             }).ToList();
+
         }
         catch (MySqlException ex)
         {
@@ -49,7 +52,7 @@ public class LocationDataAccess : BaseDataAccess<Location>
     {
         try
         {
-            ExecuteNonProcedure(StoredProcedures.CoursesDeleteById, [
+            ExecuteNonProcedure(StoredProcedures.LocationsUpdate, [
                 new MySqlParameter("@p_location_id", data.Id),
                 new MySqlParameter("@p_new_name", data.Name),
                 new MySqlParameter("@p_new_address_id", data.Address.Id)

@@ -10,7 +10,7 @@ namespace CoursesManager.UI.Repositories.CourseRepository
 
         public List<Course> GetAll()
         {
-            throw new NotImplementedException();
+            return _courseDataAccess.GetAll();
         }
 
         public List<Course> RefreshAll()
@@ -22,10 +22,19 @@ namespace CoursesManager.UI.Repositories.CourseRepository
 
         public void Add(Course course)
         {
-            ArgumentNullException.ThrowIfNull(course);
-
-            _courseDataAccess.Add(course);
+            try
+            {
+                LogUtil.Log($"Adding course: {course.Name}, {course.Code}");
+                _courseDataAccess.Add(course);
+                LogUtil.Log("Course added successfully in CourseDataAccess.");
+            }
+            catch (Exception ex)
+            {
+                LogUtil.Error($"Error in CourseRepository.Add: {ex.Message}");
+                throw;
+            }
         }
+
 
         public void Update(Course course)
         {

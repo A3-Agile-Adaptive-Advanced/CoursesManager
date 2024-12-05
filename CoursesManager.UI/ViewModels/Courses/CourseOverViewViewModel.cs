@@ -192,11 +192,14 @@ namespace CoursesManager.UI.ViewModels.Courses
             await ExecuteWithOverlayAsync(_messageBroker, async () =>
             {
                 var dialogResult = await _dialogService.ShowDialogAsync<CourseDialogViewModel, Course>(CurrentCourse);
+                
 
                 if (dialogResult.Outcome == DialogOutcome.Success)
                 {
+                    _messageBroker.Publish(new CoursesChangedMessage());
                     CurrentCourse = dialogResult.Data;
                 }
+
             });
         }
     }

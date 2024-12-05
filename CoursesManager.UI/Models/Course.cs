@@ -1,6 +1,7 @@
 ﻿using CoursesManager.MVVM.Data;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Text;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -24,8 +25,29 @@ namespace CoursesManager.UI.Models
         public DateTime DateCreated { get; set; }
         public ObservableCollection<Student>? Students { get; set; }
 
-        private BitmapImage? _image;
-        public BitmapImage? Image { get => _image; set => SetProperty(ref _image, value); }
+        private byte[]? _image;
+        public byte[]? Image { get => _image; set => SetProperty(ref _image, value); }
+
+        public BitmapImage? ImageAsBitmap
+        {
+            get
+            {
+                if (Image == null || Image.Length == 0)
+                    return null;
+
+                using (var stream = new MemoryStream(Image))
+                {
+                    var bitmap = new BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmap.StreamSource = stream;
+                    bitmap.EndInit();
+                    return bitmap;
+                }
+            }
+        }
+
+
 
 
 
@@ -73,8 +95,9 @@ namespace CoursesManager.UI.Models
                         break;
 
                     case nameof(Image):
-                        
-                        return null;
+                        if (Image != null && Image.Length > 5_000_000) // 5 MB limiet
+                            return "Afbeelding mag niet groter zijn dan 5 MB.";
+                        break;
 
                 }
                 return null;
@@ -116,8 +139,8 @@ namespace CoursesManager.UI.Models
                 LocationId = this.LocationId,
                 Location = this.Location, 
                 DateCreated = new DateTime(this.DateCreated.Ticks),
-                Students = this.Students != null ? new ObservableCollection<Student>(this.Students) : null, 
-                Image = this.Image 
+                Students = this.Students != null ? new ObservableCollection<Student>(this.Students) : null,
+                Image = this.Image != null ? (byte[])this.Image.Clone() : null
             };
         }
     }
