@@ -10,7 +10,7 @@ public class GlobalCache
     private int _InitialCapacity;
     private int _permanentItemCount;
     private readonly ConcurrentDictionary<string, LinkedListNode<CacheItem>> _cacheMap;
-    private readonly LinkedList<CacheItem> _usageOrder;
+    private readonly ConcurrentDictionary<string, long> _usageOrder;
     private readonly object _lock = new object();
 
     private static readonly Lazy<GlobalCache> _instance = new Lazy<GlobalCache>(() => new GlobalCache(10));
@@ -21,7 +21,7 @@ public class GlobalCache
         _InitialCapacity = capacity;
         _permanentItemCount = 0;
         _cacheMap = new ConcurrentDictionary<string, LinkedListNode<CacheItem>>();
-        _usageOrder = new LinkedList<CacheItem>();
+        _usageOrder = new ConcurrentDictionary<string, long>();
     }
 
     public static GlobalCache Instance => _instance.Value;
@@ -31,47 +31,32 @@ public class GlobalCache
         if (!_cacheMap.ContainsKey(key))
             throw new KeyNotFoundException();
 
-        lock (_lock)
-        {
-            var node = _cacheMap[key];
-            _usageOrder.Remove(node);
-            _usageOrder.AddFirst(node);
-            return node.Value.Value;
-        }
+        _usageOrder[key] = DateTime.UtcNow.Ticks;
+
+        return _cacheMap[key].Value.Value;
     }
 
     public void Put(string key, object value, bool isPermanent)
     {
         ArgumentNullException.ThrowIfNull(value, nameof(value));
 
-
-        lock (_lock)
+        if (_cacheMap.TryGetValue(key, out var existingNode) && existingNode != null)
         {
-            if (_cacheMap.TryGetValue(key, out var existingNode) && existingNode != null)
-            {
-                if (existingNode.Value.IsPermanent)
-                {
-                    throw new CantBeOverwrittenException($"The item with key '{key}' is permanent and cannot be overwritten.");
-                }
+            if (existingNode.Value.IsPermanent)
+                throw new CantBeOverwrittenException($"The item with key '{key}' is permanent and cannot be overwritten.");
 
-                // Instead of creating a new item (if the item is a non-permanent item), we update the item to reduce memory usage and improve performance. 
-                existingNode.Value = new CacheItem(key, value, isPermanent);
-                _usageOrder.Remove(existingNode);
-                _usageOrder.AddFirst(existingNode);
-                return;
-            }
-
-            EnsureCapacity();
-
-
-            // Create and add the new node to the cache
-            var newNode = new LinkedListNode<CacheItem>(new CacheItem(key, value, isPermanent));
-            _usageOrder.AddFirst(newNode);
-            _cacheMap[key] = newNode;
-
-            // The permanent item count will be updated in the CacheItem class itself
+            existingNode.Value = new CacheItem(key, value, existingNode.Value.IsPermanent);
         }
+        else
+        {
+            EnsureCapacity();
+            _cacheMap[key] = new LinkedListNode<CacheItem>(new CacheItem(key, value, isPermanent));
+        }
+
+        // Update usage timestamp
+        _usageOrder[key] = DateTime.UtcNow.Ticks;
     }
+
 
     private void EnsureCapacity()
     {
@@ -104,19 +89,16 @@ public class GlobalCache
 
     private void EvictNonPermanentItem()
     {
-        var node = _usageOrder.Last;
-        while (node != null)
+        var leastUsedKey = _usageOrder.OrderBy(kvp => kvp.Value).FirstOrDefault().Key;
+        if (!string.IsNullOrEmpty(leastUsedKey))
         {
-            if (!node.Value.IsPermanent)
-            {
-                _cacheMap.TryRemove(node.Value.Key, out _);
-                _usageOrder.Remove(node);
-                break;
-            }
-            node = node.Previous;
+            _cacheMap.TryRemove(leastUsedKey, out _);
+            _usageOrder.TryRemove(leastUsedKey, out _);
         }
     }
-
+    // Method is not used but implemented non the less for future possibilities.
+    // Whenever an item needs to 'survive' longer than the expected lifecycle but
+    // still should be cleaned up at some point this method is there to do so.
     public void RemovePermanentItem(string key)
     {
         lock (_lock)
@@ -128,9 +110,9 @@ public class GlobalCache
                 {
                     _permanentItemCount--;
                     _cacheMap.TryRemove(key, out _);
-                    _usageOrder.Remove(node);
+                    _usageOrder.TryRemove(key, out _);
 
-                    // Adjust capacity when permanent item is removed
+                    // If the cache was full with perm items the cache has grown in size. this method ensures capacity never exceeds the applications needs.
                     DecreaseCapacity();
                 }
             }
@@ -169,11 +151,9 @@ public class GlobalCache
     /// </summary>
     public void Clear()
     {
-        lock (_lock)
-        {
-            _cacheMap.Clear();
-            _usageOrder.Clear();
-        }
+        _cacheMap.Clear();
+        _usageOrder.Clear();
+
     }
 
     // This allows you to create a custom cache instance for testing purposes in DEBUG builds
@@ -185,11 +165,10 @@ public class GlobalCache
         _testCapacity = capacity;
     }
 
-    // Factory method for creating a cache with custom capacity in debug mode
+    // Factory method for creating a cache with custom capacity in debug mode so you dont need to enter the default amount for each test.
     public static GlobalCache CreateForTesting()
     {
         return new GlobalCache(_testCapacity);
-        Debug.WriteLine(_testCapacity);
     }
 
 #endif
