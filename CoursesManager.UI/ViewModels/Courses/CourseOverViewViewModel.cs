@@ -92,7 +92,6 @@ namespace CoursesManager.UI.ViewModels.Courses
             StartCourseMailCommand = new RelayCommand(SendStartCourseMail);
             CertificateMailCommand = new RelayCommand(SendCertificateMail);
 
-
             LoadCourseData();
 
         }

@@ -7,6 +7,7 @@ using CoursesManager.UI.Messages;
 using CoursesManager.UI.ViewModels.Students;
 using System.Windows.Media.Imaging;
 using System;
+using CoursesManager.UI.ViewModels.Mailing;
 
 namespace CoursesManager.UI.ViewModels;
 
@@ -28,8 +29,8 @@ public class MainWindowViewModel : ViewModelWithNavigation
     public ICommand MouseLeaveBorderCommand { get; private set; }
     public ICommand GoToStudentManagementView { get; private set; }
     public ICommand GoToCourseManagementView { get; private set; }
-
     public ICommand GoToConfigurationView { get; private set; }
+    public ICommand GotoTemplateView { get; private set; }
 
     public BitmapImage BackgroundImage { get; private set; }
 
@@ -136,6 +137,11 @@ public class MainWindowViewModel : ViewModelWithNavigation
         GoToConfigurationView = new RelayCommand(() =>
         {
             NavigationService.NavigateTo<ConfigurationViewModel>();
+            IsSidebarHidden = false;
+        }, () => INavigationService.CanNavigate);
+        GotoTemplateView = new RelayCommand(() =>
+        {
+            NavigationService.NavigateTo<EditMailTemplatesViewModel>();
             IsSidebarHidden = false;
         }, () => INavigationService.CanNavigate);
 

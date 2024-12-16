@@ -21,6 +21,7 @@ using CoursesManager.UI.Repositories.AddressRepository;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Service;
 using CoursesManager.UI.ViewModels.Courses;
+using CoursesManager.UI.ViewModels.Mailing;
 
 namespace CoursesManager.UI;
 
@@ -162,6 +163,8 @@ public partial class App : Application
         INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<CourseOverViewViewModel>(nav));
 
         INavigationService.RegisterViewModelFactory(() => viewModelFactory.CreateViewModel<ConfigurationViewModel>());
+
+        INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<EditMailTemplatesViewModel>(nav));
 
     }
 

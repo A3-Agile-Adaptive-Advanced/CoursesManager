@@ -16,7 +16,7 @@ namespace CoursesManager.UI.Repositories.TemplateRepository
             TemplateDataAccess templateDataAccess = new TemplateDataAccess();
             _TemplatedataAccess = templateDataAccess;
         }
-        public Template? GetTemplateByName(string name)
+        public Template GetTemplateByName(string name)
         {
             return _TemplatedataAccess.GetByName(name);
         }

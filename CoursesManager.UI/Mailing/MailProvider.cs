@@ -1,5 +1,4 @@
-﻿using CoursesManager.MVVM.Exceptions;
-using CoursesManager.MVVM.Mail;
+﻿using CoursesManager.MVVM.Mail;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.RegistrationRepository;
 using CoursesManager.UI.Repositories.TemplateRepository;

@@ -24,13 +24,14 @@ namespace CoursesManager.UI.DataAccess
             }
         }
 
-        public Template? GetByName(string name)
+        public Template GetByName(string name)
         {
             string procedureName = StoredProcedures.GetTemplateByName;
             try
             {
-                return ExecuteProcedure(procedureName, new MySqlParameter("@p_name", name)).Select(row => ToTemplate(row)).FirstOrDefault();
-
+                Template template = new();
+                template = ExecuteProcedure(procedureName, new MySqlParameter("@p_name", name)).Select(row => ToTemplate(row)).FirstOrDefault() ?? template;
+                return template;
             }
             catch (MySqlException ex)
             {

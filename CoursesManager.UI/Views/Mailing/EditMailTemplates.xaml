@@ -3,7 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:CoursesManager.UI.Views.Mailing" xmlns:rs="clr-namespace:CoursesManager.UI.Views.Controls" xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:viewmodels="clr-namespace:CoursesManager.UI.ViewModels"
+        xmlns:local="clr-namespace:CoursesManager.UI.Views.Mailing" xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:helpers="clr-namespace:CoursesManager.UI.Helpers"
         mc:Ignorable="d"
         d:DesignHeight="700" d:DesignWidth="1600" d:Background="{StaticResource SecondaryGradient}">
 
@@ -12,6 +14,8 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="25"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="15"/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="25"/>
         </Grid.ColumnDefinitions>
 
@@ -34,14 +38,51 @@
             </Grid.RowDefinitions>
 
 
-            <Button Grid.Column="0" Height="80" Style="{StaticResource PrimaryButton}">Certificaten mail</Button>
-            <Button Grid.Column="1" Height="80" Style="{StaticResource PrimaryButton}">Betaalherinnering mail</Button>
-            <Button Grid.Column="2" Height="80" Style="{StaticResource PrimaryButton}">Cursus start mail</Button>
-            <Button Grid.Column="3" Height="80" Style="{StaticResource PrimaryButton}">PDF certificaat</Button>
+            <Button CommandParameter="CertificateMail" Command="{Binding ShowMailCommand}" Grid.Column="0" Height="80" Style="{StaticResource PrimaryButtonTemplate}">Certificaten mail</Button>
+            <Button CommandParameter="PaymentMail" Command="{Binding ShowMailCommand}" Grid.Column="1" Height="80" Style="{StaticResource PrimaryButtonTemplate}">Betaalherinnering mail</Button>
+            <Button CommandParameter="CourseStartMail" Command="{Binding ShowMailCommand}" Grid.Column="2" Height="80" Style="{StaticResource PrimaryButtonTemplate}">Cursus start mail</Button>
+            <Button CommandParameter="Certificate" Command="{Binding ShowMailCommand}" Grid.Column="3" Height="80" Style="{StaticResource PrimaryButtonTemplate}">PDF certificaat</Button>
 
-            <Border Grid.Row="1" Grid.ColumnSpan="4" Background="White" CornerRadius="10" Height="500">
-                
-            </Border>
+
+            <Grid Grid.Row="1" Grid.ColumnSpan="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="15"/>
+                    <RowDefinition Height="35"/>
+                    <RowDefinition Height="6"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="15"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="15"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="15"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <!-- ToolBar for formatting options -->
+                <Button Grid.Row="1" Grid.Column="0" Content="B" FontWeight="Bold" Command="{Binding BoldCommand}" Width="50" Style="{StaticResource PrimaryButtonFormat}">
+                    <Button.ToolTip>
+                        <ToolTip Content="Dikgedrukt"/>
+                    </Button.ToolTip>
+                </Button>
+                <Button Grid.Row="1" Grid.Column="2" Content="i" FontStyle="Italic" Command="{Binding ItalicCommand}" Width="50" Style="{StaticResource PrimaryButtonFormat}">
+                        <Button.ToolTip>
+                            <ToolTip Content="Cursief"/>
+                        </Button.ToolTip>
+                    </Button>
+                <Button Grid.Row="1" Grid.Column="4" Command="{Binding UnderlineCommand}" Width="50" Style="{StaticResource PrimaryButtonFormat}">
+                    <TextBlock TextDecorations="Underline" Text="U"></TextBlock>
+                    <Button.ToolTip>
+                        <ToolTip Content="Onderstrepen"/>
+                    </Button.ToolTip>
+                </Button>
+                <RichTextBox Grid.ColumnSpan="7" Grid.Row="3"
+                    helpers:RichTextBoxHelper.Document="{Binding VisibleText, Mode=TwoWay}" 
+                    VerticalScrollBarVisibility="Auto"
+                    HorizontalScrollBarVisibility="Auto" Height="500" />
+            </Grid>
+
 
         </Grid>
 
@@ -56,4 +97,5 @@
             <Grid />
         </Border>
     </Grid>
+    
 </UserControl>

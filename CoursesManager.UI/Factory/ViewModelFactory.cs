@@ -11,6 +11,7 @@ using CoursesManager.UI.Repositories.StudentRepository;
 using CoursesManager.UI.Service;
 using CoursesManager.UI.ViewModels;
 using CoursesManager.UI.ViewModels.Courses;
+using CoursesManager.UI.ViewModels.Mailing;
 using CoursesManager.UI.ViewModels.Students;
 
 namespace CoursesManager.UI.Factory
@@ -79,6 +80,8 @@ namespace CoursesManager.UI.Factory
                         parameter as Student) as T,
                 Type vmType when vmType == typeof(CoursesManagerViewModel) =>
                     new CoursesManagerViewModel(_courseRepository, _messageBroker, _dialogService, navigationService) as T,
+                Type vmType when vmType == typeof(EditMailTemplatesViewModel) =>
+                    new EditMailTemplatesViewModel(navigationService) as T,
 
 
 
