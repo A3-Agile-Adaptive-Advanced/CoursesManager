@@ -59,30 +59,61 @@
                     <ColumnDefinition Width="15"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="15"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="15"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="15"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="15"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <!-- ToolBar for formatting options -->
-                <Button Grid.Row="1" Grid.Column="0" Content="B" FontWeight="Bold" Command="{Binding BoldCommand}" Width="50" Style="{StaticResource PrimaryButtonFormat}">
+                <Button Grid.Row="1" Grid.Column="0" Content="B" FontWeight="Bold" Click="BoldButton_Click" Width="50" Style="{StaticResource PrimaryButtonFormat}">
                     <Button.ToolTip>
                         <ToolTip Content="Dikgedrukt"/>
                     </Button.ToolTip>
                 </Button>
-                <Button Grid.Row="1" Grid.Column="2" Content="i" FontStyle="Italic" Command="{Binding ItalicCommand}" Width="50" Style="{StaticResource PrimaryButtonFormat}">
+                <Button Grid.Row="1" Grid.Column="2" Content="i" FontStyle="Italic" Click="ItalicButton_Click" Width="50" Style="{StaticResource PrimaryButtonFormat}">
                         <Button.ToolTip>
                             <ToolTip Content="Cursief"/>
                         </Button.ToolTip>
                     </Button>
-                <Button Grid.Row="1" Grid.Column="4" Command="{Binding UnderlineCommand}" Width="50" Style="{StaticResource PrimaryButtonFormat}">
+                <Button Grid.Row="1" Grid.Column="4" Click="UnderlineButton_Click" Width="50" Style="{StaticResource PrimaryButtonFormat}">
                     <TextBlock TextDecorations="Underline" Text="U"></TextBlock>
                     <Button.ToolTip>
                         <ToolTip Content="Onderstrepen"/>
                     </Button.ToolTip>
                 </Button>
+                <Button Grid.Row="1" Grid.Column="6" Click="LinkButton_Click" Width="50" Style="{StaticResource PrimaryButtonFormat}">
+                    <TextBlock Text="URL"></TextBlock>
+                    <Button.ToolTip>
+                        <ToolTip Content="Creëer link"/>
+                    </Button.ToolTip>
+                </Button>
+                <Button Grid.Row="1" Grid.Column="8" Click="TitleButton_Click" Width="60" Style="{StaticResource PrimaryButtonFormat}">
+                    <TextBlock Text="Titel"></TextBlock>
+                    <Button.ToolTip>
+                        <ToolTip Content="Titel"/>
+                    </Button.ToolTip>
+                </Button>
+                <Button Grid.Row="1" Grid.Column="10" Click="AccentuateButton_Click" Width="115" Style="{StaticResource PrimaryButtonFormat}">
+                    <TextBlock Text="Accentueren"></TextBlock>
+                    <Button.ToolTip>
+                        <ToolTip Content="Titel"/>
+                    </Button.ToolTip>
+                </Button>
                 <!--<TextBox Grid.ColumnSpan="7" Grid.Row="3" Text="{Binding HeaderText}"></TextBox>-->
-                <RichTextBox Grid.ColumnSpan="7" Grid.Row="3"
+                <RichTextBox x:Name="richTextBox" Grid.ColumnSpan="19" Grid.Row="3"
                     helpers:RichTextBoxHelper.Document="{Binding VisibleText, Mode=TwoWay}" 
                     VerticalScrollBarVisibility="Auto"
-                    HorizontalScrollBarVisibility="Auto" Height="500" />
+                    HorizontalScrollBarVisibility="Auto" Height="500" PreviewKeyDown="RichTextBox_PreviewKeyDown">
+                    <RichTextBox.Resources>
+                        <Style TargetType="Paragraph">
+                            <Setter Property="Margin" Value="0" />
+                            <Setter Property="FontSize" Value="20"/>
+                        </Style>
+                    </RichTextBox.Resources>
+                </RichTextBox>
             </Grid>
 
 

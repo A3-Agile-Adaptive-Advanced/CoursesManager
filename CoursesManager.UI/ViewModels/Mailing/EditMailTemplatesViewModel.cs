@@ -26,10 +26,6 @@ namespace CoursesManager.UI.ViewModels.Mailing
             get => _visibleText;
             set => SetProperty(ref _visibleText, value);
         }
-
-        public ICommand BoldCommand { get; }
-        public ICommand ItalicCommand { get; }
-        public ICommand UnderlineCommand { get; }
         public ICommand EnterKeyCommand { get; }
 
         public ICommand ShowMailCommand { get; }
@@ -39,12 +35,6 @@ namespace CoursesManager.UI.ViewModels.Mailing
         {
             _navigationService = navigationService;
             _mailProvider = new MailProvider();
-
-
-
-            BoldCommand = new RelayCommand(BoldText);
-            ItalicCommand = new RelayCommand(ItalicText);
-            UnderlineCommand = new RelayCommand(UnderlineText);
 
             VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText("CertificateMail"))));
             ShowMailCommand = new RelayCommand<string>(SwitchHtmls, s => s != null);
@@ -57,7 +47,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
             Template originalTemplate = _templateRepository.GetTemplateByName(templateName);
             Match match = Regex.Match(originalTemplate.HtmlString, @"<body.*?>(.*?)</body>", RegexOptions.Singleline);
             string bodyContent = match.Groups[1].Value;
-            templateText = _htmlParser.ConvertFromHtml(bodyContent);
+            templateText = bodyContent;
 
             return templateText;
         }
@@ -67,65 +57,5 @@ namespace CoursesManager.UI.ViewModels.Mailing
             VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText(Html))));
         }
 
-        private void BoldText()
-        {
-            var selection = GetRichTextBoxSelection();
-            if (selection != null)
-            {
-                var currentFontWeight = selection.GetPropertyValue(TextElement.FontWeightProperty);
-
-                if (currentFontWeight is FontWeight fontWeight && fontWeight == FontWeights.Bold)
-                {
-                    selection.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.Normal);
-                }
-                else
-                {
-                    selection.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.Bold);
-                }
-            }
-        }
-
-        private void ItalicText()
-        {
-            var selection = GetRichTextBoxSelection();
-            if (selection != null)
-            {
-                var currentFontStyle = selection.GetPropertyValue(TextElement.FontStyleProperty);
-
-                if (currentFontStyle is FontStyle fontStyle && fontStyle == FontStyles.Italic)
-                {
-                    selection.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Normal);
-                }
-                else
-                {
-                    selection.ApplyPropertyValue(TextElement.FontStyleProperty, FontStyles.Italic);
-                }
-            }
-        }
-
-        private void UnderlineText()
-        {
-            var selection = GetRichTextBoxSelection();
-            if (selection != null)
-            {
-                var currentTextDecorations = selection.GetPropertyValue(Inline.TextDecorationsProperty);
-
-                if (currentTextDecorations is TextDecorationCollection textDecorations && textDecorations.Contains(TextDecorations.Underline[0]))
-                {
-                    selection.ApplyPropertyValue(Inline.TextDecorationsProperty, null);
-                }
-                else
-                {
-                    selection.ApplyPropertyValue(Inline.TextDecorationsProperty, TextDecorations.Underline);
-                }
-            }
-        }
-
-        // A helper method to get the current selection in the RichTextBox
-        private TextSelection GetRichTextBoxSelection()
-        {
-            var richTextBox = Application.Current.Windows[0].FindName("richTextBox") as RichTextBox;
-            return richTextBox?.Selection;
-        }
     }
 }

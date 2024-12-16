@@ -10,7 +10,7 @@ public class GlobalCache
     private int _InitialCapacity;
     private int _permanentItemCount;
     private readonly ConcurrentDictionary<string, LinkedListNode<CacheItem>> _cacheMap;
-    private readonly ConcurrentDictionary<string, long> _usageOrder;
+    private readonly ConcurrentDictionary<string, DateTime> _usageOrder;
     private readonly object _lock = new object();
 
     private static readonly Lazy<GlobalCache> _instance = new Lazy<GlobalCache>(() => new GlobalCache(10));
@@ -21,7 +21,7 @@ public class GlobalCache
         _InitialCapacity = capacity;
         _permanentItemCount = 0;
         _cacheMap = new ConcurrentDictionary<string, LinkedListNode<CacheItem>>();
-        _usageOrder = new ConcurrentDictionary<string, long>();
+        _usageOrder = new ConcurrentDictionary<string, DateTime>();
     }
 
     public static GlobalCache Instance => _instance.Value;
@@ -31,7 +31,7 @@ public class GlobalCache
         if (!_cacheMap.ContainsKey(key))
             throw new KeyNotFoundException();
 
-        _usageOrder[key] = DateTime.UtcNow.Ticks;
+        _usageOrder[key] = DateTime.Now;
 
         return _cacheMap[key].Value.Value;
     }
@@ -54,7 +54,7 @@ public class GlobalCache
         }
 
         // Update usage timestamp
-        _usageOrder[key] = DateTime.UtcNow.Ticks;
+        _usageOrder[key] = DateTime.Now;
     }
 
 
