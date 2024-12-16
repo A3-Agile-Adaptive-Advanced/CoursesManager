@@ -49,6 +49,7 @@
                     <RowDefinition Height="15"/>
                     <RowDefinition Height="35"/>
                     <RowDefinition Height="6"/>
+                    <!--<RowDefinition Height="30"/>-->
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
@@ -77,6 +78,7 @@
                         <ToolTip Content="Onderstrepen"/>
                     </Button.ToolTip>
                 </Button>
+                <!--<TextBox Grid.ColumnSpan="7" Grid.Row="3" Text="{Binding HeaderText}"></TextBox>-->
                 <RichTextBox Grid.ColumnSpan="7" Grid.Row="3"
                     helpers:RichTextBoxHelper.Document="{Binding VisibleText, Mode=TwoWay}" 
                     VerticalScrollBarVisibility="Auto"

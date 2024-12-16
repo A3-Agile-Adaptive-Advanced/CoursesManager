@@ -26,9 +26,9 @@ namespace CoursesManager.UI.Mailing
             string htmlContent = templateRepository.GetTemplateByName("Certificate").HtmlString;
 
             htmlContent = htmlContent
-                .Replace("{{Cursus naam}}", course.Name)
-                .Replace("{{Student naam}}", $"{student.FirstName} {student.LastName}")
-                .Replace("{{Datum behalen cursus}}", course.EndDate.ToString("yyyy-MM-dd"));
+                .Replace("[Cursus naam]", course.Name)
+                .Replace("[Student naam]", $"{student.FirstName} {student.LastName}")
+                .Replace("[Datum behalen cursus]", course.EndDate.ToString("yyyy-MM-dd"));
 
             var converter = new SynchronizedConverter(new PdfTools());
             var doc = new HtmlToPdfDocument
