@@ -1126,11 +1126,11 @@
         <!--<Setter Property="Background" Value="{StaticResource PrimaryGradient}" />-->
         <Setter Property="BorderBrush" Value="#6C66D1" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontSize" Value="20" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border CornerRadius="8" Padding="10 0 10 0" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}">
+                    <Border Margin="0 3 0 0" CornerRadius="6 6 0 0" Padding="10 0 10 0" BorderThickness="{TemplateBinding BorderThickness}" BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                 </ControlTemplate>
