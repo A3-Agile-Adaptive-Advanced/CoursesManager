@@ -137,5 +137,35 @@ namespace CoursesManager.UI.Models
                 } : null
             };
         }
+
+        public string ReplaceStudentPlaceholders(string template, Student student)
+        {
+            var fullName = $"{student.FirstName} {(string.IsNullOrWhiteSpace(student.Insertion) ? "" : student.Insertion + " ")}{student.LastName}".Trim();
+
+            var placeholders = new Dictionary<string, string>
+            {
+                { "[Cursist naam]", fullName },
+                { "[Cursist email]", student.Email },
+                { "[Cursist telefoonnummer]", student.Phone ?? "Geen telefoonnummer" },
+                { "[Cursist geboortedatum]", student.DateOfBirth.ToString("dd-MM-yyyy") },
+                { "[Cursist adres land]", student.Address?.Country ?? "Geen land" },
+                { "[Cursist adres postcode]", student.Address?.ZipCode ?? "Geen postcode" },
+                { "[Cursist adres stad]", student.Address?.City ?? "Geen stad" },
+                { "[Cursist adres straat]", student.Address?.Street ?? "Geen straat" },
+                { "[Cursist adres huisnummer]", student.Address?.HouseNumber ?? "Geen huisnummer" },
+                { "[Cursist adres toevoeging]", student.Address?.HouseNumberExtension ?? "Geen toevoeging" },
+                { "[Cursist verwijderd]", student.IsDeleted ? "Ja" : "Nee" },
+                { "[Cursist verwijderd op]", student.DeletedAt?.ToString("dd-MM-yyyy") ?? "N.v.t." },
+                { "[Cursist aangemaakt op]", student.CreatedAt.ToString("dd-MM-yyyy") },
+                { "[Cursist bijgewerkt op]", student.UpdatedAt.ToString("dd-MM-yyyy") }
+            };
+
+            foreach (var placeholder in placeholders)
+            {
+                template = template.Replace(placeholder.Key, placeholder.Value ?? string.Empty);
+            }
+
+            return template;
+        }
     }
 }

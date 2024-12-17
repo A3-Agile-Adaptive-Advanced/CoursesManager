@@ -7,7 +7,8 @@
         xmlns:local="clr-namespace:CoursesManager.UI.Views.Mailing" xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:helpers="clr-namespace:CoursesManager.UI.Helpers"
         mc:Ignorable="d"
-        d:DesignHeight="700" d:DesignWidth="1600" d:Background="{StaticResource SecondaryGradient}">
+        d:DesignHeight="900" d:DesignWidth="1600" d:Background="{StaticResource SecondaryGradient}"
+             Loaded="Window_Loaded">
 
 
     <Grid>
@@ -33,6 +34,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="500"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
@@ -67,7 +69,7 @@
                 <Button.RenderTransform>
                     <RotateTransform Angle="270" CenterX="84" CenterY="54" />
                 </Button.RenderTransform>
-                <TextBlock Text="URL"></TextBlock>
+                <TextBlock Text="•"></TextBlock>
                 <Button.ToolTip>
                     <ToolTip Content="Creëer link"/>
                 </Button.ToolTip>
@@ -90,10 +92,19 @@
                     <ToolTip Content="Tekst dikgedrukt en groter weergeven"/>
                 </Button.ToolTip>
             </Button>
-            <Button Grid.Row="8" Grid.Column="1" Command="{Binding PreviewPage}" Width="100" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
+            <Button Grid.Row="8" Grid.Column="1" Command="{Binding PreviewPageCommand}" Width="100" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
                 <TextBlock Text="Preview"></TextBlock>
                 <Button.RenderTransform>
-                    <RotateTransform Angle="270" CenterX="38" CenterY="-32" />
+                    <RotateTransform Angle="270" CenterX="2" CenterY="-68" />
+                </Button.RenderTransform>
+                <Button.ToolTip>
+                    <ToolTip Content="Titel"/>
+                </Button.ToolTip>
+            </Button>
+            <Button Grid.Row="9" Grid.Column="1" Command="{Binding SaveTemplateCommand}" Width="100" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
+                <TextBlock Text="Opslaan"></TextBlock>
+                <Button.RenderTransform>
+                    <RotateTransform Angle="270" CenterX="40" CenterY="-30" />
                 </Button.RenderTransform>
                 <Button.ToolTip>
                     <ToolTip Content="Titel"/>
@@ -120,33 +131,22 @@
             
             <Grid Grid.Row="1" Grid.ColumnSpan="4">
                 <Border CornerRadius="10">
-                <RichTextBox x:Name="richTextBox" Grid.Column="0" Grid.Row="0"
+                    <RichTextBox x:Name="richTextBox" Grid.Column="0" Grid.Row="0"
                     helpers:RichTextBoxHelper.Document="{Binding VisibleText, Mode=TwoWay}" 
                     VerticalScrollBarVisibility="Auto"
                     HorizontalScrollBarVisibility="Auto" Height="750" PreviewKeyDown="RichTextBox_PreviewKeyDown">
-                    <RichTextBox.Resources>
-                        <Style TargetType="Paragraph">
-                            <Setter Property="Margin" Value="0" />
-                            <Setter Property="FontSize" Value="20"/>
-                        </Style>
-                    </RichTextBox.Resources>
-                </RichTextBox>
+                        <RichTextBox.Resources>
+                            <Style TargetType="Paragraph">
+                                <Setter Property="Margin" Value="0" />
+                                <Setter Property="FontSize" Value="20"/>
+                            </Style>
+                        </RichTextBox.Resources>
+                    </RichTextBox>
                 </Border>
             </Grid>
 
 
         </Grid>
-
-        <Border
-            x:Name="OverlayBorder"
-            Background="#80000000"
-            CornerRadius="0,0,15,15"
-            Visibility="{Binding IsDialogOpen, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Hidden}"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
-            IsHitTestVisible="{Binding IsDialogOpen}">
-            <Grid />
-        </Border>
     </Grid>
     
 </UserControl>

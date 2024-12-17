@@ -22,72 +22,79 @@ namespace CoursesManager.UI.Views.Mailing
     /// </summary>
     public partial class EditMailTemplates : UserControl
     {
+        private EditMailTemplatesViewModel? viewModel { get; set; }
+        private System.Windows.Documents.TextSelection selection { get; set; }
         public EditMailTemplates()
         {
             InitializeComponent();
         }
 
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            viewModel = DataContext as EditMailTemplatesViewModel;
+        }
+
 
         private void BoldButton_Click(object sender, RoutedEventArgs e)
         {
-            var selection = richTextBox.Selection;
+            selection = richTextBox.Selection;
             if (selection != null)
             {
-                var viewModel = DataContext as EditMailTemplatesViewModel;
                 formatText(selection, "b");
             }
+            _ = selection;
         }
 
         private void ItalicButton_Click(object sender, RoutedEventArgs e)
         {
-            var selection = richTextBox.Selection;
+            selection = richTextBox.Selection;
             if (selection != null)
             {
-                var viewModel = DataContext as EditMailTemplatesViewModel;
                 formatText(selection, "i");
             }
+            _ = selection;
         }
 
         private void UnderlineButton_Click(object sender, RoutedEventArgs e)
         {
-            var selection = richTextBox.Selection;
+            selection = richTextBox.Selection;
             if (selection != null)
             {
-                var viewModel = DataContext as EditMailTemplatesViewModel;
                 formatText(selection, "u");
             }
+            _ = selection;
         }
 
         
 
         private void LinkButton_Click(object sender, RoutedEventArgs e)
         {
-            var selection = richTextBox.Selection;
+            selection = richTextBox.Selection;
             if (selection != null)
             {
-                var viewModel = DataContext as EditMailTemplatesViewModel;
                 formatText(selection, "li");
             }
+            _ = selection;
         }
 
         private void TitleButton_Click(object sender, RoutedEventArgs e)
         {
-            var selection = richTextBox.Selection;
+            selection = richTextBox.Selection;
             if (selection != null)
             {
-                var viewModel = DataContext as EditMailTemplatesViewModel;
                 formatText(selection, "h1");
             }
+            _ = selection;
         }
 
         private void AccentuateButton_Click(object sender, RoutedEventArgs e)
         {
-            var selection = richTextBox.Selection;
+            selection = richTextBox.Selection;
             if (selection != null)
             {
-                var viewModel = DataContext as EditMailTemplatesViewModel;
                 formatText(selection, "strong");
             }
+            _ = selection;
         }
 
         private void RichTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -128,7 +135,6 @@ namespace CoursesManager.UI.Views.Mailing
                 }
             }
         }
-
 
     }
 }

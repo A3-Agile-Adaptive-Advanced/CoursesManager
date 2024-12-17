@@ -41,7 +41,7 @@ namespace CoursesManager.UI.Models
             get
             {
                 if (Image == null || Image.Length == 0)
-                    return null;
+                    return new BitmapImage();
 
                 using (var stream = new MemoryStream(Image))
                 {
@@ -145,11 +145,41 @@ namespace CoursesManager.UI.Models
                 StartDate = new DateTime(this.StartDate.Ticks),
                 EndDate = new DateTime(this.EndDate.Ticks),
                 LocationId = this.LocationId,
-                Location = this.Location?.Copy(), 
+                Location = this.Location?.Copy(),
                 DateCreated = new DateTime(this.DateCreated.Ticks),
                 Students = this.Students != null ? new ObservableCollection<Student>(this.Students) : null,
                 Image = this.Image != null ? (byte[])this.Image.Clone() : null
             };
+        }
+
+        public string ReplaceCoursePlaceholders(string template, Course course)
+        {
+            var placeholders = new Dictionary<string, string>
+            {
+                { "[Cursus naam]", course.Name },
+                { "[Cursus code]", course.Code },
+                { "[Cursus beschrijving]", course.Description },
+                { "[Cursus categorie]", course.Category },
+                { "[Cursus deelnemers]", course.Participants.ToString() },
+                { "[Cursus actief]", course.IsActive ? "Ja" : "Nee" },
+                { "[Cursus betaald]", course.IsPayed ? "Ja" : "Nee" },
+                { "[Cursus startdatum]", course.StartDate.ToString("dd-MM-yyyy") },
+                { "[Cursus einddatum]", course.EndDate.ToString("dd-MM-yyyy") },
+                { "[Cursus locatie naam]", course.Location?.Name ?? "Geen locatie" },
+                { "[Cursus locatie land]", course.Location?.Address?.Country ?? "Geen land" },
+                { "[Cursus locatie postcode]", course.Location?.Address?.ZipCode ?? "Geen postcode" },
+                { "[Cursus locatie stad]", course.Location?.Address?.City ?? "Geen stad" },
+                { "[Cursus locatie straat]", course.Location?.Address?.Street ?? "Geen straat" },
+                { "[Cursus locatie huisnummer]", course.Location?.Address?.HouseNumber ?? "Geen huisnummer" },
+                { "[Cursus locatie toevoeging]", course.Location?.Address?.HouseNumberExtension ?? "Geen toevoeging" }
+            };
+
+            foreach (var placeholder in placeholders)
+            {
+                template = template.Replace(placeholder.Key, placeholder.Value ?? string.Empty);
+            }
+
+            return template;
         }
     }
 }

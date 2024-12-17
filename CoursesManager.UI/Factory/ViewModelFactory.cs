@@ -81,7 +81,7 @@ namespace CoursesManager.UI.Factory
                 Type vmType when vmType == typeof(CoursesManagerViewModel) =>
                     new CoursesManagerViewModel(_courseRepository, _messageBroker, _dialogService, navigationService) as T,
                 Type vmType when vmType == typeof(EditMailTemplatesViewModel) =>
-                    new EditMailTemplatesViewModel(navigationService) as T,
+                    new EditMailTemplatesViewModel(_dialogService, _messageBroker, navigationService) as T,
 
 
 

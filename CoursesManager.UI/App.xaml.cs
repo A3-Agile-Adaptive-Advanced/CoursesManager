@@ -148,6 +148,7 @@ public partial class App : Application
                 DialogService
             ));
 
+        DialogService.RegisterDialog<TemplatePreviewDialogViewModel, TemplatePreviewDialogWindow, DialogResultType>((initial) => new  TemplatePreviewDialogViewModel(initial, MessageBroker));
 
         DialogService.RegisterDialog<CourseDialogViewModel, CourseDialogWindow, Course>((initial) => new CourseDialogViewModel(CourseRepository, DialogService, LocationRepository, initial));
     }
