@@ -40,12 +40,12 @@ public class StudentRepository : IStudentRepository
 
     public void Update(Student student)
     {
-        throw new NotImplementedException();
+        _studentDataAccess.Update(student);
     }
 
     public void Delete(Student student)
     {
-        throw new NotImplementedException();
+        _studentDataAccess.DeleteById(student.Id);
     }
 
     public void Delete(int id)

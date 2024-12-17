@@ -21,6 +21,7 @@ namespace CoursesManager.UI.Models
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public int LocationId { get; set; }
+        public List<Registration> Registrations { get; set; }
 
         private Location? _location;
 

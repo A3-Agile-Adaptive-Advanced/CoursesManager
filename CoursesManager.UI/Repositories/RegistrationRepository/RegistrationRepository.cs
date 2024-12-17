@@ -13,7 +13,6 @@ public class RegistrationRepository : BaseRepository, IRegistrationRepository
     {
         _registrationDataAccess = new RegistrationDataAccess();
         _allRegistrations = new();
-        _allRegistrations = GetAll();
     }
 
     public List<Registration> GetAll()
@@ -48,52 +47,52 @@ public class RegistrationRepository : BaseRepository, IRegistrationRepository
         }
     }
 
-    public void Add(Registration data)
+    public void Add(Registration registration)
     {
         lock (_allRegistrations)
         {
-            ArgumentNullException.ThrowIfNull(data);
+            ArgumentNullException.ThrowIfNull(registration);
 
-            _registrationDataAccess.Add(data);
-            _allRegistrations.Add(data);
+            _registrationDataAccess.Add(registration);
+            _allRegistrations.Add(registration);
         }
     }
 
-    public void Update(Registration data)
+    public void Update(Registration registration)
     {
         lock (_allRegistrations)
         {
-            ArgumentNullException.ThrowIfNull(data);
+            ArgumentNullException.ThrowIfNull(registration);
 
-            _registrationDataAccess.Update(data);
+            _registrationDataAccess.Update(registration);
 
-            if (!_allRegistrations.Contains(data))
+            if (!_allRegistrations.Contains(registration))
             {
-                var existing = _allRegistrations.FirstOrDefault(reg => reg.Id == data.Id);
+                var existing = _allRegistrations.FirstOrDefault(reg => reg.Id == registration.Id);
                 if (existing is not null)
                 {
-                    existing.CourseId = data.CourseId;
-                    existing.Course = data.Course;
-                    existing.StudentId = data.StudentId;
-                    existing.Student = data.Student;
-                    existing.RegistrationDate = data.RegistrationDate;
-                    existing.PaymentStatus = data.PaymentStatus;
-                    existing.IsActive = data.IsActive;
-                    existing.IsAchieved = data.IsAchieved;
+                    existing.CourseId = registration.CourseId;
+                    existing.Course = registration.Course;
+                    existing.StudentId = registration.StudentId;
+                    existing.Student = registration.Student;
+                    existing.RegistrationDate = registration.RegistrationDate;
+                    existing.PaymentStatus = registration.PaymentStatus;
+                    existing.IsActive = registration.IsActive;
+                    existing.IsAchieved = registration.IsAchieved;
                 }
                 else
                 {
-                    _allRegistrations.Add(data);
+                    _allRegistrations.Add(registration);
                 }
             }
         }
     }
 
-    public void Delete(Registration data)
+    public void Delete(Registration registration)
     {
-        ArgumentNullException.ThrowIfNull(data);
+        ArgumentNullException.ThrowIfNull(registration);
 
-        Delete(data.Id);
+        Delete(registration.Id);
     }
 
     public void Delete(int id)

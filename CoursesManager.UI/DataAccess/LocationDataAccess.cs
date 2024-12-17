@@ -35,7 +35,7 @@ public class LocationDataAccess : BaseDataAccess<Location>
                     Country = row["country"]?.ToString() ?? string.Empty,
                     HouseNumber = row["house_number"]?.ToString() ?? string.Empty,
                     Street = row["street"]?.ToString() ?? string.Empty,
-                    Zipcode = row["zipcode"]?.ToString() ?? string.Empty
+                    ZipCode = row["zipcode"]?.ToString() ?? string.Empty
                 },
                 Name = row["name"]?.ToString() ?? string.Empty,
                 Id = Convert.ToInt32(row["location_id"])

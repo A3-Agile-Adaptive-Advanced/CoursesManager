@@ -36,8 +36,29 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                    
-                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#02008C" FontWeight="Bold" FontSize="16" Margin="0 0 10 0">Cursus status</TextBlock>
+
+                <TextBlock HorizontalAlignment="Center" 
+                   VerticalAlignment="Center" 
+                   FontWeight="Bold" 
+                   FontSize="16" 
+                   Margin="0 0 10 0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Text" Value="Inactive" />
+                            <!-- Default Text -->
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsToggled}" Value="True">
+                                    <Setter Property="Text" Value="Actief" />
+                                    <Setter Property="Foreground" Value="#02008C"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsToggled}" Value="False">
+                                    <Setter Property="Text" Value="Inactief" />
+                                    <Setter Property="Foreground" Value="#939393"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
                 <rs:Toggle Grid.Column="1" IsToggled="{Binding IsToggled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToggleCommand="{Binding ToggleCommand}"/>
             </Grid>
             <Grid Grid.Column="4" Width="295" Margin="0 0 105 0">

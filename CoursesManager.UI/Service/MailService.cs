@@ -6,42 +6,40 @@ using CoursesManager.MVVM.Env;
 using CoursesManager.UI.Models;
 using CoursesManager.MVVM.Mail.MailService;
 using CoursesManager.MVVM.Mail;
-using CoursesManager.MVVM.Mail.MailTemplate;
 using ZstdSharp.Unsafe;
 using System.ComponentModel.DataAnnotations;
 
-public class MailService : IMailService
+public class MailService
 {
-    private readonly SmtpConfig _smtpConfig;
-    //Uncomment wanneer Encryption Service klaar is
-    //private readonly EncryptionService _encryptionService;
-
-    public MailService()
+    public async Task<MailResult> SendMail(MailMessage mailMessage)
     {
-        var mailConnectionString = EnvManager<EnvModel>.Values.MailConnectionString;
-
-        if (string.IsNullOrWhiteSpace(mailConnectionString))
-        {
-            throw new Exception("MailConnectionString is niet ingesteld in .env");
-        }
-
-        _smtpConfig = ParseConnectionString(mailConnectionString);
-    }
-    public async Task<MailResult> SendMail(IMailTemplate mailTemplate)
-    {
+        SmtpConfig _smtpConfig;
+       
         try
         {
-            var emailMessage = mailTemplate.GenerateMail();
+            var mailConnectionString = EnvManager<EnvModel>.Values.MailConnectionString;
+
+            if (string.IsNullOrWhiteSpace(mailConnectionString))
+            {
+                throw new Exception("MailConnectionString is niet ingesteld in .env");
+            }
+
+            _smtpConfig = ParseConnectionString(mailConnectionString);
+
             using var smtpClient = new SmtpClient(_smtpConfig.Server, _smtpConfig.Port)
             {
-                Credentials = new NetworkCredential(_smtpConfig.User, _smtpConfig.Password), // _smtpConfig.Password aanpassen naar _encryptionService.Decrypt(_smtpConfig.Password) wanneer EncryptionService klaar is
-                EnableSsl = _smtpConfig.EnableSsl
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(_smtpConfig.User, _smtpConfig.Password),
+                EnableSsl = true
             };
-            await smtpClient.SendMailAsync(emailMessage);
+            MailAddress mailAddress = new MailAddress(_smtpConfig.User);
+            mailMessage.From = mailAddress;
+            await smtpClient.SendMailAsync(mailMessage);
+
             return new MailResult
             {
                 Outcome = MailOutcome.Success,
-                MailMessage = emailMessage
+                MailMessage = mailMessage
             };
         }
         catch (Exception ex)
@@ -49,49 +47,14 @@ public class MailService : IMailService
             return new MailResult
             {
                 Outcome = MailOutcome.Failure,
-                MailMessage = mailTemplate.GenerateMail()
+                MailMessage = mailMessage
             };
         }
     }
 
-    public async Task<List<MailResult>> SendMail(IEnumerable<IMailTemplate> mailTemplates)
+    public async Task<List<MailResult>> SendMail(IEnumerable<MailMessage> mailMessages)
     {
-        var mailResults = new List<MailResult>();
-
-        var tasks = mailTemplates.Select(async template =>
-        {
-            try
-            {
-                var emailMessage = template.GenerateMail();
-
-                using var smtpClient = new SmtpClient(_smtpConfig.Server, _smtpConfig.Port)
-                {
-                    Credentials = new NetworkCredential(_smtpConfig.User, _smtpConfig.Password), // _smtpConfig.Password aanpassen naar _encryptionService.Decrypt(_smtpConfig.Password) wanneer EncryptionService klaar is
-                    EnableSsl = _smtpConfig.EnableSsl
-                };
-
-                await smtpClient.SendMailAsync(emailMessage);
-
-                mailResults.Add(new MailResult
-                {
-                    Outcome = MailOutcome.Success,
-                    MailMessage = emailMessage
-                });
-            }
-            catch (Exception ex)
-            {
-                mailResults.Add(new MailResult
-                {
-                    Outcome = MailOutcome.Failure,
-                    MailMessage = template.GenerateMail()
-                });
-
-                Console.WriteLine($"Fout bij verzenden: {ex.Message}");
-            }
-        });
-        await Task.WhenAll(tasks);
-
-        return mailResults;
+        return (await Task.WhenAll(mailMessages.Select(mailMessage => SendMail(mailMessage)))).ToList();
     }
 
     private SmtpConfig ParseConnectionString(string connectionString)
@@ -102,8 +65,7 @@ public class MailService : IMailService
             Server = settings["Server"],
             Port = int.Parse(settings["Port"]),
             User = settings["User"],
-            Password = settings["Password"],
-            EnableSsl = bool.Parse(settings["EnableSsl"])
+            Password = settings["Password"]
         };
     }
 

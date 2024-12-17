@@ -572,7 +572,7 @@
                                     </Border.Style>
                                     <i:Interaction.Triggers>
                                     <i:EventTrigger EventName="MouseLeftButtonDown">
-                                        <i:InvokeCommandAction Command="{Binding GoToCourseManagementView}" />
+                                            <i:InvokeCommandAction Command="{Binding GoToConfigurationView}" />
                                     </i:EventTrigger>
                                 </i:Interaction.Triggers>
                                     <Grid Grid.Row="1" Grid.Column="1">

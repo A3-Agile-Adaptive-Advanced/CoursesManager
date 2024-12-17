@@ -13,8 +13,6 @@ public class LocationRepository : BaseRepository, ILocationRepository
     {
         _locationDataAccess = new LocationDataAccess();
         _allLocations = new();
-
-        _allLocations = RefreshAll();
     }
 
     public List<Location> GetAll()

@@ -55,8 +55,8 @@ namespace CoursesManager.Tests
             _courseRepositoryMock.Setup(repo => repo.GetAll())
                 .Returns(new List<Course>
                 {
-                    new Course { Id = 1, Name = "Math" },
-                    new Course { Id = 2, Name = "Science" }
+                    new Course { Id = 1, Name = "Math", IsActive = true},
+                    new Course { Id = 2, Name = "Science", IsActive = true }
                 });
 
             _registrationRepositoryMock.Setup(repo => repo.GetAll())

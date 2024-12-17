@@ -54,6 +54,8 @@ public interface INavigationService
     /// <returns><c>true</c> if it is possible to go forward; otherwise, <c>false</c>.</returns>
     bool CanGoForward();
 
+    public static bool CanNavigate { get; set; } = true;
+
     /// <summary>
     /// Contains factories for creating instances of view models used in navigation.
     /// </summary>

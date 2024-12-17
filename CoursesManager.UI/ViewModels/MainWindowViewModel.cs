@@ -29,6 +29,8 @@ public class MainWindowViewModel : ViewModelWithNavigation
     public ICommand GoToStudentManagementView { get; private set; }
     public ICommand GoToCourseManagementView { get; private set; }
 
+    public ICommand GoToConfigurationView { get; private set; }
+
     public BitmapImage BackgroundImage { get; private set; }
 
     private INavigationService _navigationService;
@@ -118,16 +120,25 @@ public class MainWindowViewModel : ViewModelWithNavigation
             IsMouseOverButton = false;
             UpdateSidebarVisibility();
         });
+
         GoToStudentManagementView = new RelayCommand(() =>
         {
             NavigationService.NavigateTo<StudentManagerViewModel>();
             IsSidebarHidden = false;
-        });
+        }, () => INavigationService.CanNavigate);
+
         GoToCourseManagementView = new RelayCommand(() =>
         {
             NavigationService.NavigateTo<CoursesManagerViewModel>();
             IsSidebarHidden = false;
-        });
+        }, () => INavigationService.CanNavigate);
+
+        GoToConfigurationView = new RelayCommand(() =>
+        {
+            NavigationService.NavigateTo<ConfigurationViewModel>();
+            IsSidebarHidden = false;
+        }, () => INavigationService.CanNavigate);
+
     }
 
     private async void UpdateSidebarVisibility()

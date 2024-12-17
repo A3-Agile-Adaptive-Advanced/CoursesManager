@@ -117,16 +117,24 @@ namespace CoursesManager.UI.Models
             {
                 Id = this.Id,
                 FirstName = this.FirstName,
+                Insertion = this.Insertion,
                 LastName = this.LastName,
                 Email = this.Email,
                 Phone = this.Phone,
                 IsDeleted = this.IsDeleted,
-                DeletedAt = this.DeletedAt,
-                CreatedAt = this.CreatedAt,
-                UpdatedAt = this.UpdatedAt,
                 AddressId = this.AddressId,
                 Courses = this.Courses,
-                Registrations = this.Registrations
+                Registrations = this.Registrations,
+                DateOfBirth = this.DateOfBirth,
+                Address = this.Address != null ? new Address
+                {
+                    Id = this.Address.Id,
+                    Country = this.Address.Country,
+                    ZipCode = this.Address.ZipCode,
+                    City = this.Address.City,
+                    Street = this.Address.Street,
+                    HouseNumber = this.Address.HouseNumber
+                } : null
             };
         }
     }

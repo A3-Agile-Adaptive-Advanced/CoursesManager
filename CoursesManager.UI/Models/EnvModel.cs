@@ -1,4 +1,6 @@
-﻿namespace CoursesManager.UI.Models
+﻿
+
+namespace CoursesManager.UI.Models
 {
     public class EnvModel
     {

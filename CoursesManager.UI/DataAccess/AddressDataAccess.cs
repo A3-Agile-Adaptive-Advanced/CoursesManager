@@ -10,7 +10,8 @@ namespace CoursesManager.UI.DataAccess
         public List<Address> GetAll()
         {
             string procedureName = StoredProcedures.GetAllAddresses;
-            return FetchAll(procedureName);
+            var results = ExecuteProcedure(procedureName);
+            return results.Select(FillDataModel).ToList();
         }
 
         public Address? GetById(int id)
@@ -19,8 +20,8 @@ namespace CoursesManager.UI.DataAccess
             {
                 string procedureName = StoredProcedures.GetAddressById;
                 var parameters = new MySqlParameter[] { new MySqlParameter("@p_id", id) };
-                var addresses = FetchAll(procedureName, parameters);
-                return addresses.FirstOrDefault();
+                var results = ExecuteProcedure(procedureName, parameters);
+                return results.Select(FillDataModel).FirstOrDefault();
             }
             catch (MySqlException ex)
             {
@@ -92,19 +93,19 @@ namespace CoursesManager.UI.DataAccess
             }
         }
 
-        protected Address FillModel(MySqlDataReader reader)
+        public Address FillDataModel(Dictionary<string, object> row)
         {
             return new Address
             {
-                Id = reader.GetInt32("id"),
-                Country = reader.GetString("country"),
-                ZipCode = reader.GetString("zipcode"),
-                City = reader.GetString("city"),
-                Street = reader.GetString("street"),
-                HouseNumber = reader.GetString("house_number"),
-                HouseNumberExtension = reader.IsDBNull(reader.GetOrdinal("house_number_extension")) ? null : reader.GetString("house_number_extension"),
-                CreatedAt = reader.GetDateTime("created_at"),
-                UpdatedAt = reader.GetDateTime("updated_at")
+                Id = Convert.ToInt32(row["id"]),
+                Country = row["country"].ToString(),
+                ZipCode = row["zipcode"].ToString(),
+                City = row["city"].ToString(),
+                Street = row["street"].ToString(),
+                HouseNumber = row["house_number"].ToString(),
+                HouseNumberExtension = row["house_number_extension"]?.ToString(),
+                CreatedAt = Convert.ToDateTime(row["created_at"]),
+                UpdatedAt = Convert.ToDateTime(row["updated_at"])
             };
         }
     }

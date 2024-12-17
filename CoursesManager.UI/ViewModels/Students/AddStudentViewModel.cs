@@ -25,7 +25,7 @@ public class AddStudentViewModel : StudentViewModelBase, INotifyPropertyChanged
         : base(studentRepository, courseRepository, registrationRepository, dialogService, new Student { Address = new Address() })
     {
         IsStartAnimationTriggered = true;
-        Courses = new ObservableCollection<string>(_courseRepository.GetAll().Select(c => c.Name));
+        Courses = new ObservableCollection<string>(_courseRepository.GetAll().Where(c => c.IsActive).Select(c => c.Name));
     }
 
     public async Task SaveAsync()

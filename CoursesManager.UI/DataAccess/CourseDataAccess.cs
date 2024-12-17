@@ -8,6 +8,9 @@ namespace CoursesManager.UI.DataAccess;
 
 public class CourseDataAccess : BaseDataAccess<Course>
 {
+    private readonly StudentDataAccess _studentDataAccess = new();
+    private readonly Registration _registrationDataAccess = new();
+
     public List<Course> GetAll()
     {
         try
@@ -15,8 +18,10 @@ public class CourseDataAccess : BaseDataAccess<Course>
             // Voer de stored procedure uit
             var results = ExecuteProcedure("spCourses_GetAll");
 
+            var students = _studentDataAccess.GetAll();
+
             // Converteer de resultaten naar een lijst van Course-objecten
-            return results.Select(row => new Course
+            var models = results.Select(row => new Course
             {
                 Id = Convert.ToInt32(row["course_id"]),
                 Name = row["course_name"]?.ToString() ?? string.Empty,
@@ -36,6 +41,31 @@ public class CourseDataAccess : BaseDataAccess<Course>
                     ? (byte[])row["tile_image"]
                     : null
             }).ToList();
+
+
+            models.ForEach(m =>
+            {
+                m.Students = new(students.Where(s => s.Registrations.Any(r => r.CourseId == m.Id)));
+                m.Participants = m.Students.Count;
+                m.IsPayed = true;
+                m.Registrations = new();
+
+                foreach (var student in m.Students)
+                {
+                    var registration = student.Registrations?.FirstOrDefault(r => r.CourseId == m.Id);
+                    m.Registrations.Add(registration);
+
+                    if (registration is not null)
+                    {
+                        if (m.IsPayed)
+                        {
+                            m.IsPayed = registration.PaymentStatus;
+                        }
+                    }
+                }
+            });
+
+            return models;
         }
         catch (Exception ex)
         {

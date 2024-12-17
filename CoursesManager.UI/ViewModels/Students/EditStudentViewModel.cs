@@ -42,16 +42,20 @@ namespace CoursesManager.UI.ViewModels.Students
 
         private void UpdateStudentDetails()
         {
+            Student.Id = StudentCopy.Id;
             Student.FirstName = StudentCopy.FirstName;
             Student.Insertion = StudentCopy.Insertion;
             Student.LastName = StudentCopy.LastName;
             Student.Email = StudentCopy.Email;
             Student.Phone = StudentCopy.Phone;
-            Student.Address.ZipCode = StudentCopy.Address.ZipCode;
-            Student.Address.Country = StudentCopy.Address.Country;
-            Student.Address.City = StudentCopy.Address.City;
-            Student.Address.Street = StudentCopy.Address.Street;
-            Student.Address.HouseNumber = StudentCopy.Address.HouseNumber;
+            if (Student.Address != null && StudentCopy.Address != null)
+            {
+                Student.Address.ZipCode = StudentCopy.Address.ZipCode;
+                Student.Address.Country = StudentCopy.Address.Country;
+                Student.Address.City = StudentCopy.Address.City;
+                Student.Address.Street = StudentCopy.Address.Street;
+                Student.Address.HouseNumber = StudentCopy.Address.HouseNumber;
+            }
 
             _studentRepository.Update(Student);
         }

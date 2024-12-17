@@ -240,8 +240,12 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="25"/>
                         </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                         <!-- Scrollable Card Grid -->
-                        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Style="{DynamicResource ScrollViewerStyle1}">
+                        <ScrollViewer Grid.Row="0" Grid.Column="1" VerticalScrollBarVisibility="Auto" Style="{DynamicResource ScrollViewerStyle1}">
                             <ItemsControl ItemsSource="{Binding StudentPayments}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -265,7 +269,20 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                    </ScrollViewer>
+                        </ScrollViewer>
+                        <Grid Grid.Row="1" Grid.Column="1" HorizontalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="30"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Command="{Binding PaymentMailCommand}" Visibility="{Binding IsPaid, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Hidden}" MinWidth="100" MinHeight="50" Grid.Column="1" Style="{StaticResource PrimaryButton}">Betaal email</Button>
+                            <Button Command="{Binding StartCourseMailCommand}" Visibility="{Binding HasStarted, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Hidden}" MinWidth="100" MinHeight="50" Grid.Column="3" Style="{StaticResource PrimaryButton}">Start cursus email</Button>
+                            <Button Command="{Binding CertificateMailCommand}" Visibility="{Binding IsFinished, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Hidden}" MinWidth="300" MinHeight="50" Grid.Column="1" Grid.ColumnSpan="3" Style="{StaticResource PrimaryButton}">Certificaten email</Button>
+                        </Grid>
+
                     </Grid>
                 </Grid>
             </Border>

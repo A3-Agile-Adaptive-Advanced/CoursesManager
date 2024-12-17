@@ -1,10 +1,12 @@
 ﻿using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Data;
 using CoursesManager.MVVM.Dialogs;
+using CoursesManager.MVVM.Mail.MailService;
 using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Dialogs.ViewModels;
+using CoursesManager.UI.Mailing;
 using CoursesManager.UI.Messages;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.CourseRepository;
@@ -22,10 +24,14 @@ namespace CoursesManager.UI.ViewModels.Courses
         private readonly ICourseRepository _courseRepository;
         private readonly IDialogService _dialogService;
         private readonly IMessageBroker _messageBroker;
-
+        private readonly IMailProvider _mailProvider;
         public ICommand ChangeCourseCommand { get; set; }
         public ICommand DeleteCourseCommand { get; set; }
         public ICommand CheckboxChangedCommand { get; }
+
+        public ICommand CertificateMailCommand { get; set; }
+        public ICommand PaymentMailCommand { get; set; }
+        public ICommand StartCourseMailCommand { get; set; }
 
         private readonly IStudentRepository _studentRepository;
         private readonly IRegistrationRepository _registrationRepository;
@@ -36,6 +42,27 @@ namespace CoursesManager.UI.ViewModels.Courses
         {
             get => _currentCourse;
             private set => SetProperty(ref _currentCourse, value);
+        }
+
+        private bool _isPaid;
+        public bool IsPaid
+        {
+            get => _isPaid;
+            set => SetProperty(ref _isPaid, value);
+        }
+
+        private bool _hasStarted;
+        public bool HasStarted
+        {
+            get => _hasStarted;
+            set => SetProperty(ref _hasStarted, value);
+        }
+
+        private bool _isFinished;
+        public bool IsFinished
+        {
+            get => _isFinished;
+            set => SetProperty(ref _isFinished, value);
         }
 
         private ObservableCollection<Student> _students;
@@ -56,12 +83,18 @@ namespace CoursesManager.UI.ViewModels.Courses
             _courseRepository = courseRepository;
             _dialogService = dialogService;
             _messageBroker = messageBroker;
+            _mailProvider = new MailProvider();
 
             ChangeCourseCommand = new RelayCommand(ChangeCourse);
             DeleteCourseCommand = new RelayCommand(DeleteCourse);
             CheckboxChangedCommand = new RelayCommand<CourseStudentPayment>(OnCheckboxChanged);
+            PaymentMailCommand = new RelayCommand(SendPaymentMail);
+            StartCourseMailCommand = new RelayCommand(SendStartCourseMail);
+            CertificateMailCommand = new RelayCommand(SendCertificateMail);
+
 
             LoadCourseData();
+
         }
 
         private void LoadCourseData()
@@ -71,6 +104,20 @@ namespace CoursesManager.UI.ViewModels.Courses
             if (CurrentCourse == null)
             {
                 throw new InvalidOperationException("No course is currently opened. Ensure the course is loaded in the GlobalCache.");
+            }
+
+            IsPaid = !CurrentCourse.IsPayed;
+            HasStarted = false;
+            IsFinished = false;
+            if ((CurrentCourse.StartDate - DateTime.Now).TotalDays <= 7 && CurrentCourse.StartDate > DateTime.Now)
+            {
+                HasStarted = true;
+            }
+            if (CurrentCourse.EndDate <= DateTime.Now)
+            {
+                HasStarted = false;
+                IsPaid = false;
+                IsFinished = true;
             }
 
             var registrations = _registrationRepository.GetAll()
@@ -103,28 +150,6 @@ namespace CoursesManager.UI.ViewModels.Courses
                 existingRegistration.PaymentStatus = payment.IsPaid;
                 existingRegistration.IsAchieved = payment.IsAchieved;
                 _registrationRepository.Update(existingRegistration);
-
-                //na review verwijderen. dit zorgt ervoor dat het overzicht reflecteert wat er gebeurd in deze actie.
-                int paymentCounter = 0;
-                foreach (Registration registration in _registrationRepository.GetAll())
-                {
-                    if (registration.CourseId == CurrentCourse.Id)
-                    {
-                        paymentCounter++;
-                    }
-                }
-
-                if (paymentCounter == CurrentCourse.Participants)
-                {
-                    CurrentCourse.IsPayed = true;
-                }
-
-                if (!payment.IsPaid)
-                {
-                    CurrentCourse.IsPayed = false;
-                }
-                //tot hier verwijderen. LET OP! bij verwijderen moet nog wel de koppeling gemaakt worden tussen opgehaalde DB info en UI attributen.
-                //(de tegels in het overzicht moeten de daadwerkelijke betaalstatus en aantal studenten doorgeven)
             }
             else if (payment.IsPaid || payment.IsAchieved)
             {
@@ -185,6 +210,21 @@ namespace CoursesManager.UI.ViewModels.Courses
                     }
                 }
             });
+        }
+
+        public async void SendPaymentMail()
+        {
+            await _mailProvider.SendPaymentNotifications(CurrentCourse);
+        }
+
+        public async void SendStartCourseMail()
+        {
+           await _mailProvider.SendCourseStartNotifications(CurrentCourse);
+        }
+
+        public async void SendCertificateMail()
+        {
+            await _mailProvider.SendCertificates(CurrentCourse);
         }
 
         private async void ChangeCourse()

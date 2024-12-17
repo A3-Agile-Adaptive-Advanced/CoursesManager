@@ -36,11 +36,12 @@
 	<!-- Conditional inclusion of the .env file -->
 	<ItemGroup>
 	  <Content Include=".env">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 	  </Content>
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="DinkToPdf" Version="1.0.8" />
 		<PackageReference Include="MaterialDesignThemes" Version="5.1.0" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
 		<PackageReference Include="Mysql.Data" Version="9.1.0" />
@@ -87,6 +88,7 @@
 
 	<ItemGroup>
 	  <Folder Include="Database\Procedures\Locations\" />
+	  <Folder Include="Database\Procedures\Certificates\" />
 	  <Folder Include="Database\Procedures\Registrations\" />
 	  <Folder Include="Database\Seed\" />
 	</ItemGroup>

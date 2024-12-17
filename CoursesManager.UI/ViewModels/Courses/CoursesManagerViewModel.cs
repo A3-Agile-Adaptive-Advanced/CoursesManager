@@ -73,7 +73,7 @@ namespace CoursesManager.UI.ViewModels
             _courseRepository = courseRepository;
             _messageBroker = messageBroker;
             _dialogService = dialogService;
-            
+
             _messageBroker.Subscribe<CoursesChangedMessage, CoursesManagerViewModel>(OnCoursesChangedMessage, this);
 
             ViewTitle = "Cursus beheer";

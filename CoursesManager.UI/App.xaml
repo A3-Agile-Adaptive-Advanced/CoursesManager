@@ -8,6 +8,7 @@
              xmlns:views="clr-namespace:CoursesManager.UI.Views"
              xmlns:courseViews="clr-namespace:CoursesManager.UI.Views.Courses"
              xmlns:students="clr-namespace:CoursesManager.UI.Views.Students"
+             xmlns:mailing="clr-namespace:CoursesManager.UI.Views.Mailing"
              xmlns:studentViewModel="clr-namespace:CoursesManager.UI.ViewModels.Students"
              xmlns:converters="clr-namespace:CoursesManager.UI.Helpers.Converters"
              xmlns:courses="clr-namespace:CoursesManager.UI.ViewModels.Courses">
@@ -41,6 +42,10 @@
 
             <DataTemplate DataType="{x:Type courses:CourseOverViewViewModel}">
                 <courseViews:CourseOverView />
+            </DataTemplate>
+
+            <DataTemplate DataType="{x:Type viewModels:ConfigurationViewModel}">
+                <views:ConfigurationView />
             </DataTemplate>
 
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></converters:BoolToVisibilityConverter>

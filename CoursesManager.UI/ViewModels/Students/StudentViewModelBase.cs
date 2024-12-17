@@ -64,6 +64,7 @@ namespace CoursesManager.UI.ViewModels.Students
 
             var courses = _courseRepository.GetAll() ?? new List<Course>();
             var selectableCourses = courses
+                .Where(course => course.IsActive)
                 .Select(course => new SelectableCourse
                 {
                     Id = course.Id,

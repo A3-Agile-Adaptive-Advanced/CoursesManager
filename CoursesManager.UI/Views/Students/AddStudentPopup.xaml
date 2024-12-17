@@ -137,7 +137,7 @@
                         <!-- Huisnummer -->
                         <TextBlock Text="Huisnummer*" Grid.Row="7" Grid.Column="1" Margin="0,0,0,5" />
                         <TextBox Style="{DynamicResource TextBoxEditStudentStyle1}"
-                             Text="{Binding Student.Address.Phone, UpdateSourceTrigger=PropertyChanged}"
+                             Text="{Binding Student.Address.HouseNumber, UpdateSourceTrigger=PropertyChanged}"
                              local:ValidationProperties.IsRequired="True"
                              Tag="Huisnummer"
                              Grid.Row="8" Grid.Column="1" Margin="0,0,10,10" />
@@ -169,12 +169,12 @@
                         <!-- RegisterdTo (ComboBox) -->
                         <TextBlock Text="Cursus*"  Margin="0,0,5,5" Grid.Row="11" Grid.Column="1" />
                         <ComboBox x:Name="cmbCourses" ItemsSource="{Binding Courses}"
-                              Style="{DynamicResource ComboBoxStyle}"
-                              SelectedItem="{Binding SelectedCourse}"
-                              ItemContainerStyle="{StaticResource ComboBoxItem}"
-                              local:ValidationProperties.IsRequired="True"
-                              Tag="cursus"
-                              Grid.Row="12" Grid.Column="1" Margin="5,0,10,10">
+                                  Style="{DynamicResource ComboBoxStyle}"
+                                  SelectedItem="{Binding SelectedCourse}"
+                                  ItemContainerStyle="{StaticResource ComboBoxItem}"
+                                  local:ValidationProperties.IsRequired="True"
+                                  Tag="cursus"
+                                  Grid.Row="12" Grid.Column="1" Margin="5,0,10,10">
                         </ComboBox>
                     </Grid>
 

@@ -34,7 +34,7 @@
 
     <Grid Name="SizingGrid" RenderTransformOrigin="0.5, 0.5">
         <Grid.RenderTransform>
-            <ScaleTransform x:Name="WindowScaleTransform" ScaleX="0" ScaleY="0"/>
+            <ScaleTransform x:Name="WindowScaleTransform" ScaleX="1" ScaleY="1"/>
         </Grid.RenderTransform>
         <Grid.Style>
             <Style TargetType="Grid">
@@ -98,7 +98,7 @@
                         <!-- Tussenvoegsel -->
                         <TextBlock Text="Tussenvoegsel" Grid.Row="1" Grid.Column="1" Margin="0,0,0,5" />
                         <TextBox Style="{DynamicResource TextBoxEditStudentStyle1}"
-                         Text="{Binding StudentCopy.Insertion, UpdateSourceTrigger=PropertyChanged}"
+                         Text="{Binding StudentCopy.Insertion. , UpdateSourceTrigger=PropertyChanged}"
                          Tag="Tussenvoegsel"
                          Grid.Row="2" Grid.Column="1" Margin="0,0,10,10" />
 
@@ -131,7 +131,7 @@
                         <!-- Telefoonnummer -->
                         <TextBlock Text="Telefoonnummer*" Grid.Row="5" Grid.Column="1" Margin="0,0,0,5" />
                         <TextBox Style="{DynamicResource TextBoxEditStudentStyle1}"
-                         Text="{Binding StudentCopy.PhoneNumber, UpdateSourceTrigger=PropertyChanged}"
+                         Text="{Binding StudentCopy.Phone, UpdateSourceTrigger=PropertyChanged}"
                          helpers:ValidationProperties.IsRequired="True"
                          helpers:ValidationProperties.IsPhoneNumber="True"
                          Tag="Telefoonnummer"
@@ -140,7 +140,7 @@
                         <!-- PostCode -->
                         <TextBlock Text="Postcode*" Grid.Row="7" Grid.Column="0" Margin="0,0,0,5" />
                         <TextBox Style="{DynamicResource TextBoxEditStudentStyle1}"
-                         Text="{Binding StudentCopy.Àddress.ZipCode, UpdateSourceTrigger=PropertyChanged}"
+                         Text="{Binding StudentCopy.Address.ZipCode, UpdateSourceTrigger=PropertyChanged}"
                          helpers:ValidationProperties.IsRequired="True"
                          Tag="Postcode"
                          Grid.Row="8" Grid.Column="0" Margin="0,0,10,10" />
@@ -148,7 +148,7 @@
                         <!-- Huisnummer -->
                         <TextBlock Text="Huisnummer*" Grid.Row="7" Grid.Column="1" Margin="0,0,0,5" />
                         <TextBox Style="{DynamicResource TextBoxEditStudentStyle1}"
-                         Text="{Binding StudentCopy.Àddress.HouseNumber, UpdateSourceTrigger=PropertyChanged}"
+                         Text="{Binding StudentCopy.Address.HouseNumber, UpdateSourceTrigger=PropertyChanged}"
                          helpers:ValidationProperties.IsRequired="True"
                          Tag="Huisnummer"
                          Grid.Row="8" Grid.Column="1" Margin="0,0,10,10" />
@@ -156,7 +156,7 @@
                         <!-- Straatnaam -->
                         <TextBlock Text="Straatnaam*" Grid.Row="9" Grid.Column="0" Margin="0,0,0,5" />
                         <TextBox Style="{DynamicResource TextBoxEditStudentStyle1}"
-                         Text="{Binding StudentCopy.Àddress.Street, UpdateSourceTrigger=PropertyChanged}"
+                         Text="{Binding StudentCopy.Address.Street, UpdateSourceTrigger=PropertyChanged}"
                          helpers:ValidationProperties.IsRequired="True"
                          Tag="Straatnaam"
                          Grid.Row="10" Grid.Column="0" Margin="0,0,10,10" />
@@ -164,7 +164,7 @@
                         <!-- Land -->
                         <TextBlock Text="Land*" Grid.Row="9" Grid.Column="1" Margin="0,0,0,5" />
                         <TextBox Style="{DynamicResource TextBoxEditStudentStyle1}"
-                         Text="{Binding StudentCopy.Àddress.Country, UpdateSourceTrigger=PropertyChanged}"
+                         Text="{Binding StudentCopy.Address.Country, UpdateSourceTrigger=PropertyChanged}"
                          helpers:ValidationProperties.IsRequired="True"
                          Tag="Land"
                          Grid.Row="10" Grid.Column="1" Margin="0,0,10,10" />
@@ -172,7 +172,7 @@
                         <!-- Stad -->
                         <TextBlock Text="Stad*" Grid.Row="11" Grid.Column="0" Margin="0,0,0,5" />
                         <TextBox Style="{DynamicResource TextBoxEditStudentStyle1}"
-                         Text="{Binding StudentCopy.Àddress.City, UpdateSourceTrigger=PropertyChanged}"
+                         Text="{Binding StudentCopy.Address.City, UpdateSourceTrigger=PropertyChanged}"
                          helpers:ValidationProperties.IsRequired="True"
                          Tag="Stad"
                          Grid.Row="12" Grid.Column="0" Margin="0,0,10,10" />

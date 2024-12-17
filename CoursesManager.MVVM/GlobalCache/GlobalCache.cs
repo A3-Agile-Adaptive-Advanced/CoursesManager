@@ -145,7 +145,6 @@ public class GlobalCache
     }
 
 
-#if DEBUG
     /// <summary>
     /// Clears the cache for unit testing purposes.
     /// </summary>
@@ -171,5 +170,4 @@ public class GlobalCache
         return new GlobalCache(_testCapacity);
     }
 
-#endif
 }

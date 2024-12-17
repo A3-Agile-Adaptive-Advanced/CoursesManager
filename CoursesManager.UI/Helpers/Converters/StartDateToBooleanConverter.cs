@@ -9,7 +9,7 @@ namespace CoursesManager.UI.Helpers.Converters
         {
             if (value is DateTime startDate)
             {
-                return DateTime.Now.Date >= startDate.Date.AddDays(-7 * 3);
+                return DateTime.Now.Date < startDate.Date && DateTime.Now.Date >= startDate.Date.AddDays(-7 * 3);
             }
             return false;
         }
