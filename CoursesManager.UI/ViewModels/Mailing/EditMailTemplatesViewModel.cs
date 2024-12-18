@@ -124,24 +124,21 @@ namespace CoursesManager.UI.ViewModels.Mailing
         {
             var invalidPlaceholders = new List<string>();
 
-            // Regular expression to match text inside square brackets []
             var regex = new Regex(@"\[(.*?)\]");
 
-            // Find matches in the template
             var matches = regex.Matches(template);
 
             foreach (Match match in matches)
             {
-                var placeholder = match.Value; // Get the matched placeholder, including brackets
+                var placeholder = match.Value;
 
-                // Check if it exists in the valid placeholders list
                 if (!placeholders.Contains(placeholder))
                 {
-                    invalidPlaceholders.Add(placeholder); // Flag as invalid
+                    invalidPlaceholders.Add(placeholder);
                 }
             }
 
-            return invalidPlaceholders; // Return the list of invalid placeholders
+            return invalidPlaceholders;
         }
 
     }
