@@ -9,144 +9,153 @@
         mc:Ignorable="d"
         d:DesignHeight="900" d:DesignWidth="1600" d:Background="{StaticResource SecondaryGradient}"
              Loaded="Window_Loaded">
-
-
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="0"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="110"/>
-        </Grid.ColumnDefinitions>
+        <Popup x:Name="SuggestionsPopup" Placement="MousePoint" IsOpen="False">
+            <Border Background="White" BorderBrush="Gray" BorderThickness="1" CornerRadius="5">
+                <ListBox x:Name="SuggestionsList"
 
-        <Grid.RowDefinitions>
-            <RowDefinition Height="50"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="25"/>
-        </Grid.RowDefinitions>
-        <Grid Grid.Row="1" Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="95"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="500"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+                     PreviewKeyDown="SuggestionsList_PreviewKeyDown"
+                     SelectionChanged="SuggestionsList_SelectionChanged">
+                </ListBox>
+            </Border>
+        </Popup>
+
+        <Grid>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="110"/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Row="1" Grid.Column="1" Content="B" FontWeight="Bold" Click="BoldButton_Click" Width="50" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
-                <Button.RenderTransform>
-                    <RotateTransform Angle="270" CenterX="32" CenterY="12" />
-                </Button.RenderTransform>
-                <Button.ToolTip>
-                    <ToolTip Content="Dikgedrukt"/>
-                </Button.ToolTip>
-            </Button>
-            <Button Grid.Row="2" Grid.Column="1" Content="i" FontStyle="Italic" Click="ItalicButton_Click" Width="50" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
-                <Button.RenderTransform>
-                    <RotateTransform Angle="270" CenterX="46" CenterY="26" />
-                </Button.RenderTransform>
-                <Button.ToolTip>
-                    <ToolTip Content="Cursief"/>
-                </Button.ToolTip>
-            </Button>
-            <Button Grid.Row="3" Grid.Column="1" Click="UnderlineButton_Click" Width="50" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
-                <TextBlock TextDecorations="Underline" Text="U"></TextBlock>
-                <Button.RenderTransform>
-                    <RotateTransform Angle="270" CenterX="60" CenterY="40" />
-                </Button.RenderTransform>
-                <Button.ToolTip>
-                    <ToolTip Content="Onderstrepen"/>
-                </Button.ToolTip>
-            </Button>
-            <Button Grid.Row="4" Grid.Column="1" Click="LinkButton_Click" Width="60" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
-                <Button.RenderTransform>
-                    <RotateTransform Angle="270" CenterX="84" CenterY="54" />
-                </Button.RenderTransform>
-                <TextBlock Text="•"></TextBlock>
-                <Button.ToolTip>
-                    <ToolTip Content="Creëer link"/>
-                </Button.ToolTip>
-            </Button>
-            <Button Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3" Click="TitleButton_Click" Width="60" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
-                <Button.RenderTransform>
-                    <RotateTransform Angle="270" CenterX="103" CenterY="73" />
-                </Button.RenderTransform>
-                <TextBlock Text="Titel"></TextBlock>
-                <Button.ToolTip>
-                    <ToolTip Content="Titel"/>
-                </Button.ToolTip>
-            </Button>
-            <Button Grid.Row="6" Grid.Column="1" Click="AccentuateButton_Click" Width="110" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
-                <Button.RenderTransform>
-                    <RotateTransform Angle="270" CenterX="172" CenterY="92" />
-                </Button.RenderTransform>
-                <TextBlock Text="Highlight"></TextBlock>
-                <Button.ToolTip>
-                    <ToolTip Content="Tekst dikgedrukt en groter weergeven"/>
-                </Button.ToolTip>
-            </Button>
-            <Button Grid.Row="8" Grid.Column="1" Command="{Binding PreviewPageCommand}" Width="100" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
-                <TextBlock Text="Preview"></TextBlock>
-                <Button.RenderTransform>
-                    <RotateTransform Angle="270" CenterX="2" CenterY="-68" />
-                </Button.RenderTransform>
-                <Button.ToolTip>
-                    <ToolTip Content="Titel"/>
-                </Button.ToolTip>
-            </Button>
-            <Button Grid.Row="9" Grid.Column="1" Command="{Binding SaveTemplateCommand}" Width="100" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
-                <TextBlock Text="Opslaan"></TextBlock>
-                <Button.RenderTransform>
-                    <RotateTransform Angle="270" CenterX="40" CenterY="-30" />
-                </Button.RenderTransform>
-                <Button.ToolTip>
-                    <ToolTip Content="Titel"/>
-                </Button.ToolTip>
-            </Button>
-        </Grid>
 
-        <Grid Grid.Row="1" Grid.Column="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="25"/>
             </Grid.RowDefinitions>
-            
-            <Button CommandParameter="CertificateMail" Command="{Binding ShowMailCommand}" Grid.Column="0" Height="80" Style="{StaticResource PrimaryButtonTemplate}">Certificaten mail</Button>
-            <Button CommandParameter="PaymentMail" Command="{Binding ShowMailCommand}" Grid.Column="1" Height="80" Style="{StaticResource PrimaryButtonTemplate}">Betaalherinnering mail</Button>
-            <Button CommandParameter="CourseStartMail" Command="{Binding ShowMailCommand}" Grid.Column="2" Height="80" Style="{StaticResource PrimaryButtonTemplate}">Cursus start mail</Button>
-            <Button CommandParameter="Certificate" Command="{Binding ShowMailCommand}" Grid.Column="3" Height="80" Style="{StaticResource PrimaryButtonTemplate}">PDF certificaat</Button>
-            
-            <Grid Grid.Row="1" Grid.ColumnSpan="4">
-                <Border CornerRadius="10">
-                    <RichTextBox x:Name="richTextBox" Grid.Column="0" Grid.Row="0"
+            <Grid Grid.Row="1" Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="95"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="500"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Row="1" Grid.Column="1" Content="B" FontWeight="Bold" Click="BoldButton_Click" Width="50" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
+                    <Button.RenderTransform>
+                        <RotateTransform Angle="270" CenterX="32" CenterY="12" />
+                    </Button.RenderTransform>
+                    <Button.ToolTip>
+                        <ToolTip Content="Dikgedrukt"/>
+                    </Button.ToolTip>
+                </Button>
+                <Button Grid.Row="2" Grid.Column="1" Content="i" FontStyle="Italic" Click="ItalicButton_Click" Width="50" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
+                    <Button.RenderTransform>
+                        <RotateTransform Angle="270" CenterX="46" CenterY="26" />
+                    </Button.RenderTransform>
+                    <Button.ToolTip>
+                        <ToolTip Content="Cursief"/>
+                    </Button.ToolTip>
+                </Button>
+                <Button Grid.Row="3" Grid.Column="1" Click="UnderlineButton_Click" Width="50" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
+                    <TextBlock TextDecorations="Underline" Text="U"></TextBlock>
+                    <Button.RenderTransform>
+                        <RotateTransform Angle="270" CenterX="60" CenterY="40" />
+                    </Button.RenderTransform>
+                    <Button.ToolTip>
+                        <ToolTip Content="Onderstrepen"/>
+                    </Button.ToolTip>
+                </Button>
+                <Button Grid.Row="4" Grid.Column="1" Click="LinkButton_Click" Width="60" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
+                    <Button.RenderTransform>
+                        <RotateTransform Angle="270" CenterX="84" CenterY="54" />
+                    </Button.RenderTransform>
+                    <TextBlock Text="•"></TextBlock>
+                    <Button.ToolTip>
+                        <ToolTip Content="Creëer link"/>
+                    </Button.ToolTip>
+                </Button>
+                <Button Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="3" Click="TitleButton_Click" Width="60" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
+                    <Button.RenderTransform>
+                        <RotateTransform Angle="270" CenterX="103" CenterY="73" />
+                    </Button.RenderTransform>
+                    <TextBlock Text="Titel"></TextBlock>
+                    <Button.ToolTip>
+                        <ToolTip Content="Titel"/>
+                    </Button.ToolTip>
+                </Button>
+                <Button Grid.Row="6" Grid.Column="1" Click="AccentuateButton_Click" Width="110" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
+                    <Button.RenderTransform>
+                        <RotateTransform Angle="270" CenterX="172" CenterY="92" />
+                    </Button.RenderTransform>
+                    <TextBlock Text="Highlight"></TextBlock>
+                    <Button.ToolTip>
+                        <ToolTip Content="Tekst dikgedrukt en groter weergeven"/>
+                    </Button.ToolTip>
+                </Button>
+                <Button Grid.Row="8" Grid.Column="1" Command="{Binding PreviewPageCommand}" Width="100" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
+                    <TextBlock Text="Preview"></TextBlock>
+                    <Button.RenderTransform>
+                        <RotateTransform Angle="270" CenterX="2" CenterY="-68" />
+                    </Button.RenderTransform>
+                    <Button.ToolTip>
+                        <ToolTip Content="Titel"/>
+                    </Button.ToolTip>
+                </Button>
+                <Button Grid.Row="9" Grid.Column="1" Command="{Binding SaveTemplateCommand}" Width="100" Style="{StaticResource PrimaryButtonFormat}" HorizontalAlignment="Right">
+                    <TextBlock Text="Opslaan"></TextBlock>
+                    <Button.RenderTransform>
+                        <RotateTransform Angle="270" CenterX="40" CenterY="-30" />
+                    </Button.RenderTransform>
+                    <Button.ToolTip>
+                        <ToolTip Content="Titel"/>
+                    </Button.ToolTip>
+                </Button>
+            </Grid>
+
+            <Grid Grid.Row="1" Grid.Column="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Button CommandParameter="CertificateMail" Command="{Binding ShowMailCommand}" Grid.Column="0" Height="80" Style="{StaticResource PrimaryButtonTemplate}">Certificaten mail</Button>
+                <Button CommandParameter="PaymentMail" Command="{Binding ShowMailCommand}" Grid.Column="1" Height="80" Style="{StaticResource PrimaryButtonTemplate}">Betaalherinnering mail</Button>
+                <Button CommandParameter="CourseStartMail" Command="{Binding ShowMailCommand}" Grid.Column="2" Height="80" Style="{StaticResource PrimaryButtonTemplate}">Cursus start mail</Button>
+                <Button CommandParameter="Certificate" Command="{Binding ShowMailCommand}" Grid.Column="3" Height="80" Style="{StaticResource PrimaryButtonTemplate}">PDF certificaat</Button>
+
+                <Grid Grid.Row="1" Grid.ColumnSpan="4">
+                    <Border CornerRadius="10">
+                        <RichTextBox x:Name="richTextBox" Grid.Column="0" Grid.Row="0"
                     helpers:RichTextBoxHelper.Document="{Binding VisibleText, Mode=TwoWay}" 
                     VerticalScrollBarVisibility="Auto"
                     HorizontalScrollBarVisibility="Auto" Height="750" PreviewKeyDown="RichTextBox_PreviewKeyDown">
-                        <RichTextBox.Resources>
-                            <Style TargetType="Paragraph">
-                                <Setter Property="Margin" Value="0" />
-                                <Setter Property="FontSize" Value="20"/>
-                            </Style>
-                        </RichTextBox.Resources>
-                    </RichTextBox>
-                </Border>
+                            <RichTextBox.Resources>
+                                <Style TargetType="Paragraph">
+                                    <Setter Property="Margin" Value="0" />
+                                    <Setter Property="FontSize" Value="20"/>
+                                </Style>
+                            </RichTextBox.Resources>
+                        </RichTextBox>
+                    </Border>
+                </Grid>
+
+
             </Grid>
-
-
         </Grid>
     </Grid>
-    
 </UserControl>

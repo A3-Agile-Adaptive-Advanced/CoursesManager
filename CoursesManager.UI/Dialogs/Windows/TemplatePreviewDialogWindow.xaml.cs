@@ -1,6 +1,7 @@
 ﻿using CoursesManager.UI.Dialogs.ViewModels;
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace CoursesManager.UI.Dialogs.Windows
 {
@@ -18,7 +19,6 @@ namespace CoursesManager.UI.Dialogs.Windows
         {
             if (DataContext is TemplatePreviewDialogViewModel viewModel)
             {
-                Debug.WriteLine(viewModel.Message);
                 webBrowser.NavigateToString(viewModel.Message);
             }
         }

@@ -1,21 +1,16 @@
-﻿using CoursesManager.MVVM.Data;
-using CoursesManager.MVVM.Navigation;
-using CoursesManager.UI.Mailing;
-using System.Windows.Input;
-using CoursesManager.UI.Models;
-using CoursesManager.UI.Repositories.TemplateRepository;
-using CoursesManager.UI.Helpers;
-using CoursesManager.MVVM.Commands;
-using System.Text.RegularExpressions;
-using System.Windows.Documents;
-using System.Windows.Controls;
-using System.Windows;
+﻿using CoursesManager.MVVM.Commands;
+using CoursesManager.MVVM.Data;
 using CoursesManager.MVVM.Dialogs;
+using CoursesManager.MVVM.Messages;
+using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Dialogs.ViewModels;
-using CoursesManager.UI.ViewModels.Students;
-using CoursesManager.MVVM.Messages;
-using System.Diagnostics;
+using CoursesManager.UI.Mailing;
+using CoursesManager.UI.Models;
+using CoursesManager.UI.Repositories.TemplateRepository;
+using System.Text.RegularExpressions;
+using System.Windows.Documents;
+using System.Windows.Input;
 
 namespace CoursesManager.UI.ViewModels.Mailing
 {
@@ -45,7 +40,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
         #region Commands
         public ICommand ShowMailCommand { get; }
         public ICommand PreviewPageCommand { get; }
-        public ICommand SaveTemplateCommand {  get; }
+        public ICommand SaveTemplateCommand { get; }
         #endregion
 
         public EditMailTemplatesViewModel(ITemplateRepository templateRepository, IDialogService dialogService, IMessageBroker messageBroker, INavigationService navigationService) : base(navigationService)
@@ -100,6 +95,17 @@ namespace CoursesManager.UI.ViewModels.Mailing
 
             return updatedTemplate;
         }
+        public async void OpenTemplateViewer()
+        {
+            await ExecuteWithOverlayAsync(_messageBroker, async () =>
+            {
+                var dialogResult = await _dialogService.ShowDialogAsync<TemplatePreviewDialogViewModel, DialogResultType>(new DialogResultType
+                {
+                    DialogTitle = Template.Name,
+                    DialogText = UpdateTemplateBody(GetPlainTextFromFlowDocument(VisibleText)),
+                });
+            });
+        }
 
         private void SwitchHtmls(string Html)
         {
@@ -114,16 +120,29 @@ namespace CoursesManager.UI.ViewModels.Mailing
             return new TextRange(document.ContentStart, document.ContentEnd).Text;
         }
 
-        public async void OpenTemplateViewer()
+        private List<string> ValidatePlaceholders(string template, List<string> placeholders)
         {
-            await ExecuteWithOverlayAsync(_messageBroker, async () =>
+            var invalidPlaceholders = new List<string>();
+
+            // Regular expression to match text inside square brackets []
+            var regex = new Regex(@"\[(.*?)\]");
+
+            // Find matches in the template
+            var matches = regex.Matches(template);
+
+            foreach (Match match in matches)
             {
-                var dialogResult = await _dialogService.ShowDialogAsync<TemplatePreviewDialogViewModel, DialogResultType>(new DialogResultType
+                var placeholder = match.Value; // Get the matched placeholder, including brackets
+
+                // Check if it exists in the valid placeholders list
+                if (!placeholders.Contains(placeholder))
                 {
-                    DialogTitle = Template.Name,
-                    DialogText = UpdateTemplateBody(GetPlainTextFromFlowDocument(VisibleText)),
-                });
-            });
+                    invalidPlaceholders.Add(placeholder); // Flag as invalid
+                }
+            }
+
+            return invalidPlaceholders; // Return the list of invalid placeholders
         }
+
     }
 }

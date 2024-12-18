@@ -3,6 +3,7 @@ using CoursesManager.UI.ViewModels.Courses;
 using CoursesManager.UI.ViewModels.Mailing;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,6 +28,35 @@ namespace CoursesManager.UI.Views.Mailing
         public EditMailTemplates()
         {
             InitializeComponent();
+            var placeholders = new List<string>
+        {
+
+            "[Cursus naam]",
+            "[Cursus code]",
+            "[Cursus beschrijving]",
+            "[Cursus categorie]",
+            "[Cursus startdatum]",
+            "[Cursus einddatum]",
+            "[Cursus locatie naam]",
+            "[Cursus locatie land]",
+            "[Cursus locatie postcode]",
+            "[Cursus locatie stad]",
+            "[Cursus locatie straat]",
+            "[Cursus locatie huisnummer]",
+            "[Cursus locatie toevoeging]",
+
+            "[Cursist naam]",
+            "[Cursist email]",
+            "[Cursist telefoonnummer]",
+            "[Cursist geboortedatum]",
+            "[Cursist adres land]",
+            "[Cursist adres postcode]",
+            "[Cursist adres stad]",
+            "[Cursist adres straat]",
+            "[Cursist adres huisnummer]",
+            "[Cursist adres toevoeging]"
+        };
+            SuggestionsList.ItemsSource = placeholders;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -65,7 +95,7 @@ namespace CoursesManager.UI.Views.Mailing
             _ = selection;
         }
 
-        
+
 
         private void LinkButton_Click(object sender, RoutedEventArgs e)
         {
@@ -120,6 +150,34 @@ namespace CoursesManager.UI.Views.Mailing
                     }
                 }
             }
+            else if (e.Key == Key.OemOpenBrackets)
+            {
+                var caretPosition = richTextBox.CaretPosition;
+                richTextBox.Selection.Text = "[";
+
+                try
+                {
+                    richTextBox.CaretPosition = caretPosition.GetPositionAtOffset(1);
+                }
+                catch (Exception ex)
+                {
+                    richTextBox.CaretPosition = richTextBox.Selection.End;
+                }
+                SuggestionsPopup.IsOpen = true;
+                e.Handled = true;
+            }
+            else if (SuggestionsPopup.IsOpen)
+            {
+                if (e.Key == Key.Escape)
+                {
+                    SuggestionsPopup.IsOpen = false;
+                    e.Handled = true;
+                }
+                else if (e.Key != Key.Up || e.Key != Key.Down || e.Key != Key.Enter)
+                {
+                    SuggestionsPopup.IsOpen = false;
+                }
+            }
         }
 
         private void formatText(TextSelection selection, string formatType)
@@ -133,6 +191,60 @@ namespace CoursesManager.UI.Views.Mailing
                     string wrappedText = $"<{formatType}>{selectedText}</{formatType}>";
                     selection.Text = wrappedText;
                 }
+            }
+        }
+        private void SuggestionsList_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                SuggestionsPopup.IsOpen = false;
+                e.Handled = true;
+            }
+            else if (e.Key != Key.Up && e.Key != Key.Down && e.Key != Key.Enter)
+            {
+                SuggestionsPopup.IsOpen = false;
+            }
+        }
+
+        private void InsertSelectedText(string selectedText)
+        {
+            if (!string.IsNullOrEmpty(selectedText))
+            {
+                var caretPosition = richTextBox.CaretPosition;
+
+                // Safely move the caret position after the inserted text
+                var startPosition = caretPosition.GetPositionAtOffset(-1);
+                if (startPosition != null)
+                {
+                    string previousCharacter = startPosition.GetTextInRun(LogicalDirection.Forward);
+                    // Select the '[' character
+                    if (previousCharacter == "[")
+                    {
+                        richTextBox.Selection.Select(startPosition, caretPosition);
+                        // Replace '[' with the selected text
+                        richTextBox.Selection.Text = selectedText;
+                    }
+                    else
+                    {
+                        caretPosition.InsertTextInRun(selectedText);
+                    }
+                    // Move the caret to the end of the inserted text
+                    richTextBox.CaretPosition = richTextBox.Selection.End;
+
+                }
+
+                // Close the popup and clear selection
+                SuggestionsPopup.IsOpen = false;
+                SuggestionsList.SelectedItem = null;
+                richTextBox.Focus();
+            }
+        }
+
+        private void SuggestionsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (SuggestionsPopup.IsOpen && SuggestionsList.SelectedItem is string selectedText)
+            {
+                InsertSelectedText(selectedText);
             }
         }
 
