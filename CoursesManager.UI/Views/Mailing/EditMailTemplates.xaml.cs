@@ -178,7 +178,6 @@ namespace CoursesManager.UI.Views.Mailing
                 var caretPosition = richTextBox.CaretPosition;
                 richTextBox.Selection.Text = "[";
 
-                //richTextBox.CaretPosition = caretPosition.GetPositionAtOffset(1);
                 richTextBox.CaretPosition = richTextBox.Selection.End;
                 SuggestionsPopup.IsOpen = true;
                 e.Handled = true;
@@ -227,31 +226,17 @@ namespace CoursesManager.UI.Views.Mailing
         {
             if (!string.IsNullOrEmpty(selectedText))
             {
-                var caretPosition = richTextBox.CaretPosition;
+                    richTextBox.Selection.Text = selectedText;
+                    TextPointer selectionStart = richTextBox.Selection.Start;
+                    TextPointer previousPosition = selectionStart.GetPositionAtOffset(-1, LogicalDirection.Backward);
 
-                // Safely move the caret position after the inserted text
-                var startPosition = caretPosition.GetPositionAtOffset(-1);
-                if (startPosition != null)
-                {
-                    string previousCharacter = startPosition.GetTextInRun(LogicalDirection.Forward);
-                    previousCharacter = previousCharacter[0].ToString();
-
-                    if (previousCharacter == "[")
+                    if (previousPosition != null)
                     {
-                        richTextBox.Selection.Select(startPosition, caretPosition);
-                        // Replace '[' with the selected text
-                        richTextBox.Selection.Text = selectedText;
+                        previousPosition.DeleteTextInRun(1);
                     }
-                    else
-                    {
-                        caretPosition.InsertTextInRun(selectedText);
-                    }
-                    // Move the caret to the end of the inserted text
-                    richTextBox.CaretPosition = richTextBox.Selection.End;
 
-                }
+                richTextBox.CaretPosition = richTextBox.Selection.End;
 
-                // Close the popup and clear selection
                 SuggestionsPopup.IsOpen = false;
                 SuggestionsList.SelectedItem = null;
                 richTextBox.Focus();

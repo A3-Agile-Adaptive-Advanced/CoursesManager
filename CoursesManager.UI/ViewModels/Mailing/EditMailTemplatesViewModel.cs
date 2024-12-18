@@ -66,9 +66,12 @@ namespace CoursesManager.UI.ViewModels.Mailing
         {
             string templateText = string.Empty;
             Template = _templateRepository.GetTemplateByName(templateName);
+
             Match match = Regex.Match(Template.HtmlString, @"<body>(.*?)</body>", RegexOptions.Singleline);
+
             string bodyContent = match.Groups[1].Value;
             templateText = bodyContent;
+
             return templateText;
         }
 
@@ -77,9 +80,14 @@ namespace CoursesManager.UI.ViewModels.Mailing
 
             string convertedText = GetPlainTextFromFlowDocument(VisibleText);
             List<string> invalidPlaceholders = ValidatePlaceholders(convertedText);
+
             if (invalidPlaceholders != null && invalidPlaceholders.Count != 0)
             {
+                _messageBroker.Publish(new ToastNotificationMessage(true, "1 of meerdere placeholders zijn incorrect."));
                 ReUploadTextWithErrorFormatting(convertedText, invalidPlaceholders);
+                await Task.Delay(5000);
+                _messageBroker.Publish(new ToastNotificationMessage(false, string.Empty));
+
                 return;
             }
             string updatedHtmlString = UpdateTemplateBody(convertedText);
@@ -184,7 +192,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
             FlowDocument newDocument = new FlowDocument();
             Paragraph paragraph = new Paragraph();
 
-            string pattern = @"(<[^>]*>)|([ ,.!?;:\""\r\n]+)";
+            string pattern = @"(<[^>]*>)|([ ,.!?;:\""\r\n]+)|(\[[^\]]*\])";
             string[] words = Regex.Split(inputText, pattern);
             foreach (string word in words)
             {

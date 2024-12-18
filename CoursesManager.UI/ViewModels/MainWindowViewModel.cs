@@ -74,12 +74,27 @@ public class MainWindowViewModel : ViewModelWithNavigation
         set => SetProperty(ref _isDialogOpen, value);
     }
 
+    private static bool _errorDisplayed;
+    public bool ErrorDisplayed
+    {
+        get => _errorDisplayed;
+        set => SetProperty(ref _errorDisplayed, value);
+    }
+
+    private string _toastText;
+    public string ToastText
+    {
+        get => _toastText;
+        set => SetProperty(ref _toastText, value);
+    }
+
     public MainWindowViewModel(INavigationService navigationService, IMessageBroker messageBroker) : base(navigationService)
     {
         BackgroundImage = LoadImage($"Resources/Images/CourseManagerA3.png");
         _navigationService = navigationService;
         _messageBroker = messageBroker;
         _messageBroker.Subscribe<OverlayActivationMessage, MainWindowViewModel>(OverlayActivationHandler, this);
+        _messageBroker.Subscribe<ToastNotificationMessage, MainWindowViewModel>(ShowToastNotification, this);
 
         CloseCommand = new RelayCommand(() =>
         {
@@ -160,10 +175,15 @@ public class MainWindowViewModel : ViewModelWithNavigation
         }
     }
 
-    private async void OverlayActivationHandler(OverlayActivationMessage obj)
+    private async void OverlayActivationHandler(OverlayActivationMessage message)
     {
-        OverlayActivationMessage overlayActivationMessage = obj as OverlayActivationMessage;
-        IsDialogOpen = overlayActivationMessage.IsVisible;
+        IsDialogOpen = message.IsVisible;
+    }
+
+    private async void ShowToastNotification(ToastNotificationMessage message)
+    {
+        ToastText = message.NotificationText;
+        ErrorDisplayed = message.SetVisibillity;
     }
 
     private static BitmapImage LoadImage(string relativePath)
