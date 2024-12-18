@@ -139,6 +139,13 @@ namespace CoursesManager.UI.Views.Mailing
                 if (selection != null)
                 {
                     var currentCaret = richTextBox.CaretPosition;
+                    string trailingText = currentCaret.GetTextInRun(LogicalDirection.Forward);
+                    string firstFourCharacters = trailingText.Length >= 4 ? trailingText.Substring(0, 4) : trailingText;
+                    if (firstFourCharacters == "</p>")
+                    {
+                        richTextBox.CaretPosition = currentCaret.GetPositionAtOffset(4);
+                    }
+
                     var newLine = Environment.NewLine;
 
                     selection.Text = $"{newLine}<p></p>";
@@ -150,19 +157,29 @@ namespace CoursesManager.UI.Views.Mailing
                     }
                 }
             }
+            else if (e.Key == Key.Back)
+            {
+                var currentCaret = richTextBox.CaretPosition;
+                string leadingText = currentCaret.GetTextInRun(LogicalDirection.Backward);
+                string trailingText = currentCaret.GetTextInRun(LogicalDirection.Forward);
+
+                if (leadingText == "<p>" && trailingText.StartsWith("</p>"))
+                {
+                    richTextBox.Selection.Select(currentCaret.GetPositionAtOffset(-3), currentCaret.GetPositionAtOffset(4));
+                    richTextBox.Selection.Text = "";
+
+                    richTextBox.CaretPosition = currentCaret.GetPositionAtOffset(-8);
+
+                    e.Handled = true;
+                }
+            }
             else if (e.Key == Key.OemOpenBrackets)
             {
                 var caretPosition = richTextBox.CaretPosition;
                 richTextBox.Selection.Text = "[";
 
-                try
-                {
-                    richTextBox.CaretPosition = caretPosition.GetPositionAtOffset(1);
-                }
-                catch (Exception ex)
-                {
-                    richTextBox.CaretPosition = richTextBox.Selection.End;
-                }
+                //richTextBox.CaretPosition = caretPosition.GetPositionAtOffset(1);
+                richTextBox.CaretPosition = richTextBox.Selection.End;
                 SuggestionsPopup.IsOpen = true;
                 e.Handled = true;
             }
@@ -217,7 +234,8 @@ namespace CoursesManager.UI.Views.Mailing
                 if (startPosition != null)
                 {
                     string previousCharacter = startPosition.GetTextInRun(LogicalDirection.Forward);
-                    // Select the '[' character
+                    previousCharacter = previousCharacter[0].ToString();
+
                     if (previousCharacter == "[")
                     {
                         richTextBox.Selection.Select(startPosition, caretPosition);

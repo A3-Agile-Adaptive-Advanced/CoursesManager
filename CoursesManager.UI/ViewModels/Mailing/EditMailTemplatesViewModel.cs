@@ -8,9 +8,13 @@ using CoursesManager.UI.Dialogs.ViewModels;
 using CoursesManager.UI.Mailing;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.TemplateRepository;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.Windows.Controls;
+using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace CoursesManager.UI.ViewModels.Mailing
 {
@@ -70,7 +74,14 @@ namespace CoursesManager.UI.ViewModels.Mailing
 
         public async void SaveTemplate()
         {
+
             string convertedText = GetPlainTextFromFlowDocument(VisibleText);
+            List<string> invalidPlaceholders = ValidatePlaceholders(convertedText);
+            if (invalidPlaceholders != null && invalidPlaceholders.Count != 0)
+            {
+                ReUploadTextWithErrorFormatting(convertedText, invalidPlaceholders);
+                return;
+            }
             string updatedHtmlString = UpdateTemplateBody(convertedText);
 
             Template.HtmlString = updatedHtmlString;
@@ -120,13 +131,40 @@ namespace CoursesManager.UI.ViewModels.Mailing
             return new TextRange(document.ContentStart, document.ContentEnd).Text;
         }
 
-        private List<string> ValidatePlaceholders(string template, List<string> placeholders)
+        private List<string> ValidatePlaceholders(string htmlString)
         {
             var invalidPlaceholders = new List<string>();
+            var placeholders = new List<string>
+        {
+
+            "[Cursus naam]",
+            "[Cursus code]",
+            "[Cursus beschrijving]",
+            "[Cursus categorie]",
+            "[Cursus startdatum]",
+            "[Cursus einddatum]",
+            "[Cursus locatie naam]",
+            "[Cursus locatie land]",
+            "[Cursus locatie postcode]",
+            "[Cursus locatie stad]",
+            "[Cursus locatie straat]",
+            "[Cursus locatie huisnummer]",
+            "[Cursus locatie toevoeging]",
+
+            "[Cursist naam]",
+            "[Cursist email]",
+            "[Cursist telefoonnummer]",
+            "[Cursist geboortedatum]",
+            "[Cursist adres land]",
+            "[Cursist adres postcode]",
+            "[Cursist adres stad]",
+            "[Cursist adres straat]",
+            "[Cursist adres huisnummer]",
+            "[Cursist adres toevoeging]"
+        };
 
             var regex = new Regex(@"\[(.*?)\]");
-
-            var matches = regex.Matches(template);
+            var matches = regex.Matches(htmlString);
 
             foreach (Match match in matches)
             {
@@ -140,6 +178,33 @@ namespace CoursesManager.UI.ViewModels.Mailing
 
             return invalidPlaceholders;
         }
+
+        private void ReUploadTextWithErrorFormatting(string inputText, List<string> flaggedWords)
+        {
+            FlowDocument newDocument = new FlowDocument();
+            Paragraph paragraph = new Paragraph();
+
+            string pattern = @"(<[^>]*>)|([ ,.!?;:\""\r\n]+)";
+            string[] words = Regex.Split(inputText, pattern);
+            foreach (string word in words)
+            {
+                Run run = new Run(word);
+                Debug.WriteLine(word);
+                if (flaggedWords.Contains(word))
+                {
+                    run.FontWeight = FontWeights.Bold;
+                    run.Foreground = Brushes.Red;
+                }
+
+                paragraph.Inlines.Add(run);
+
+            }
+
+            newDocument.Blocks.Add(paragraph);
+
+            VisibleText = newDocument;
+        }
+
 
     }
 }
