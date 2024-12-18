@@ -49,7 +49,7 @@ namespace CoursesManager.UI.DataAccess
                 ExecuteNonProcedure(StoredProcedures.UpdateTemplate, [
                     new MySqlParameter("@p_id", template.Id),
                     new MySqlParameter("@p_html", template.HtmlString),
-                    new MySqlParameter("@subject", template.SubjectString),
+                    new MySqlParameter("@p_subject", template.SubjectString),
                     new MySqlParameter("@p_name", template.Name),
                     new MySqlParameter("@p_updated_at", DateTime.Now)
                 ]);

@@ -15,6 +15,7 @@ using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Dialogs.ViewModels;
 using CoursesManager.UI.ViewModels.Students;
 using CoursesManager.MVVM.Messages;
+using System.Diagnostics;
 
 namespace CoursesManager.UI.ViewModels.Mailing
 {
@@ -25,7 +26,6 @@ namespace CoursesManager.UI.ViewModels.Mailing
         private readonly IDialogService _dialogService;
         private readonly IMailProvider _mailProvider;
         private readonly ITemplateRepository _templateRepository;
-        private readonly HtmlParser _htmlParser = new();
         #endregion
         #region Attributes
         private FlowDocument _visibleText;
@@ -50,11 +50,12 @@ namespace CoursesManager.UI.ViewModels.Mailing
 
         public EditMailTemplatesViewModel(ITemplateRepository templateRepository, IDialogService dialogService, IMessageBroker messageBroker, INavigationService navigationService) : base(navigationService)
         {
+            _templateRepository = templateRepository;
             _navigationService = navigationService;
             _mailProvider = new MailProvider();
             _messageBroker = messageBroker;
             _dialogService = dialogService;
-            _templateRepository = templateRepository;
+
 
             VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText("CertificateMail"))));
             ShowMailCommand = new RelayCommand<string>(SwitchHtmls, s => s != null);
@@ -66,10 +67,9 @@ namespace CoursesManager.UI.ViewModels.Mailing
         {
             string templateText = string.Empty;
             Template = _templateRepository.GetTemplateByName(templateName);
-            Match match = Regex.Match(Template.HtmlString, @"<body.*?>(.*?)</body>", RegexOptions.Singleline);
+            Match match = Regex.Match(Template.HtmlString, @"<body>(.*?)</body>", RegexOptions.Singleline);
             string bodyContent = match.Groups[1].Value;
             templateText = bodyContent;
-
             return templateText;
         }
 
@@ -79,8 +79,13 @@ namespace CoursesManager.UI.ViewModels.Mailing
             string updatedHtmlString = UpdateTemplateBody(convertedText);
 
             Template.HtmlString = updatedHtmlString;
-
-            _templateRepository.UpdateTemplate(Template);
+            try
+            {
+                _templateRepository.UpdateTemplate(Template);
+            }
+            catch (Exception ex)
+            {
+            }
         }
 
         private string UpdateTemplateBody(string updatedBodyContent)
@@ -88,7 +93,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
             string tempString = Template.HtmlString;
             string updatedTemplate = Regex.Replace(
                 tempString,
-                @"<body.*?>(.*?)</body>",
+                @"<body>(.*?)</body>",
                 $"<body>{updatedBodyContent}</body>",
                 RegexOptions.Singleline
             );
@@ -106,7 +111,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
             if (document == null)
                 return string.Empty;
 
-            return UpdateTemplateBody(new TextRange(document.ContentStart, document.ContentEnd).Text);
+            return new TextRange(document.ContentStart, document.ContentEnd).Text;
         }
 
         public async void OpenTemplateViewer()
@@ -116,7 +121,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
                 var dialogResult = await _dialogService.ShowDialogAsync<TemplatePreviewDialogViewModel, DialogResultType>(new DialogResultType
                 {
                     DialogTitle = Template.Name,
-                    DialogText = GetPlainTextFromFlowDocument(VisibleText),
+                    DialogText = UpdateTemplateBody(GetPlainTextFromFlowDocument(VisibleText)),
                 });
             });
         }

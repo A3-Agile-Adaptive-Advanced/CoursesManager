@@ -101,31 +101,8 @@ public partial class App : Application
         StudentRepository = new StudentRepository();
         RegistrationRepository = new RegistrationRepository();
         AddressRepository = new AddressRepository();
-        LocationRepository = new LocationRepository();
         TemplateRepository = new TemplateRepository();
-    }
-
-    private static void SetupDummyDataTemporary()
-    {
-        //This is a temporary static class that will hold all the data that is used in the application.
-        //This is a temporary solution until we have a database.
-        Students = DummyDataGenerator.GenerateStudents(60);
-        Courses = DummyDataGenerator.GenerateCourses(30);
-        Registrations = DummyDataGenerator.GenerateRegistrations(Students, Courses);
-        //Registrations = DummyDataGenerator.GenerateRegistrationBetter(Courses, Students);
-        Locations = DummyDataGenerator.GenerateLocations(15);
-
-
-        foreach (var registration in Registrations)
-        {
-            registration.Student = Students.FirstOrDefault(s => s.Id == registration.StudentId);
-            registration.Course = Courses.FirstOrDefault(c => c.Id == registration.CourseId);
-        }
-
-        foreach (var course in Courses)
-        {
-            course.Location = Locations.FirstOrDefault(s => s.Id == course.LocationId);
-        }
+        LocationRepository = new LocationRepository();
     }
 
     private void RegisterDialogs()

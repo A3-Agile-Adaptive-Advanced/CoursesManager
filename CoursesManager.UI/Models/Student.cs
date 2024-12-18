@@ -153,11 +153,7 @@ namespace CoursesManager.UI.Models
                 { "[Cursist adres stad]", student.Address?.City ?? "Geen stad" },
                 { "[Cursist adres straat]", student.Address?.Street ?? "Geen straat" },
                 { "[Cursist adres huisnummer]", student.Address?.HouseNumber ?? "Geen huisnummer" },
-                { "[Cursist adres toevoeging]", student.Address?.HouseNumberExtension ?? "Geen toevoeging" },
-                { "[Cursist verwijderd]", student.IsDeleted ? "Ja" : "Nee" },
-                { "[Cursist verwijderd op]", student.DeletedAt?.ToString("dd-MM-yyyy") ?? "N.v.t." },
-                { "[Cursist aangemaakt op]", student.CreatedAt.ToString("dd-MM-yyyy") },
-                { "[Cursist bijgewerkt op]", student.UpdatedAt.ToString("dd-MM-yyyy") }
+                { "[Cursist adres toevoeging]", student.Address?.HouseNumberExtension ?? "Geen toevoeging" }
             };
 
             foreach (var placeholder in placeholders)

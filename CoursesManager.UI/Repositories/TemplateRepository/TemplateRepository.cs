@@ -1,10 +1,5 @@
 ﻿using CoursesManager.UI.DataAccess;
 using CoursesManager.UI.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CoursesManager.UI.Repositories.TemplateRepository
 {
@@ -15,6 +10,30 @@ namespace CoursesManager.UI.Repositories.TemplateRepository
         {
             TemplateDataAccess templateDataAccess = new TemplateDataAccess();
             _templateDataAccess = templateDataAccess;
+        }
+
+        public Template GetTemplateByName(string name)
+        {
+            try
+            {
+                return _templateDataAccess.GetByName(name);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public void UpdateTemplate(Template template)
+        {
+            try
+            {
+                _templateDataAccess.UpdateTemplate(template);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
         public void Add(Template data)
@@ -42,11 +61,6 @@ namespace CoursesManager.UI.Repositories.TemplateRepository
             throw new NotImplementedException();
         }
 
-        public Template GetTemplateByName(string name)
-        {
-            return _templateDataAccess.GetByName(name);
-        }
-
         public List<Template> RefreshAll()
         {
             throw new NotImplementedException();
@@ -57,9 +71,5 @@ namespace CoursesManager.UI.Repositories.TemplateRepository
             throw new NotImplementedException();
         }
 
-        public void UpdateTemplate(Template template)
-        {
-            _templateDataAccess.UpdateTemplate(template);
-        }
     }
 }
