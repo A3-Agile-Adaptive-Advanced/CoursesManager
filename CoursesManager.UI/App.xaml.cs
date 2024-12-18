@@ -22,6 +22,7 @@ using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Service;
 using CoursesManager.UI.ViewModels.Courses;
 using CoursesManager.UI.ViewModels.Mailing;
+using CoursesManager.UI.Repositories.TemplateRepository;
 
 namespace CoursesManager.UI;
 
@@ -40,6 +41,8 @@ public partial class App : Application
     public static IRegistrationRepository RegistrationRepository { get; private set; }
     public static IStudentRepository StudentRepository { get; private set; }
     public static IAddressRepository AddressRepository { get; private set; }
+
+    public static ITemplateRepository TemplateRepository { get; private set; }
 
     public static INavigationService NavigationService { get; set; } = new NavigationService();
     public static IMessageBroker MessageBroker { get; set; } = new MessageBroker();
@@ -69,6 +72,7 @@ public partial class App : Application
             RegistrationRepository,
             StudentRepository,
             AddressRepository,
+            TemplateRepository,
             MessageBroker,
             DialogService,
             ConfigurationService);
@@ -98,6 +102,7 @@ public partial class App : Application
         RegistrationRepository = new RegistrationRepository();
         AddressRepository = new AddressRepository();
         LocationRepository = new LocationRepository();
+        TemplateRepository = new TemplateRepository();
     }
 
     private static void SetupDummyDataTemporary()

@@ -24,7 +24,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
         private readonly IMessageBroker _messageBroker;
         private readonly IDialogService _dialogService;
         private readonly IMailProvider _mailProvider;
-        private readonly TemplateRepository _templateRepository = new();
+        private readonly ITemplateRepository _templateRepository;
         private readonly HtmlParser _htmlParser = new();
         #endregion
         #region Attributes
@@ -48,12 +48,13 @@ namespace CoursesManager.UI.ViewModels.Mailing
         public ICommand SaveTemplateCommand {  get; }
         #endregion
 
-        public EditMailTemplatesViewModel(IDialogService dialogService, IMessageBroker messageBroker, INavigationService navigationService) : base(navigationService)
+        public EditMailTemplatesViewModel(ITemplateRepository templateRepository, IDialogService dialogService, IMessageBroker messageBroker, INavigationService navigationService) : base(navigationService)
         {
             _navigationService = navigationService;
             _mailProvider = new MailProvider();
             _messageBroker = messageBroker;
             _dialogService = dialogService;
+            _templateRepository = templateRepository;
 
             VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText("CertificateMail"))));
             ShowMailCommand = new RelayCommand<string>(SwitchHtmls, s => s != null);
@@ -74,13 +75,16 @@ namespace CoursesManager.UI.ViewModels.Mailing
 
         public async void SaveTemplate()
         {
+            string convertedText = GetPlainTextFromFlowDocument(VisibleText);
+            string updatedHtmlString = UpdateTemplateBody(convertedText);
 
+            Template.HtmlString = updatedHtmlString;
+
+            _templateRepository.UpdateTemplate(Template);
         }
 
         private string UpdateTemplateBody(string updatedBodyContent)
         {
-            if (Template == null || string.IsNullOrEmpty(Template.HtmlString))
-                throw new InvalidOperationException("No template is loaded.");
             string tempString = Template.HtmlString;
             string updatedTemplate = Regex.Replace(
                 tempString,

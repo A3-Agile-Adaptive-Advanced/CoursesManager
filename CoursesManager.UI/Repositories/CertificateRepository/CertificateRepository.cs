@@ -24,5 +24,6 @@ namespace CoursesManager.UI.Repositories.CertificateRepository
         {
             return _certificateDataAccess.SaveCertificate(template, course, student);
         }
+        
     }
 }

@@ -2,12 +2,14 @@
 using CoursesManager.MVVM.Dialogs;
 using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
+using CoursesManager.UI.Mailing;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.AddressRepository;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Repositories.LocationRepository;
 using CoursesManager.UI.Repositories.RegistrationRepository;
 using CoursesManager.UI.Repositories.StudentRepository;
+using CoursesManager.UI.Repositories.TemplateRepository;
 using CoursesManager.UI.Service;
 using CoursesManager.UI.ViewModels;
 using CoursesManager.UI.ViewModels.Courses;
@@ -23,6 +25,7 @@ namespace CoursesManager.UI.Factory
         private readonly IRegistrationRepository _registrationRepository;
         private readonly IStudentRepository _studentRepository;
         private readonly IAddressRepository _addressRepository;
+        private readonly ITemplateRepository _templateRepository;
         private readonly IMessageBroker _messageBroker;
         private readonly IDialogService _dialogService;
         private readonly IConfigurationService _configurationService;
@@ -34,6 +37,7 @@ namespace CoursesManager.UI.Factory
             IRegistrationRepository registrationRepository,
             IStudentRepository studentRepository,
             IAddressRepository addressRepository,
+            ITemplateRepository templateRepository,
             IMessageBroker messageBroker,
             IDialogService dialogService,
             IConfigurationService configurationService)
@@ -43,6 +47,7 @@ namespace CoursesManager.UI.Factory
             _registrationRepository = registrationRepository;
             _studentRepository = studentRepository;
             _addressRepository = addressRepository;
+            _templateRepository = templateRepository;
             _messageBroker = messageBroker;
             _dialogService = dialogService;
             _configurationService = configurationService;
@@ -81,7 +86,7 @@ namespace CoursesManager.UI.Factory
                 Type vmType when vmType == typeof(CoursesManagerViewModel) =>
                     new CoursesManagerViewModel(_courseRepository, _messageBroker, _dialogService, navigationService) as T,
                 Type vmType when vmType == typeof(EditMailTemplatesViewModel) =>
-                    new EditMailTemplatesViewModel(_dialogService, _messageBroker, navigationService) as T,
+                    new EditMailTemplatesViewModel(_templateRepository, _dialogService, _messageBroker, navigationService) as T,
 
 
 
