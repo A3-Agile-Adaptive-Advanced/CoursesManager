@@ -1162,7 +1162,8 @@
     </Style>
 
     <Style x:Key="ToastMessage" TargetType="Border">
-        <Setter Property="Width" Value="600"/>
+        <Setter Property="Width" Value="500"/>
+        <Setter Property="Height" Value="0"/>
         <Setter Property="Effect">
             <Setter.Value>
                 <DropShadowEffect Color="Black" Opacity="0.3" BlurRadius="6" ShadowDepth="3" />
@@ -1170,7 +1171,7 @@
         </Setter>
         <Setter Property="RenderTransform">
             <Setter.Value>
-                <TranslateTransform X="0" />
+                <ScaleTransform ScaleY="1"/>
             </Setter.Value>
         </Setter>
         <Style.Triggers>
@@ -1178,29 +1179,21 @@
                 <DataTrigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
-                            <DoubleAnimation
-                            Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)"
-                            From="0"
-                            To="600"
-                            Duration="0:0:3" />
+                            <DoubleAnimation Storyboard.TargetProperty="Height"
+                                                     From="0" To="60" Duration="0:0:0.3"/>
                         </Storyboard>
                     </BeginStoryboard>
                 </DataTrigger.EnterActions>
-
                 <DataTrigger.ExitActions>
                     <BeginStoryboard>
                         <Storyboard>
-                            <DoubleAnimation
-                            Storyboard.TargetProperty="RenderTransform.(TranslateTransform.X)"
-                            From="600"
-                            To="0"
-                            Duration="0:0:3" />
+                            <DoubleAnimation Storyboard.TargetProperty="Height"
+                                                     From="60" To="0" Duration="0:0:0.3"/>
                         </Storyboard>
                     </BeginStoryboard>
                 </DataTrigger.ExitActions>
             </DataTrigger>
         </Style.Triggers>
     </Style>
-
 
 </ResourceDictionary>

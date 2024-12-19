@@ -184,6 +184,10 @@ public class MainWindowViewModel : ViewModelWithNavigation
     {
         ToastText = message.NotificationText;
         ErrorDisplayed = message.SetVisibillity;
+        await Task.Delay(5000);
+        ToastText = string.Empty;
+        ErrorDisplayed = false;
+        await Task.Delay(1000);
     }
 
     private static BitmapImage LoadImage(string relativePath)

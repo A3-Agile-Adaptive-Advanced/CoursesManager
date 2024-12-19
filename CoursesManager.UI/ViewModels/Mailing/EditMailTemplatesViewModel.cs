@@ -83,22 +83,21 @@ namespace CoursesManager.UI.ViewModels.Mailing
 
             if (invalidPlaceholders != null && invalidPlaceholders.Count != 0)
             {
-                _messageBroker.Publish(new ToastNotificationMessage(true, "1 of meerdere placeholders zijn incorrect."));
                 ReUploadTextWithErrorFormatting(convertedText, invalidPlaceholders);
-                await Task.Delay(5000);
-                _messageBroker.Publish(new ToastNotificationMessage(false, string.Empty));
-
-                return;
+                _messageBroker.Publish(new ToastNotificationMessage(true, "1 of meerdere placeholders zijn incorrect."));
             }
-            string updatedHtmlString = UpdateTemplateBody(convertedText);
+            else
+            {
+                string updatedHtmlString = UpdateTemplateBody(convertedText);
 
-            Template.HtmlString = updatedHtmlString;
-            try
-            {
-                _templateRepository.UpdateTemplate(Template);
-            }
-            catch (Exception ex)
-            {
+                Template.HtmlString = updatedHtmlString;
+                try
+                {
+                    _templateRepository.UpdateTemplate(Template);
+                }
+                catch (Exception ex)
+                {
+                }
             }
         }
 

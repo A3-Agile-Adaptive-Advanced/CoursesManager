@@ -99,9 +99,9 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    
-                    <Border x:Name="ToastMessage" BorderBrush="Transparent" Background="Transparent" Grid.Column="1" Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Right" Height="60">
-                        <Grid Visibility="{Binding ErrorDisplayed, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Hidden}" Background="White">
+
+                    <Border x:Name="ToastMessage" BorderBrush="Transparent" Background="Transparent" Grid.Column="1" Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Right" Style="{StaticResource ToastMessage}">
+                        <Grid Background="White">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="60"/>
                                 <ColumnDefinition Width="*"/>
