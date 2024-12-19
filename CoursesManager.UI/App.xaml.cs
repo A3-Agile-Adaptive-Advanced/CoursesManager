@@ -24,6 +24,7 @@ using CoursesManager.UI.ViewModels.Courses;
 using CoursesManager.UI.ViewModels.Mailing;
 using CoursesManager.UI.Repositories.TemplateRepository;
 using CoursesManager.UI.Mailing;
+using CoursesManager.UI.Repositories.CertificateRepository;
 
 namespace CoursesManager.UI;
 
@@ -44,6 +45,7 @@ public partial class App : Application
     public static IAddressRepository AddressRepository { get; private set; }
 
     public static ITemplateRepository TemplateRepository { get; private set; }
+    public static ICertificateRepository CertificateRepository { get; private set; }
 
     public static INavigationService NavigationService { get; set; } = new NavigationService();
     public static IMessageBroker MessageBroker { get; set; } = new MessageBroker();

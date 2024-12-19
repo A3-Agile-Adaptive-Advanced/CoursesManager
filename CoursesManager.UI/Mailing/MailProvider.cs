@@ -1,8 +1,11 @@
 ﻿using CoursesManager.MVVM.Mail;
 using CoursesManager.UI.Models;
+using CoursesManager.UI.Repositories.CertificateRepository;
 using CoursesManager.UI.Repositories.RegistrationRepository;
 using CoursesManager.UI.Repositories.TemplateRepository;
 using DinkToPdf;
+using iText.Html2pdf;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Mail;
 
@@ -14,42 +17,30 @@ namespace CoursesManager.UI.Mailing
     {
         //service classes
         private readonly MailService mailService = new MailService();
-        private readonly RegistrationRepository registrationRepository = new RegistrationRepository();
-        private readonly TemplateRepository templateRepository = new TemplateRepository();
+        private readonly IRegistrationRepository registrationRepository = new RegistrationRepository();
+        private readonly ITemplateRepository templateRepository = new TemplateRepository();
+        private readonly ICertificateRepository certificateRepository = new CertificateRepository();
 
         // private attributes
-        private List<Registration> courseRegistrations = new List<Registration>();
-        private List<MailResult> mailResults = new List<MailResult>();
+        private List<Registration> courseRegistrations = new();
+        private List<MailResult> mailResults = new();
+
 
         public byte[] GeneratePDF(Course course, Student student)
         {
-            string htmlContent = templateRepository.GetTemplateByName("Certificate").HtmlString;
+            Template template = templateRepository.GetTemplateByName("Certificate");
 
-            htmlContent = htmlContent
-                .Replace("[Cursus naam]", course.Name)
-                .Replace("[Student naam]", $"{student.FirstName} {student.LastName}")
-                .Replace("[Datum behalen cursus]", course.EndDate.ToString("yyyy-MM-dd"));
-
-            var converter = new SynchronizedConverter(new PdfTools());
-            var doc = new HtmlToPdfDocument
-            {
-                GlobalSettings = new GlobalSettings
-                {
-                    ColorMode = ColorMode.Color,
-                    Orientation = DinkToPdf.Orientation.Portrait,
-                    PaperSize = PaperKind.A4,
-                }
-            };
-
-            doc.Objects.Add(new ObjectSettings
-            {
-                HtmlContent = htmlContent,
-                WebSettings = { DefaultEncoding = "utf-8" }
-            });
+            template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
 
             try
             {
-                return converter.Convert(doc);
+                using (var memoryStream = new MemoryStream())
+                {
+                    HtmlConverter.ConvertToPdf(template.HtmlString, memoryStream);
+                    saveCertificate(template, course, student);
+                    return memoryStream.ToArray();
+                }
+
             }
             catch (Exception ex)
             {
@@ -66,10 +57,14 @@ namespace CoursesManager.UI.Mailing
                 Template originalTemplate = templateRepository.GetTemplateByName("CertificateMail");
                 foreach (Student student in course.Students)
                 {
-                    //byte[] certificate = GeneratePDF(course, student);
-                    var template = originalTemplate.Copy();
-                    template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
-                    messages.Add(CreateMessage("jarnogerrets@gmail.com", template.SubjectString, template.HtmlString, null));
+                    Registration registration = student.Registrations.FirstOrDefault(r => r.CourseId == course.Id);
+                    if (registration.IsAchieved)
+                    {
+                        byte[] certificate = GeneratePDF(course, student);
+                        var template = originalTemplate.Copy();
+                        template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
+                        messages.Add(CreateMessage("jarnogerrets@gmail.com", template.SubjectString, template.HtmlString, certificate));
+                    }
                 }
                 if (messages.Any())
                 {
@@ -164,16 +159,22 @@ namespace CoursesManager.UI.Mailing
 
             if (certificate != null)
             {
-                foreach (var certBytes in certificate)
-                {
-                    // Convert byte array to MemoryStream and create an attachment
-                    using var stream = new MemoryStream(certBytes);
-                    var attachment = new Attachment(stream, "certificate.pdf", "application/pdf");
-                    message.Attachments.Add(attachment);
-                }
+                var stream = new MemoryStream(certificate);
+                var attachment = new Attachment(stream, "certificate.pdf", "application/pdf");
+                message.Attachments.Add(attachment);
             }
-
             return message;
+        }
+
+        private void saveCertificate(Template template, Course course, Student student)
+        {
+            Certificate certificate = new();
+            certificate.PdfString = template.HtmlString;
+            certificate.StudentCode = student.Id;
+            certificate.CourseCode = course.Code;
+
+            certificateRepository.Add(certificate);
+
         }
     }
 }
