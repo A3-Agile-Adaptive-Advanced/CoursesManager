@@ -100,7 +100,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
                 {
                     _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden", ToastType.Error));
                 }
-                _messageBroker.Publish(new ToastNotificationMessage(true, "Template opgeslagen", ToastType.Warning));
+                _messageBroker.Publish(new ToastNotificationMessage(true, "Template opgeslagen", ToastType.Confirmation));
             }
         }
 

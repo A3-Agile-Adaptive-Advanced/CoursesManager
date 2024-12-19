@@ -1162,7 +1162,6 @@
     </Style>
 
     <Style x:Key="ToastMessage" TargetType="Border">
-        <Setter Property="Width" Value="500"/>
         <Setter Property="Height" Value="0"/>
         <Setter Property="Effect">
             <Setter.Value>
