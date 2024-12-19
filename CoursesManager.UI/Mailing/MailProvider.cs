@@ -1,5 +1,4 @@
-﻿using CoursesManager.MVVM.Exceptions;
-using CoursesManager.MVVM.Mail;
+﻿using CoursesManager.MVVM.Mail;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.RegistrationRepository;
 using CoursesManager.UI.Repositories.TemplateRepository;
@@ -27,9 +26,9 @@ namespace CoursesManager.UI.Mailing
             string htmlContent = templateRepository.GetTemplateByName("Certificate").HtmlString;
 
             htmlContent = htmlContent
-                .Replace("{{Cursus naam}}", course.Name)
-                .Replace("{{Student naam}}", $"{student.FirstName} {student.LastName}")
-                .Replace("{{Datum behalen cursus}}", course.EndDate.ToString("yyyy-MM-dd"));
+                .Replace("[Cursus naam]", course.Name)
+                .Replace("[Student naam]", $"{student.FirstName} {student.LastName}")
+                .Replace("[Datum behalen cursus]", course.EndDate.ToString("yyyy-MM-dd"));
 
             var converter = new SynchronizedConverter(new PdfTools());
             var doc = new HtmlToPdfDocument
@@ -69,7 +68,7 @@ namespace CoursesManager.UI.Mailing
                 {
                     //byte[] certificate = GeneratePDF(course, student);
                     var template = originalTemplate.Copy();
-                    template.HtmlString = FillTemplate(template.HtmlString, $"{student.FirstName} {student.LastName}", course.Name, null);
+                    template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
                     messages.Add(CreateMessage("jarnogerrets@gmail.com", template.SubjectString, template.HtmlString, null));
                 }
                 if (messages.Any())
@@ -96,7 +95,7 @@ namespace CoursesManager.UI.Mailing
                 foreach (Student student in course.Students)
                 {
                     var template = originalTemplate.Copy();
-                    template.HtmlString = FillTemplate(template.HtmlString, $"{student.FirstName} {student.LastName}", course.Name, null);
+                    template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
                     messages.Add(CreateMessage("jarnogerrets@gmail.com", template.SubjectString, template.HtmlString, null));
                 }
                 if (messages.Any())
@@ -126,7 +125,7 @@ namespace CoursesManager.UI.Mailing
                     {
                         Student student = course.Students.FirstOrDefault(s => s.Id == registration.StudentId);
                         var template = originalTemplate.Copy();
-                        template.HtmlString = FillTemplate(template.HtmlString, $"{student.FirstName} {student.LastName}", course.Name, $"https://tinyurl.com/CourseManager/{student.Id}");
+                        template.HtmlString = FillTemplate(template.HtmlString, student, course, $"https://tinyurl.com/CourseManager/{student.Id}");
                         messages.Add(CreateMessage("jarnogerrets@gmail.com", template.SubjectString, template.HtmlString, null));
                     }
                 }
@@ -144,10 +143,10 @@ namespace CoursesManager.UI.Mailing
             }
         }
 
-        private string FillTemplate(string template, string name, string courseName, string? URL)
+        private string FillTemplate(string template, Student student, Course course, string? URL)
         {
-            template = template.Replace("[Naam]", name);
-            template = template.Replace("[Cursusnaam]", courseName);
+            template = course.ReplaceCoursePlaceholders(template, course);
+            template = student.ReplaceStudentPlaceholders(template, student);
             if (URL != null)
             {
                 template = template.Replace("[Betaal Link]", URL);

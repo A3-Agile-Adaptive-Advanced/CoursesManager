@@ -1,20 +1,17 @@
 ﻿using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Data;
 using CoursesManager.MVVM.Dialogs;
-using CoursesManager.MVVM.Mail.MailService;
 using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Dialogs.ViewModels;
+using CoursesManager.UI.Enums;
 using CoursesManager.UI.Mailing;
-using CoursesManager.UI.Messages;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Repositories.RegistrationRepository;
 using CoursesManager.UI.Repositories.StudentRepository;
-using CoursesManager.UI.ViewModels.Students;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Windows.Input;
 
 namespace CoursesManager.UI.ViewModels.Courses
@@ -75,7 +72,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             private set => SetProperty(ref _studentPayments, value);
         }
 
-        public CourseOverViewViewModel(IStudentRepository studentRepository, IRegistrationRepository registrationRepository, ICourseRepository courseRepository, IDialogService dialogService, IMessageBroker messageBroker, INavigationService navigationService) : base(navigationService)
+        public CourseOverViewViewModel(IStudentRepository studentRepository, IRegistrationRepository registrationRepository, ICourseRepository courseRepository, IDialogService dialogService, IMessageBroker messageBroker, INavigationService navigationService, IMailProvider mailProvider) : base(navigationService)
         {
             _studentRepository = studentRepository ?? throw new ArgumentNullException(nameof(studentRepository));
             _registrationRepository = registrationRepository ?? throw new ArgumentNullException(nameof(registrationRepository));
@@ -83,7 +80,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             _courseRepository = courseRepository;
             _dialogService = dialogService;
             _messageBroker = messageBroker;
-            _mailProvider = new MailProvider();
+            _mailProvider = mailProvider;
 
             ChangeCourseCommand = new RelayCommand(ChangeCourse);
             DeleteCourseCommand = new RelayCommand(DeleteCourse);
@@ -91,7 +88,6 @@ namespace CoursesManager.UI.ViewModels.Courses
             PaymentMailCommand = new RelayCommand(SendPaymentMail);
             StartCourseMailCommand = new RelayCommand(SendStartCourseMail);
             CertificateMailCommand = new RelayCommand(SendCertificateMail);
-
 
             LoadCourseData();
 
@@ -215,16 +211,19 @@ namespace CoursesManager.UI.ViewModels.Courses
         public async void SendPaymentMail()
         {
             await _mailProvider.SendPaymentNotifications(CurrentCourse);
+            _messageBroker.Publish(new ToastNotificationMessage(true, "Email verstuurd", ToastType.Confirmation));
         }
 
-        public async void SendStartCourseMail()
+            public async void SendStartCourseMail()
         {
            await _mailProvider.SendCourseStartNotifications(CurrentCourse);
+            _messageBroker.Publish(new ToastNotificationMessage(true, "Email verstuurd", ToastType.Confirmation));
         }
 
         public async void SendCertificateMail()
         {
             await _mailProvider.SendCertificates(CurrentCourse);
+            _messageBroker.Publish(new ToastNotificationMessage(true, "Email verstuurd", ToastType.Confirmation));
         }
 
         private async void ChangeCourse()
