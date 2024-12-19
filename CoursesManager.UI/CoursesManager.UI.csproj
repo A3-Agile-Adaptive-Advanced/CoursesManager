@@ -42,6 +42,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="DinkToPdf" Version="1.0.8" />
+		<PackageReference Include="itext7" Version="9.0.0" />
+		<PackageReference Include="itext7.bouncy-castle-adapter" Version="9.0.0" />
+		<PackageReference Include="itext7.pdfhtml" Version="6.0.0" />
 		<PackageReference Include="MaterialDesignThemes" Version="5.1.0" />
 		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
 		<PackageReference Include="Mysql.Data" Version="9.1.0" />

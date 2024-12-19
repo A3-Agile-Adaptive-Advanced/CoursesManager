@@ -1,12 +1,13 @@
 ﻿using CoursesManager.MVVM.Commands;
+using CoursesManager.MVVM.Data;
 using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
-using System.Windows.Input;
-using CoursesManager.MVVM.Data;
+using CoursesManager.UI.Enums;
 using CoursesManager.UI.Messages;
+using CoursesManager.UI.ViewModels.Mailing;
 using CoursesManager.UI.ViewModels.Students;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using System;
 
 namespace CoursesManager.UI.ViewModels;
 
@@ -28,9 +29,12 @@ public class MainWindowViewModel : ViewModelWithNavigation
     public ICommand MouseLeaveBorderCommand { get; private set; }
     public ICommand GoToStudentManagementView { get; private set; }
     public ICommand GoToCourseManagementView { get; private set; }
-
     public ICommand GoToConfigurationView { get; private set; }
+    public ICommand GotoTemplateView { get; private set; }
 
+    private CancellationTokenSource _toastCancellationTokenSource;
+    private bool _isToastProcessing = false;
+    private ToastNotificationMessage _nextMessage = null;
     public BitmapImage BackgroundImage { get; private set; }
 
     private INavigationService _navigationService;
@@ -73,12 +77,38 @@ public class MainWindowViewModel : ViewModelWithNavigation
         set => SetProperty(ref _isDialogOpen, value);
     }
 
+    private static bool _toastDisplayed;
+    public bool ToastDisplayed
+    {
+        get => _toastDisplayed;
+        set => SetProperty(ref _toastDisplayed, value);
+    }
+
+    private string _toastText;
+    public string ToastText
+    {
+        get => _toastText;
+        set => SetProperty(ref _toastText, value);
+    }
+
+    private ToastType _toastType;
+    public ToastType ToastType
+    {
+        get => _toastType;
+        set
+        {
+            _toastType = value;
+            OnPropertyChanged(nameof(ToastType));
+        }
+    }
+
     public MainWindowViewModel(INavigationService navigationService, IMessageBroker messageBroker) : base(navigationService)
     {
         BackgroundImage = LoadImage($"Resources/Images/CourseManagerA3.png");
         _navigationService = navigationService;
         _messageBroker = messageBroker;
         _messageBroker.Subscribe<OverlayActivationMessage, MainWindowViewModel>(OverlayActivationHandler, this);
+        _messageBroker.Subscribe<ToastNotificationMessage, MainWindowViewModel>(ShowToastNotification, this);
 
         CloseCommand = new RelayCommand(() =>
         {
@@ -138,6 +168,11 @@ public class MainWindowViewModel : ViewModelWithNavigation
             NavigationService.NavigateTo<ConfigurationViewModel>();
             IsSidebarHidden = false;
         }, () => INavigationService.CanNavigate);
+        GotoTemplateView = new RelayCommand(() =>
+        {
+            NavigationService.NavigateTo<EditMailTemplatesViewModel>();
+            IsSidebarHidden = false;
+        }, () => INavigationService.CanNavigate);
 
     }
 
@@ -154,10 +189,56 @@ public class MainWindowViewModel : ViewModelWithNavigation
         }
     }
 
-    private async void OverlayActivationHandler(OverlayActivationMessage obj)
+    private async void OverlayActivationHandler(OverlayActivationMessage message)
     {
-        OverlayActivationMessage overlayActivationMessage = obj as OverlayActivationMessage;
-        IsDialogOpen = overlayActivationMessage.IsVisible;
+        IsDialogOpen = message.IsVisible;
+    }
+
+    private async void ShowToastNotification(ToastNotificationMessage message)
+    {
+
+        if (_isToastProcessing)
+        {
+            _nextMessage = message;
+            _toastCancellationTokenSource?.Cancel();
+            return;
+        }
+
+        _isToastProcessing = true;
+        _nextMessage = null;
+        _toastCancellationTokenSource = new CancellationTokenSource();
+        var token = _toastCancellationTokenSource.Token;
+
+        try
+        {
+            ToastText = message.NotificationText;
+            ToastDisplayed = message.SetVisibillity;
+            ToastType = message.ToastType;
+
+            await Task.Delay(5000, token);
+        }
+        catch (TaskCanceledException)
+        {
+        }
+
+        ToastDisplayed = false;
+
+            await Task.Delay(1000);
+        
+            ToastText = string.Empty;
+            ToastType = ToastType.None;
+
+            if (_toastCancellationTokenSource?.Token == token)
+            {
+                _toastCancellationTokenSource.Dispose();
+                _toastCancellationTokenSource = null;
+            }
+            _isToastProcessing = false;
+
+        if (_nextMessage != null)
+        {
+            ShowToastNotification(_nextMessage);
+        }
     }
 
     private static BitmapImage LoadImage(string relativePath)

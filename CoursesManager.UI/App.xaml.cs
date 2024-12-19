@@ -21,6 +21,10 @@ using CoursesManager.UI.Repositories.AddressRepository;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Service;
 using CoursesManager.UI.ViewModels.Courses;
+using CoursesManager.UI.ViewModels.Mailing;
+using CoursesManager.UI.Repositories.TemplateRepository;
+using CoursesManager.UI.Mailing;
+using CoursesManager.UI.Repositories.CertificateRepository;
 
 namespace CoursesManager.UI;
 
@@ -40,9 +44,13 @@ public partial class App : Application
     public static IStudentRepository StudentRepository { get; private set; }
     public static IAddressRepository AddressRepository { get; private set; }
 
+    public static ITemplateRepository TemplateRepository { get; private set; }
+    public static ICertificateRepository CertificateRepository { get; private set; }
+
     public static INavigationService NavigationService { get; set; } = new NavigationService();
     public static IMessageBroker MessageBroker { get; set; } = new MessageBroker();
     public static IDialogService DialogService { get; set; } = new DialogService();
+    public static IMailProvider MailProvider { get; set; } = new MailProvider();
 
     public static IConfigurationService ConfigurationService { get; set; } = new ConfigurationService(new EncryptionService("SmpjQzNZMWdCdW11bTlER2owdFRzOHIzQUpWWmhYQ0U="));
 
@@ -68,9 +76,11 @@ public partial class App : Application
             RegistrationRepository,
             StudentRepository,
             AddressRepository,
+            TemplateRepository,
             MessageBroker,
             DialogService,
-            ConfigurationService);
+            ConfigurationService,
+            MailProvider);
 
         // Register ViewModel
 
@@ -96,30 +106,8 @@ public partial class App : Application
         StudentRepository = new StudentRepository();
         RegistrationRepository = new RegistrationRepository();
         AddressRepository = new AddressRepository();
+        TemplateRepository = new TemplateRepository();
         LocationRepository = new LocationRepository();
-    }
-
-    private static void SetupDummyDataTemporary()
-    {
-        //This is a temporary static class that will hold all the data that is used in the application.
-        //This is a temporary solution until we have a database.
-        Students = DummyDataGenerator.GenerateStudents(60);
-        Courses = DummyDataGenerator.GenerateCourses(30);
-        Registrations = DummyDataGenerator.GenerateRegistrations(Students, Courses);
-        //Registrations = DummyDataGenerator.GenerateRegistrationBetter(Courses, Students);
-        Locations = DummyDataGenerator.GenerateLocations(15);
-
-
-        foreach (var registration in Registrations)
-        {
-            registration.Student = Students.FirstOrDefault(s => s.Id == registration.StudentId);
-            registration.Course = Courses.FirstOrDefault(c => c.Id == registration.CourseId);
-        }
-
-        foreach (var course in Courses)
-        {
-            course.Location = Locations.FirstOrDefault(s => s.Id == course.LocationId);
-        }
     }
 
     private void RegisterDialogs()
@@ -147,6 +135,7 @@ public partial class App : Application
                 DialogService
             ));
 
+        DialogService.RegisterDialog<TemplatePreviewDialogViewModel, TemplatePreviewDialogWindow, DialogResultType>((initial) => new  TemplatePreviewDialogViewModel(initial, MessageBroker));
 
         DialogService.RegisterDialog<CourseDialogViewModel, CourseDialogWindow, Course>((initial) => new CourseDialogViewModel(CourseRepository, DialogService, LocationRepository, initial));
     }
@@ -162,6 +151,8 @@ public partial class App : Application
         INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<CourseOverViewViewModel>(nav));
 
         INavigationService.RegisterViewModelFactory(() => viewModelFactory.CreateViewModel<ConfigurationViewModel>());
+
+        INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<EditMailTemplatesViewModel>(nav));
 
     }
 

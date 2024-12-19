@@ -8,6 +8,7 @@ using CoursesManager.MVVM.Mail.MailService;
 using CoursesManager.MVVM.Mail;
 using ZstdSharp.Unsafe;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 
 public class MailService
 {
@@ -44,6 +45,7 @@ public class MailService
         }
         catch (Exception ex)
         {
+            Debug.WriteLine(ex);
             return new MailResult
             {
                 Outcome = MailOutcome.Failure,
