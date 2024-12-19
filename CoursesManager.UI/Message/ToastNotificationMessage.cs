@@ -1,4 +1,5 @@
-﻿using CoursesManager.UI.Messages;
+﻿using CoursesManager.UI.Enums;
+using CoursesManager.UI.Messages;
 using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
@@ -12,9 +13,9 @@ namespace CoursesManager.MVVM.Messages
     {
         public bool SetVisibillity { get; set; }
         public string NotificationText { get; set; }
-        public System.Enum ToastType { get; set; }
+        public ToastType ToastType { get; set; }
 
-        public ToastNotificationMessage(bool setVisibillity, string notificationText, System.Enum toastType)
+        public ToastNotificationMessage(bool setVisibillity, string notificationText, ToastType toastType)
         {
             SetVisibillity = setVisibillity;
             NotificationText = notificationText;

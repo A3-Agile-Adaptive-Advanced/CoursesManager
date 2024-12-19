@@ -8,8 +8,7 @@ namespace CoursesManager.UI.Repositories.TemplateRepository
         private readonly TemplateDataAccess _templateDataAccess;
         public TemplateRepository() 
         {
-            TemplateDataAccess templateDataAccess = new TemplateDataAccess();
-            _templateDataAccess = templateDataAccess;
+            _templateDataAccess = new TemplateDataAccess();
         }
 
         public Template GetTemplateByName(string name)
@@ -24,7 +23,7 @@ namespace CoursesManager.UI.Repositories.TemplateRepository
             }
         }
 
-        public void UpdateTemplate(Template template)
+        public void Update(Template template)
         {
             try
             {
@@ -62,11 +61,6 @@ namespace CoursesManager.UI.Repositories.TemplateRepository
         }
 
         public List<Template> RefreshAll()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Update(Template data)
         {
             throw new NotImplementedException();
         }

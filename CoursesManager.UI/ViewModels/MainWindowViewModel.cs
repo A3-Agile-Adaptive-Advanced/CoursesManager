@@ -195,7 +195,7 @@ public class MainWindowViewModel : ViewModelWithNavigation
     {
         ToastText = message.NotificationText;
         ErrorDisplayed = message.SetVisibillity;
-        ToastType = (ToastType)message.ToastType;
+        ToastType = message.ToastType;
         await Task.Delay(5000);
         ToastText = string.Empty;
         ToastType = ToastType.None;

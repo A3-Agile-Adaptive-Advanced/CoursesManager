@@ -94,7 +94,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
                 Template.HtmlString = updatedHtmlString;
                 try
                 {
-                    _templateRepository.UpdateTemplate(Template);
+                    _templateRepository.Update(Template);
                 }
                 catch (Exception ex)
                 {
