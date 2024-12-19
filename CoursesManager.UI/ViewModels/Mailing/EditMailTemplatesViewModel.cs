@@ -15,6 +15,7 @@ using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using CoursesManager.UI.Enums;
 
 namespace CoursesManager.UI.ViewModels.Mailing
 {
@@ -84,7 +85,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
             if (invalidPlaceholders != null && invalidPlaceholders.Count != 0)
             {
                 ReUploadTextWithErrorFormatting(convertedText, invalidPlaceholders);
-                _messageBroker.Publish(new ToastNotificationMessage(true, "1 of meerdere placeholders zijn incorrect."));
+                _messageBroker.Publish(new ToastNotificationMessage(true, "1 of meerdere placeholders zijn incorrect.", ToastType.Warning));
             }
             else
             {
@@ -97,7 +98,9 @@ namespace CoursesManager.UI.ViewModels.Mailing
                 }
                 catch (Exception ex)
                 {
+                    _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden", ToastType.Error));
                 }
+                _messageBroker.Publish(new ToastNotificationMessage(true, "Template opgeslagen", ToastType.Warning));
             }
         }
 

@@ -1,13 +1,13 @@
 ﻿using CoursesManager.MVVM.Commands;
+using CoursesManager.MVVM.Data;
 using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
-using System.Windows.Input;
-using CoursesManager.MVVM.Data;
+using CoursesManager.UI.Enums;
 using CoursesManager.UI.Messages;
-using CoursesManager.UI.ViewModels.Students;
-using System.Windows.Media.Imaging;
-using System;
 using CoursesManager.UI.ViewModels.Mailing;
+using CoursesManager.UI.ViewModels.Students;
+using System.Windows.Input;
+using System.Windows.Media.Imaging;
 
 namespace CoursesManager.UI.ViewModels;
 
@@ -86,6 +86,17 @@ public class MainWindowViewModel : ViewModelWithNavigation
     {
         get => _toastText;
         set => SetProperty(ref _toastText, value);
+    }
+
+    private ToastType _toastType;
+    public ToastType ToastType
+    {
+        get => _toastType;
+        set
+        {
+            _toastType = value;
+            OnPropertyChanged(nameof(ToastType));
+        }
     }
 
     public MainWindowViewModel(INavigationService navigationService, IMessageBroker messageBroker) : base(navigationService)
@@ -184,8 +195,10 @@ public class MainWindowViewModel : ViewModelWithNavigation
     {
         ToastText = message.NotificationText;
         ErrorDisplayed = message.SetVisibillity;
+        ToastType = (ToastType)message.ToastType;
         await Task.Delay(5000);
         ToastText = string.Empty;
+        ToastType = ToastType.None;
         ErrorDisplayed = false;
         await Task.Delay(1000);
     }

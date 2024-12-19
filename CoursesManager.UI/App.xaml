@@ -56,7 +56,7 @@
 
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></converters:BoolToVisibilityConverter>
             <converters:StartDateToBooleanConverter x:Key="StartDateToBooleanConverter"></converters:StartDateToBooleanConverter>
-            <converters:ToastTypeToVisibillity x:Key="ToastTypeToVisibilityConverter"></converters:ToastTypeToVisibillity>
+            <converters:ToastTypeToVisibility x:Key="ToastTypeToVisibilityConverter"></converters:ToastTypeToVisibility>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

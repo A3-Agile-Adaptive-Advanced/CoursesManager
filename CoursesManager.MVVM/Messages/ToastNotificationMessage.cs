@@ -12,20 +12,23 @@ namespace CoursesManager.MVVM.Messages
     {
         public bool SetVisibillity { get; set; }
         public string NotificationText { get; set; }
+        public System.Enum ToastType { get; set; }
 
-        public ToastNotificationMessage(bool setVisibillity, string notificationText)
+        public ToastNotificationMessage(bool setVisibillity, string notificationText, System.Enum toastType)
         {
             SetVisibillity = setVisibillity;
             NotificationText = notificationText;
+            ToastType = toastType;
         }
 
 
         public override ToastNotificationMessage Clone()
         {
-            return new ToastNotificationMessage(SetVisibillity, NotificationText)
+            return new ToastNotificationMessage(SetVisibillity, NotificationText, ToastType)
             {
                 SetVisibillity = SetVisibillity,
                 NotificationText = NotificationText,
+                ToastType = ToastType,
                 MessageId = MessageId,
                 TimeStamp = new(TimeStamp.Ticks)
             };
