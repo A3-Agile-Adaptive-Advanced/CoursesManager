@@ -23,6 +23,7 @@ using CoursesManager.UI.Service;
 using CoursesManager.UI.ViewModels.Courses;
 using CoursesManager.UI.ViewModels.Mailing;
 using CoursesManager.UI.Repositories.TemplateRepository;
+using CoursesManager.UI.Mailing;
 
 namespace CoursesManager.UI;
 
@@ -47,6 +48,7 @@ public partial class App : Application
     public static INavigationService NavigationService { get; set; } = new NavigationService();
     public static IMessageBroker MessageBroker { get; set; } = new MessageBroker();
     public static IDialogService DialogService { get; set; } = new DialogService();
+    public static IMailProvider MailProvider { get; set; } = new MailProvider();
 
     public static IConfigurationService ConfigurationService { get; set; } = new ConfigurationService(new EncryptionService("SmpjQzNZMWdCdW11bTlER2owdFRzOHIzQUpWWmhYQ0U="));
 
@@ -75,7 +77,8 @@ public partial class App : Application
             TemplateRepository,
             MessageBroker,
             DialogService,
-            ConfigurationService);
+            ConfigurationService,
+            MailProvider);
 
         // Register ViewModel
 

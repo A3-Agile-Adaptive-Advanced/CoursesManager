@@ -72,7 +72,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             private set => SetProperty(ref _studentPayments, value);
         }
 
-        public CourseOverViewViewModel(IStudentRepository studentRepository, IRegistrationRepository registrationRepository, ICourseRepository courseRepository, IDialogService dialogService, IMessageBroker messageBroker, INavigationService navigationService) : base(navigationService)
+        public CourseOverViewViewModel(IStudentRepository studentRepository, IRegistrationRepository registrationRepository, ICourseRepository courseRepository, IDialogService dialogService, IMessageBroker messageBroker, INavigationService navigationService, IMailProvider mailProvider) : base(navigationService)
         {
             _studentRepository = studentRepository ?? throw new ArgumentNullException(nameof(studentRepository));
             _registrationRepository = registrationRepository ?? throw new ArgumentNullException(nameof(registrationRepository));
@@ -80,7 +80,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             _courseRepository = courseRepository;
             _dialogService = dialogService;
             _messageBroker = messageBroker;
-            _mailProvider = new MailProvider();
+            _mailProvider = mailProvider;
 
             ChangeCourseCommand = new RelayCommand(ChangeCourse);
             DeleteCourseCommand = new RelayCommand(DeleteCourse);

@@ -29,6 +29,7 @@ namespace CoursesManager.UI.Factory
         private readonly IMessageBroker _messageBroker;
         private readonly IDialogService _dialogService;
         private readonly IConfigurationService _configurationService;
+        private readonly IMailProvider _mailProvider;
 
 
         public ViewModelFactory(
@@ -40,7 +41,8 @@ namespace CoursesManager.UI.Factory
             ITemplateRepository templateRepository,
             IMessageBroker messageBroker,
             IDialogService dialogService,
-            IConfigurationService configurationService)
+            IConfigurationService configurationService,
+            IMailProvider mailProvider)
         {
             _courseRepository = courseRepository;
             _locationRepository = locationRepository;
@@ -51,7 +53,7 @@ namespace CoursesManager.UI.Factory
             _messageBroker = messageBroker;
             _dialogService = dialogService;
             _configurationService = configurationService;
-
+            _mailProvider = mailProvider;
         }
 
         public T CreateViewModel<T>(object? parameter = null) where T : class
@@ -72,7 +74,7 @@ namespace CoursesManager.UI.Factory
             return typeof(T) switch
             {
                 Type vmType when vmType == typeof(CourseOverViewViewModel) =>
-                    new CourseOverViewViewModel(_studentRepository, _registrationRepository, _courseRepository, _dialogService, _messageBroker, navigationService) as T,
+                    new CourseOverViewViewModel(_studentRepository, _registrationRepository, _courseRepository, _dialogService, _messageBroker, navigationService, _mailProvider) as T,
                 Type vmType when vmType == typeof(StudentManagerViewModel) =>
                     new StudentManagerViewModel(_dialogService, _studentRepository, _courseRepository,
                         _registrationRepository, _messageBroker, navigationService) as T,
