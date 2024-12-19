@@ -83,10 +83,7 @@ namespace CoursesManager.UI.DataAccess
                     throw new ArgumentNullException(nameof(student.Address), "Student address cannot be null.");
                 }
 
-                _addressDataAccess.Add(student.Address);
-
-                // Get the newly created address ID
-                int addressId = _addressDataAccess.GetLastInsertedId();
+                int addressId = _addressDataAccess.Add(student.Address);
 
                 string procedureName = StoredProcedures.AddStudent;
                 var parameters = new MySqlParameter[]
@@ -104,9 +101,7 @@ namespace CoursesManager.UI.DataAccess
                     new MySqlParameter("@p_date_of_birth", student.DateOfBirth)
                 };
 
-                ExecuteNonProcedure(procedureName, parameters);
-
-                int studentId = GetLastInsertedId();
+                int studentId =  ExecuteNonProcedure(procedureName, parameters);
 
                 if (student.Registrations != null)
                 {
