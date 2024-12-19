@@ -168,7 +168,8 @@ namespace CoursesManager.UI.Models
                 { "[Cursus locatie stad]", course.Location?.Address?.City ?? "Geen stad" },
                 { "[Cursus locatie straat]", course.Location?.Address?.Street ?? "Geen straat" },
                 { "[Cursus locatie huisnummer]", course.Location?.Address?.HouseNumber ?? "Geen huisnummer" },
-                { "[Cursus locatie toevoeging]", course.Location?.Address?.HouseNumberExtension ?? "Geen toevoeging" }
+                { "[Cursus locatie toevoeging]", course.Location?.Address?.HouseNumberExtension ?? "Geen toevoeging" },
+                { "[Betaal link]", "Betaal link"}
             };
 
             foreach (var placeholder in placeholders)

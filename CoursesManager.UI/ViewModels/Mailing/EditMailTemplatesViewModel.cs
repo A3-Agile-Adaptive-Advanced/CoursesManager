@@ -161,6 +161,8 @@ namespace CoursesManager.UI.ViewModels.Mailing
             "[Cursus locatie huisnummer]",
             "[Cursus locatie toevoeging]",
 
+            "[Betaal link]",
+
             "[Cursist naam]",
             "[Cursist email]",
             "[Cursist telefoonnummer]",
