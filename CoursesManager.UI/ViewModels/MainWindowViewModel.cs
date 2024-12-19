@@ -32,6 +32,9 @@ public class MainWindowViewModel : ViewModelWithNavigation
     public ICommand GoToConfigurationView { get; private set; }
     public ICommand GotoTemplateView { get; private set; }
 
+    private CancellationTokenSource _toastCancellationTokenSource;
+    private bool _isToastProcessing = false;
+    private ToastNotificationMessage _nextMessage = null;
     public BitmapImage BackgroundImage { get; private set; }
 
     private INavigationService _navigationService;
@@ -74,11 +77,11 @@ public class MainWindowViewModel : ViewModelWithNavigation
         set => SetProperty(ref _isDialogOpen, value);
     }
 
-    private static bool _errorDisplayed;
-    public bool ErrorDisplayed
+    private static bool _toastDisplayed;
+    public bool ToastDisplayed
     {
-        get => _errorDisplayed;
-        set => SetProperty(ref _errorDisplayed, value);
+        get => _toastDisplayed;
+        set => SetProperty(ref _toastDisplayed, value);
     }
 
     private string _toastText;
@@ -193,14 +196,49 @@ public class MainWindowViewModel : ViewModelWithNavigation
 
     private async void ShowToastNotification(ToastNotificationMessage message)
     {
-        ToastText = message.NotificationText;
-        ErrorDisplayed = message.SetVisibillity;
-        ToastType = message.ToastType;
-        await Task.Delay(5000);
-        ErrorDisplayed = false;
-        await Task.Delay(1000);
-        ToastText = string.Empty;
-        ToastType = ToastType.None;
+
+        if (_isToastProcessing)
+        {
+            _nextMessage = message;
+            _toastCancellationTokenSource?.Cancel();
+            return;
+        }
+
+        _isToastProcessing = true;
+        _nextMessage = null;
+        _toastCancellationTokenSource = new CancellationTokenSource();
+        var token = _toastCancellationTokenSource.Token;
+
+        try
+        {
+            ToastText = message.NotificationText;
+            ToastDisplayed = message.SetVisibillity;
+            ToastType = message.ToastType;
+
+            await Task.Delay(5000, token);
+        }
+        catch (TaskCanceledException)
+        {
+        }
+
+        ToastDisplayed = false;
+
+            await Task.Delay(1000);
+        
+            ToastText = string.Empty;
+            ToastType = ToastType.None;
+
+            if (_toastCancellationTokenSource?.Token == token)
+            {
+                _toastCancellationTokenSource.Dispose();
+                _toastCancellationTokenSource = null;
+            }
+            _isToastProcessing = false;
+
+        if (_nextMessage != null)
+        {
+            ShowToastNotification(_nextMessage);
+        }
     }
 
     private static BitmapImage LoadImage(string relativePath)

@@ -106,13 +106,13 @@
                                 <ColumnDefinition Width="60"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Background="Orange" Visibility="{Binding ToastType, Converter={StaticResource ToastTypeToVisibilityConverter}, ConverterParameter=Warning}">
+                            <Border Grid.Column="0" Background="#FFA500" Visibility="{Binding ToastType, Converter={StaticResource ToastTypeToVisibilityConverter}, ConverterParameter=Warning}">
                                 <materialDesign:PackIcon Kind="Warning" Height="55" Width="55" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
                             </Border>
                             <Border Grid.Column="0" Background="Red" Visibility="{Binding ToastType, Converter={StaticResource ToastTypeToVisibilityConverter}, ConverterParameter=Error}">
                                 <materialDesign:PackIcon Kind="CloseCircleOutline" Height="55" Width="55" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
                             </Border>
-                            <Border Grid.Column="0" Background="LightGreen" Visibility="{Binding ToastType, Converter={StaticResource ToastTypeToVisibilityConverter}, ConverterParameter=Confirmation}">
+                            <Border Grid.Column="0" Background="#5bb450" Visibility="{Binding ToastType, Converter={StaticResource ToastTypeToVisibilityConverter}, ConverterParameter=Confirmation}">
                                 <materialDesign:PackIcon Kind="CheckCircleOutline" Height="55" Width="55" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
                             </Border>
                             <TextBlock Margin="25 0 25 0" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding ToastText}" FontSize="18" Foreground="#02008C"/>

@@ -1174,7 +1174,7 @@
             </Setter.Value>
         </Setter>
         <Style.Triggers>
-            <DataTrigger Binding="{Binding ErrorDisplayed}" Value="True">
+            <DataTrigger Binding="{Binding ToastDisplayed}" Value="True">
                 <DataTrigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
