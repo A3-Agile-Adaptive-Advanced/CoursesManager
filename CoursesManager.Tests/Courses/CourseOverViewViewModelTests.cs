@@ -3,19 +3,15 @@ using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Dialogs.ViewModels;
-using CoursesManager.UI.ViewModels.Courses;
+using CoursesManager.UI.Enums;
+using CoursesManager.UI.Mailing;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Repositories.RegistrationRepository;
 using CoursesManager.UI.Repositories.StudentRepository;
+using CoursesManager.UI.ViewModels.Courses;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.ObjectModel;
-using CoursesManager.UI.Mailing;
+using System.Diagnostics;
 
 namespace CoursesManager.Tests.Courses
 {
@@ -120,8 +116,11 @@ namespace CoursesManager.Tests.Courses
             _viewModel.DeleteCourseCommand.Execute(null);
 
             // Assert
-            _dialogServiceMock.Verify(d => d.ShowDialogAsync<ErrorDialogViewModel, DialogResultType>(
-                It.Is<DialogResultType>(dr => dr.DialogText.Contains("actieve registraties"))), Times.Once);
+            _messageBrokerMock.Verify(d => d.Publish(It.Is<ToastNotificationMessage>(msg =>
+                    msg.SetVisibillity == true &&
+                    msg.NotificationText == "Cursus heeft nog actieve registraties." &&
+                    msg.ToastType == ToastType.Error)),
+                Times.Once);
         }
 
         [Test]

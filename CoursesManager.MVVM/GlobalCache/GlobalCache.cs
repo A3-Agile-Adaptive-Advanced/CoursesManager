@@ -10,7 +10,7 @@ public class GlobalCache
     private int _InitialCapacity;
     private int _permanentItemCount;
     private readonly ConcurrentDictionary<string, LinkedListNode<CacheItem>> _cacheMap;
-    private readonly ConcurrentDictionary<string, DateTime> _usageOrder;
+    private readonly ConcurrentDictionary<string, long> _usageOrder;
     private readonly object _lock = new object();
 
     private static readonly Lazy<GlobalCache> _instance = new Lazy<GlobalCache>(() => new GlobalCache(10));
@@ -21,21 +21,24 @@ public class GlobalCache
         _InitialCapacity = capacity;
         _permanentItemCount = 0;
         _cacheMap = new ConcurrentDictionary<string, LinkedListNode<CacheItem>>();
-        _usageOrder = new ConcurrentDictionary<string, DateTime>();
+        _usageOrder = new ConcurrentDictionary<string, long>();
     }
 
     public static GlobalCache Instance => _instance.Value;
 
-    public object Get(string key)
+    public object? Get(string key)
     {
         if (!_cacheMap.ContainsKey(key))
             throw new KeyNotFoundException();
 
-        _usageOrder[key] = DateTime.Now;
+        _usageOrder[key] = DateTime.Now.Ticks;
 
         return _cacheMap[key].Value.Value;
     }
 
+    // When an item is permanent the only thing possible is to update its contents, here we check if the contents match whats already in cache. example:
+    // when the cache contains either a string or collection of strings (List<string>), you can update with a string or collections of strings.
+    // but not with a long or collection of longs (List<long>)
     public void Put(string key, object value, bool isPermanent)
     {
         ArgumentNullException.ThrowIfNull(value, nameof(value));
@@ -43,8 +46,13 @@ public class GlobalCache
         if (_cacheMap.TryGetValue(key, out var existingNode) && existingNode != null)
         {
             if (existingNode.Value.IsPermanent)
-                throw new CantBeOverwrittenException($"The item with key '{key}' is permanent and cannot be overwritten.");
-
+            {
+                if (!ShouldUpdateValue(existingNode.Value.Value, value))
+                {
+                    throw new CantBeOverwrittenException($"The item with key '{key}' is permanent and cannot be overwritten.");
+                }
+                existingNode.Value.Value = value;
+            }
             existingNode.Value = new CacheItem(key, value, existingNode.Value.IsPermanent);
         }
         else
@@ -53,8 +61,7 @@ public class GlobalCache
             _cacheMap[key] = new LinkedListNode<CacheItem>(new CacheItem(key, value, isPermanent));
         }
 
-        // Update usage timestamp
-        _usageOrder[key] = DateTime.Now;
+        _usageOrder[key] = DateTime.Now.Ticks;
     }
 
 
@@ -76,7 +83,7 @@ public class GlobalCache
 
     private void IncreaseCapacity()
     {
-        _capacity += 5;
+        _capacity += _InitialCapacity * 2;
     }
 
     private void DecreaseCapacity()
@@ -119,6 +126,30 @@ public class GlobalCache
         }
     }
 
+    // helpermethod to make sure that a permanent item can be updated but not overwritten by another (new/different) type.
+    private bool ShouldUpdateValue(object existingValue, object newValue)
+    {
+        if (existingValue is System.Collections.IEnumerable existingCollection && newValue is System.Collections.IEnumerable newCollection)
+        {
+            return CollectionsAreEqual(existingCollection, newCollection);
+        }
+        else
+        {
+            return Equals(existingValue, newValue);
+        }
+    }
+
+
+    private bool CollectionsAreEqual(System.Collections.IEnumerable collection1, System.Collections.IEnumerable collection2)
+    {
+        if (ReferenceEquals(collection1, collection2)) return true;
+
+        if (collection1 == null || collection2 == null) return false;
+
+        return (collection1.GetType() == collection2.GetType());
+
+    }
+
     private class CacheItem
     {
         public string Key { get; }
@@ -139,7 +170,7 @@ public class GlobalCache
             }
         }
     }
-    public int getCapactiy()
+    public int GetCapacity()
     {
         return _capacity;
     }

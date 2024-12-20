@@ -65,7 +65,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
 
         public string GetTemplateText(string? templateName, Template? template)
         {
-            if ( (template == null && string.IsNullOrEmpty(templateName))
+            if ( (template == null && string.IsNullOrEmpty(templateName)))
             {
                 
             }

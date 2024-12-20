@@ -15,16 +15,16 @@ namespace CoursesManager.UI.Mailing
 {
     public class MailProvider : IMailProvider
     {
-        //service classes
+        #region Services
         private readonly MailService mailService = new MailService();
         private readonly IRegistrationRepository registrationRepository = new RegistrationRepository();
         private readonly ITemplateRepository templateRepository = new TemplateRepository();
         private readonly ICertificateRepository certificateRepository = new CertificateRepository();
-
-        // private attributes
+        #endregion
+        #region Attributes
         private List<Registration> courseRegistrations = new();
         private List<MailResult> mailResults = new();
-
+        #endregion
 
         public byte[] GeneratePDF(Course course, Student student)
         {
@@ -36,6 +36,8 @@ namespace CoursesManager.UI.Mailing
             {
                 using (var memoryStream = new MemoryStream())
                 {
+                    // Since the way a Certificate is saved is using a html string we can seperate the actual pdf from the template.
+                    // First we are converting the html to pdf, in the event of failure the html is also not saved to the db, preventing the storage of a faulty html string.
                     HtmlConverter.ConvertToPdf(template.HtmlString, memoryStream);
                     saveCertificate(template, course, student);
                     return memoryStream.ToArray();
@@ -55,9 +57,10 @@ namespace CoursesManager.UI.Mailing
             {
                 List<MailMessage> messages = new();
                 Template originalTemplate = templateRepository.GetTemplateByName("CertificateMail");
+                
                 foreach (Student student in course.Students)
                 {
-                    Registration registration = student.Registrations.FirstOrDefault(r => r.CourseId == course.Id);
+                    Registration? registration = student.Registrations.FirstOrDefault(r => r.CourseId == course.Id);
                     if (registration.IsAchieved)
                     {
                         byte[] certificate = GeneratePDF(course, student);
