@@ -24,13 +24,14 @@ namespace CoursesManager.UI.DataAccess
             }
         }
 
-        public Template? GetByName(string name)
+        public Template GetByName(string name)
         {
             string procedureName = StoredProcedures.GetTemplateByName;
             try
             {
-                return ExecuteProcedure(procedureName, new MySqlParameter("@p_name", name)).Select(row => ToTemplate(row)).FirstOrDefault();
-
+                Template template = new();
+                template = ExecuteProcedure(procedureName, new MySqlParameter("@p_name", name)).Select(row => ToTemplate(row)).FirstOrDefault() ?? template;
+                return template;
             }
             catch (MySqlException ex)
             {
@@ -48,7 +49,7 @@ namespace CoursesManager.UI.DataAccess
                 ExecuteNonProcedure(StoredProcedures.UpdateTemplate, [
                     new MySqlParameter("@p_id", template.Id),
                     new MySqlParameter("@p_html", template.HtmlString),
-                    new MySqlParameter("@subject", template.SubjectString),
+                    new MySqlParameter("@p_subject", template.SubjectString),
                     new MySqlParameter("@p_name", template.Name),
                     new MySqlParameter("@p_updated_at", DateTime.Now)
                 ]);

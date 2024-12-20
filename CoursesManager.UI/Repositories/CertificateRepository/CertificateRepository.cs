@@ -19,10 +19,39 @@ namespace CoursesManager.UI.Repositories.CertificateRepository
             _certificateDataAccess = certificateDataAccess;
         }
 
-
-        public bool SaveCertificate(Template template, Course course, Student student)
+        public void Add(Certificate certificate)
         {
-            return _certificateDataAccess.SaveCertificate(template, course, student);
+            _certificateDataAccess.SaveCertificate(certificate);
+        }
+
+        public void Delete(Certificate data)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Delete(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<Certificate> GetAll()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Certificate? GetById(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<Certificate> RefreshAll()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Update(Certificate data)
+        {
+            throw new NotImplementedException();
         }
     }
 }
