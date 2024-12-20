@@ -29,7 +29,7 @@ namespace CoursesManager.UI.DataAccess
             }
         }
 
-        public void Add(Address address)
+        public dynamic Add(Address address)
         {
             try
             {
@@ -46,7 +46,7 @@ namespace CoursesManager.UI.DataAccess
                     new MySqlParameter("@p_updated_at", DateTime.Now)
                 };
 
-                ExecuteNonProcedure(procedureName, parameters);
+                return ExecuteNonProcedure(procedureName, parameters);
             }
             catch (MySqlException ex)
             {

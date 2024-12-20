@@ -7,60 +7,22 @@ using CoursesManager.UI.Service;
 
 namespace CoursesManager.UI.DataAccess;
 
-public abstract class BaseDataAccess<T> where T : new()
+public abstract class BaseDataAccess<T>(string? modelTableName = null) where T : new()
 {
-   
-    protected readonly string _modelTableName;
+    protected readonly string _dbTableName = modelTableName ?? typeof(T).Name.ToLower();
 
-    protected BaseDataAccess(EncryptionService encryptionService) : this(encryptionService, typeof(T).Name.ToLower()) { }
-
-    protected BaseDataAccess(EncryptionService encryptionService, string modelTableName)
-    {
-        _modelTableName = modelTableName;
-    }
-
-
-    protected MySqlConnection GetConnection()
-    {
-        var connectionString = EnvManager<EnvModel>.Values.ConnectionString;
-
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
-            throw new InvalidOperationException("De ConnectionString is leeg of ongeldig.");
-        }
-
-        return new MySqlConnection(connectionString);
-    }
-
-    /// <inheritdoc />
-    protected BaseDataAccess() : this(typeof(T).Name.ToLower()) { }
-
-    /// <summary>
-    /// Sets up basic functionality of the Data access layer.
-    /// </summary>
-    /// <param name="modelTableName">Name of the table that is represented with this data access object.</param>
-    protected BaseDataAccess(string modelTableName)
-    {
-        _modelTableName = modelTableName;
-    }
-
-    public List<T> FetchAll()
-    {
-        return FetchAll($"SELECT * FROM `{_modelTableName}`;");
-    }
+    public List<T> FetchAll() => FetchAll($"SELECT * FROM `{_dbTableName}`;");
 
     public List<T> FetchAll(string query, params MySqlParameter[]? parameters)
     {
         List<T> result = new();
         PropertyInfo[] properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
-        using var mySqlConnection = GetConnection();
+        using MySqlConnection mySqlConnection = GetConnection();
         using MySqlCommand mySqlCommand = new($"{query};", mySqlConnection);
 
-        if (parameters is not null)
-        {
+        if (parameters is { Length: > 0 })
             mySqlCommand.Parameters.AddRange(parameters);
-        }
 
         try
         {
@@ -68,15 +30,9 @@ public abstract class BaseDataAccess<T> where T : new()
 
             using MySqlDataReader mySqlReader = mySqlCommand.ExecuteReader();
             while (mySqlReader.Read())
-            {
                 result.Add(FillModel(mySqlReader, properties));
-            }
         }
         catch (MySqlException exception)
-        {
-            LogUtil.Error(exception.Message);
-        }
-        catch (InvalidCastException exception)
         {
             LogUtil.Error(exception.Message);
         }
@@ -84,27 +40,26 @@ public abstract class BaseDataAccess<T> where T : new()
         return result;
     }
 
-    public T? FetchOneById(int id)
-    {
-        return FetchAll(
-            $"SELECT * FROM `{_modelTableName}` WHERE ID = @ID;",
-            [new MySqlParameter("@ID", id)]
-        ).FirstOrDefault();
-    }
+    public T? FetchOneById(int id) => 
+        FetchAll($"SELECT * FROM `{_dbTableName}` WHERE ID = @ID;", new MySqlParameter("@ID", id)).FirstOrDefault();
 
-    protected bool InsertRow(Dictionary<string, object> data)
+    public dynamic InsertRow(T model) => InsertRow(ModelToDictionary(model));
+    public dynamic InsertRow(Dictionary<string, object> data)
     {
         ArgumentNullException.ThrowIfNull(data);
         ArgumentOutOfRangeException.ThrowIfZero(data.Count);
 
         string columns = string.Join(", ", data.Keys.Select(k => $"`{k}`"));
         string parameters = string.Join(", ", data.Keys.Select(k => $"@{k}"));
-        string query = $"INSERT INTO `{_modelTableName}` ({columns}) VALUES ({parameters});";
+        string query = $"INSERT INTO `{_dbTableName}` ({columns}) VALUES ({parameters});";
 
-        return ExecuteNonQuery(query, data);
+        return ExecuteNonQuery(query, DictionaryToParameters(data)) ? GetLastInsertedId() : false;
     }
 
-    protected bool UpdateRow(Dictionary<string, object> data, string whereClause, params MySqlParameter[]? parameters)
+    public dynamic UpdateRow(T model, string whereClause, params MySqlParameter[]? parameters) =>
+        UpdateRow(ModelToDictionary(model), whereClause, parameters);
+
+    public dynamic UpdateRow(Dictionary<string, object?> data, string whereClause, params MySqlParameter[]? parameters)
     {
         ArgumentNullException.ThrowIfNull(data);
         ArgumentOutOfRangeException.ThrowIfZero(data.Count);
@@ -116,19 +71,18 @@ public abstract class BaseDataAccess<T> where T : new()
         }
 
         string setClause = string.Join(", ", data.Keys.Select(k => $"`{k}` = @{k}"));
-        string query = $"UPDATE `{_modelTableName}` SET {setClause} WHERE {whereClause};";
+        string query = $"UPDATE `{_dbTableName}` SET {setClause} WHERE {whereClause};";
 
         List<MySqlParameter> allParameters = data.Select(kvp => new MySqlParameter($"@{kvp.Key}", kvp.Value ?? DBNull.Value)).ToList();
 
-        if (parameters is not null)
-        {
-            allParameters.AddRange(parameters);
-        }
+        var allParams = DictionaryToParameters(data).ToList();
+        if (parameters is { Length: > 0 })
+            allParams.AddRange(parameters);
 
-        return ExecuteNonQuery(query, allParameters.ToArray());
+        return ExecuteNonQuery(query, [.. allParameters]) ? GetLastInsertedId() : false;
     }
 
-    protected bool DeleteRow(string whereClause, params MySqlParameter[] parameters)
+    public dynamic DeleteRow(string whereClause, params MySqlParameter[] parameters)
     {
         if (string.IsNullOrWhiteSpace(whereClause))
         {
@@ -136,68 +90,36 @@ public abstract class BaseDataAccess<T> where T : new()
             return false;
         }
 
-        string query = $"DELETE FROM `{_modelTableName}` WHERE {whereClause};";
-        return ExecuteNonQuery(query, parameters);
+        return ExecuteNonQuery($"DELETE FROM `{_dbTableName}` WHERE {whereClause};", parameters);
     }
 
-    public int GetLastInsertedId()
+    /// <summary>
+    /// Executes a stored procedure that returns one or more result sets.
+    /// Returns the results as a list of dictionaries keyed by column name.
+    /// </summary>
+    public List<Dictionary<string, object?>> ExecuteProcedure(string procedureName, params MySqlParameter[]? parameters)
     {
-        using var connection = GetConnection();
-        using var command = new MySqlCommand("SELECT LAST_INSERT_ID()", connection);
-        connection.Open();
-        return Convert.ToInt32(command.ExecuteScalar());
-    }
-    protected T FillModel(MySqlDataReader mySqlReader, PropertyInfo[] properties)
-    {
-        T model = new();
-
-        foreach (var property in properties)
-        {
-            if (!HasColumn(mySqlReader, property.Name) || mySqlReader[property.Name] is DBNull)
-            {
-                continue;
-            }
-
-            try
-            {
-                property.SetValue(model, Convert.ChangeType(mySqlReader[property.Name], property.PropertyType));
-            }
-            catch (Exception exception)
-            {
-                throw new InvalidCastException($"Error converting column '{property.Name}' to property '{property.Name}' of type '{property.PropertyType}'.", exception);
-            }
-        }
-
-        return model;
-    }
-
-    public List<Dictionary<string, object>> ExecuteProcedure(string procedureName, params MySqlParameter[]? parameters)
-    {
-        using var mySqlConnection = GetConnection();
-        using var mySqlCommand = new MySqlCommand(procedureName, mySqlConnection)
+        using MySqlConnection mySqlConnection = GetConnection();
+        using MySqlCommand mySqlCommand = new(procedureName, mySqlConnection)
         {
             CommandType = CommandType.StoredProcedure
         };
 
-        if (parameters is not null)
-        {
+        if (parameters is { Length: > 0 })
             mySqlCommand.Parameters.AddRange(parameters);
-        }
 
         try
         {
             mySqlConnection.Open();
+            using MySqlDataReader reader = mySqlCommand.ExecuteReader();
 
-            using var reader = mySqlCommand.ExecuteReader();
-
-            List<Dictionary<string, object>> results = new();
+            List<Dictionary<string, object?>> results = [];
             while (reader.Read())
             {
-                Dictionary<string, object> row = new();
+                Dictionary<string, object?> row = [];
                 for (int i = 0; i < reader.FieldCount; i++)
-                {
                     row[reader.GetName(i)] = reader.IsDBNull(i) ? null : reader.GetValue(i);
-                }
+                
                 results.Add(row);
             }
 
@@ -210,21 +132,66 @@ public abstract class BaseDataAccess<T> where T : new()
         }
     }
 
-    protected T FillDataModel(Dictionary<string, object> row)
+    /// <summary>
+    /// Executes a stored procedure that does not return a result set (e.g., INSERT, UPDATE, DELETE).
+    /// Returns true if execution succeeds.
+    /// </summary>
+    public dynamic ExecuteNonProcedure(string procedureName, params MySqlParameter[]? parameters)
+    {
+        using MySqlConnection mySqlConnection = GetConnection();
+        using MySqlCommand mySqlCommand = new(procedureName, mySqlConnection)
+        {
+            CommandType = CommandType.StoredProcedure
+        };
+
+        if (parameters is { Length: > 0 })
+            mySqlCommand.Parameters.AddRange(parameters);
+
+
+        try
+        {
+            mySqlConnection.Open();
+            mySqlCommand.ExecuteNonQuery();
+
+            return mySqlCommand.ExecuteNonQuery() > 0 ? GetLastInsertedId() : false;
+        }
+        catch (MySqlException exception)
+        {
+            LogUtil.Error($"Error executing procedure '{procedureName}': {exception.Message}");
+            throw;
+        }
+    }
+
+    private int GetLastInsertedId()
+    {
+        using var mySqlConnection = GetConnection();
+        using var mySqlCommand = new MySqlCommand("SELECT LAST_INSERT_ID()", mySqlConnection);
+
+        mySqlConnection.Open();
+        return Convert.ToInt32(mySqlCommand.ExecuteScalar());
+    }
+
+    protected MySqlConnection GetConnection()
+    {
+        var connectionString = EnvManager<EnvModel>.Values.ConnectionString;
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+            throw new InvalidOperationException("De ConnectionString is leeg of ongeldig.");
+
+        return new MySqlConnection(connectionString);
+    }
+
+    protected T FillModel(MySqlDataReader mySqlReader, PropertyInfo[] properties)
     {
         T model = new();
-        PropertyInfo[] properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
         foreach (var property in properties)
         {
-            if (!row.ContainsKey(property.Name) || row[property.Name] is DBNull)
-            {
-                continue;
-            }
+            if (!HasColumn(mySqlReader, property.Name) || mySqlReader[property.Name] is DBNull) continue;
 
             try
             {
-                property.SetValue(model, Convert.ChangeType(row[property.Name], property.PropertyType));
+                object? value = mySqlReader[property.Name];
+                property.SetValue(model, Convert.ChangeType(value, property.PropertyType));
             }
             catch (Exception exception)
             {
@@ -235,70 +202,45 @@ public abstract class BaseDataAccess<T> where T : new()
         return model;
     }
 
-    public bool ExecuteNonQuery(string query, params MySqlParameter[]? parameters)
+    /// <summary>Executes a non-query command (INSERT, UPDATE, DELETE).</summary>
+    private bool ExecuteNonQuery(string query, params MySqlParameter[]? parameters)
     {
         using var mySqlConnection = GetConnection();
         using var mySqlCommand = new MySqlCommand(query, mySqlConnection);
 
-        if (parameters is not null)
-        {
+        if (parameters is { Length: > 0 })
             mySqlCommand.Parameters.AddRange(parameters);
-        }
 
         try
         {
             mySqlConnection.Open();
             mySqlCommand.ExecuteNonQuery();
+            return true;
         }
         catch (MySqlException exception)
         {
             LogUtil.Error(exception.Message);
-            throw;
+            return false;
         }
-
-        return true;
     }
 
-    public bool ExecuteNonProcedure(string procedureName, params MySqlParameter[]? parameters)
+    private static Dictionary<string, object> ModelToDictionary(T model)
     {
-        using var mySqlConnection = GetConnection();
-        using var mySqlCommand = new MySqlCommand(procedureName, mySqlConnection)
-        {
-            CommandType = CommandType.StoredProcedure
-        };
+        Dictionary<string, object?> dict = [];
+        foreach (var prop in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            dict[prop.Name] = prop.GetValue(model) ?? DBNull.Value;
 
-        if (parameters is not null)
-        {
-            mySqlCommand.Parameters.AddRange(parameters);
-        }
-
-        try
-        {
-            mySqlConnection.Open();
-            mySqlCommand.ExecuteNonQuery();
-        }
-        catch (MySqlException exception)
-        {
-            LogUtil.Error($"Error executing procedure '{procedureName}': {exception.Message}");
-            throw;
-        }
-
-        return true;
+        return dict;
     }
 
-    public bool ExecuteNonQuery(string query, Dictionary<string, object> data)
-    {
-        MySqlParameter[] parameters = data.Select(kvp => new MySqlParameter($"@{kvp.Key}", kvp.Value ?? DBNull.Value)).ToArray();
-        return ExecuteNonQuery(query, parameters);
-    }
+    private static MySqlParameter[] DictionaryToParameters(Dictionary<string, object> data) =>
+        data.Select(kvp => new MySqlParameter($"@{kvp.Key}", kvp.Value ?? DBNull.Value)).ToArray();
 
-    private bool HasColumn(MySqlDataReader mySqlReader, string columnName)
+    private static bool HasColumn(MySqlDataReader mySqlReader, string columnName)
     {
         for (var i = 0; i < mySqlReader.FieldCount; i++)
-        {
             if (mySqlReader.GetName(i).Equals(columnName, StringComparison.OrdinalIgnoreCase))
                 return true;
-        }
 
         return false;
     }

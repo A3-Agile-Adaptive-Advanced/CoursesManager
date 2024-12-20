@@ -66,7 +66,7 @@ namespace CoursesManager.UI.ViewModels.Courses
                     Location = null,
                     IsActive = false,
                     StartDate = DateTime.Now,
-                    EndDate = DateTime.Now,
+                    EndDate =  DateTime.Now,
                     Image = null,
 
                 };

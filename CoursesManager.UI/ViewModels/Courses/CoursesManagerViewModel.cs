@@ -4,13 +4,8 @@ using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Data;
 using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
-using CoursesManager.UI.Messages;
 using CoursesManager.UI.Models;
-using CoursesManager.UI.ViewModels.Students;
 using CoursesManager.MVVM.Dialogs;
-using System.Diagnostics;
-using CoursesManager.MVVM.Messages;
-using CoursesManager.UI.Repositories.RegistrationRepository;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.ViewModels.Courses;
 
@@ -105,14 +100,24 @@ namespace CoursesManager.UI.ViewModels
                 ? String.Empty
                 : SearchText.Trim().Replace(" ", "").ToLower();
 
+            var now = DateTime.Now;
+            var twoWeeksFromNow = now.AddDays(14);
+
             var filtered = await Task.Run(() =>
-                Courses.Where(course =>
+                Courses
+                .Where(course =>
+                    // Filter courses based on the search string and ensure they are active
                     (string.IsNullOrEmpty(searchTerm)
-                    || course.GenerateFilterString().ToLower().Contains(searchTerm))
+                        || course.GenerateFilterString().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase))
                     && course.IsActive == IsToggled
-                ).OrderBy(course => course.IsPayed)
+                )
+                .OrderBy(course =>
+                    // Put courses that start within 2 weeks and are not paid at the top
+                    (course.StartDate >= now && course.StartDate <= twoWeeksFromNow && !course.IsPayed) ? 0 : 1
+                )
                 .ThenBy(course => course.StartDate)
-                .ToList());
+                .ToList()
+            );
 
             UpdateFilteredCourses(filtered);
         }
