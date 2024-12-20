@@ -35,11 +35,11 @@ namespace CoursesManager.UI.ViewModels.Mailing
             set => SetProperty(ref _visibleText, value);
         }
 
-        private Template _template;
-        public Template Template
+        private Template _currenttemplate;
+        public Template CurrentTemplate
         {
-            get => _template;
-            set => SetProperty(ref _template, value);
+            get => _currenttemplate;
+            set => SetProperty(ref _currenttemplate, value);
         }
         #endregion
         #region Commands
@@ -57,18 +57,24 @@ namespace CoursesManager.UI.ViewModels.Mailing
             _dialogService = dialogService;
 
 
-            VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText("CertificateMail"))));
+            VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText("CertificateMail", null))));
             ShowMailCommand = new RelayCommand<string>(SwitchHtmls, s => s != null);
             PreviewPageCommand = new RelayCommand(OpenTemplateViewer);
             SaveTemplateCommand = new RelayCommand(SaveTemplate);
         }
 
-        public string GetTemplateText(string templateName)
+        public string GetTemplateText(string? templateName, Template? template)
         {
-            string templateText = string.Empty;
-            Template = _templateRepository.GetTemplateByName(templateName);
+            if ( (template == null && string.IsNullOrEmpty(templateName))
+            {
+                
+            }
 
-            Match match = Regex.Match(Template.HtmlString, @"<body>(.*?)</body>", RegexOptions.Singleline);
+            string templateText = string.Empty;
+
+            CurrentTemplate = template ?? _templateRepository.GetTemplateByName(templateName);
+
+            Match match = Regex.Match(CurrentTemplate.HtmlString, @"<body>(.*?)</body>", RegexOptions.Singleline);
 
             string bodyContent = match.Groups[1].Value;
             templateText = bodyContent;
@@ -91,22 +97,24 @@ namespace CoursesManager.UI.ViewModels.Mailing
             {
                 string updatedHtmlString = UpdateTemplateBody(convertedText);
 
-                Template.HtmlString = updatedHtmlString;
+                CurrentTemplate.HtmlString = updatedHtmlString;
                 try
                 {
-                    _templateRepository.Update(Template);
+                    _templateRepository.Update(CurrentTemplate);
                 }
                 catch (Exception ex)
                 {
                     _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden", ToastType.Error));
                 }
                 _messageBroker.Publish(new ToastNotificationMessage(true, "Template opgeslagen", ToastType.Confirmation));
+
+                VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText(null, CurrentTemplate))));
             }
         }
 
         private string UpdateTemplateBody(string updatedBodyContent)
         {
-            string tempString = Template.HtmlString;
+            string tempString = CurrentTemplate.HtmlString;
             string updatedTemplate = Regex.Replace(
                 tempString,
                 @"<body>(.*?)</body>",
@@ -122,7 +130,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
             {
                 var dialogResult = await _dialogService.ShowDialogAsync<TemplatePreviewDialogViewModel, DialogResultType>(new DialogResultType
                 {
-                    DialogTitle = Template.Name,
+                    DialogTitle = CurrentTemplate.Name,
                     DialogText = UpdateTemplateBody(GetPlainTextFromFlowDocument(VisibleText)),
                 });
             });
@@ -130,7 +138,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
 
         private void SwitchHtmls(string Html)
         {
-            VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText(Html))));
+            VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText(Html, null))));
         }
 
         private string GetPlainTextFromFlowDocument(FlowDocument document)
