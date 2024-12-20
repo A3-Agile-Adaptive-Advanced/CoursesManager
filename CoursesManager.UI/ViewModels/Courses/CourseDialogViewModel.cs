@@ -158,7 +158,7 @@ namespace CoursesManager.UI.ViewModels.Courses
 
 
 
-        public async void OnCancel()
+        private async void OnCancel()
         {
             var dialogResult = DialogResult<Course>.Builder()
                 .SetCanceled("Wijzigingen geannuleerd door de gebruiker.")
@@ -169,23 +169,25 @@ namespace CoursesManager.UI.ViewModels.Courses
             InvokeResponseCallback(dialogResult);
         }
 
-        private void UploadImage()
+        protected virtual OpenFileDialog CreateOpenFileDialog()
         {
-            var openDialog = new OpenFileDialog
+            return new OpenFileDialog
             {
                 Filter = "Image Files|*.bmp;*.jpg;*.png",
                 FilterIndex = 1
             };
+        }
 
+
+
+        private void UploadImage()
+        {
+            var openDialog = CreateOpenFileDialog();
+            
             if (openDialog.ShowDialog() == true)
             {
-                
                 var bitmap = new BitmapImage(new Uri(openDialog.FileName));
-
-              
                 Course.Image = ConvertImageToByteArray(bitmap);
-
-                
                 ImageSource = bitmap;
             }
         }
@@ -209,6 +211,5 @@ namespace CoursesManager.UI.ViewModels.Courses
                 return memoryStream.ToArray();
             }
         }
-
     }
 }
