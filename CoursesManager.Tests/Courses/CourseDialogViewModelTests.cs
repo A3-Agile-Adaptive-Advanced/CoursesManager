@@ -72,7 +72,6 @@ namespace CoursesManager.Tests.Courses
             await Task.Run(() => _viewModel.CancelCommand.Execute(null));
 
             // Assert
-            // Controleer dat geen wijzigingen zijn aangebracht
             Assert.Pass("CancelCommand voltooid zonder fouten en annuleert correct.");
         }
 
@@ -114,6 +113,88 @@ namespace CoursesManager.Tests.Courses
 
             // Assert
             Assert.That(originalCourse.Name, Is.EqualTo("Original Course"), "De originele cursus mag niet worden aangepast wanneer wijzigingen worden aangebracht.");
+        }
+
+        // unhappy flows
+
+        [Test]
+
+        public void SaveCommand_CanExecute_ShouldReturnFalse_WhenFieldsAreInvalid()
+        {
+            _viewModel.Course.Name = ""; 
+            _viewModel.Course.Code = ""; 
+            _viewModel.Course.StartDate = default; 
+            _viewModel.Course.EndDate = default; 
+            _viewModel.Course.Location = null; 
+            _viewModel.Course.Description = "";
+
+            var canExecute = _viewModel.SaveCommand.CanExecute(null);
+
+            Assert.That(canExecute, Is.False, "SaveCommand.CanExecute moet false retourneren als de velden ongeldig zijn.");
+        }
+
+        [Test]
+        public void SaveCommand_ShouldThrowException_WhenCourseIsNull()
+        {
+            // Arrange
+            _viewModel.Course = null;
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() => _viewModel.SaveCommand.Execute(null));
+        }
+
+        [Test]
+        public void CancelCommand_ShouldNotModifyOriginalCourse()
+        {
+            // Arrange
+            var originalCourse = new Course { Name = "Original Course" };
+            _viewModel = new CourseDialogViewModel(
+                _courseRepositoryMock.Object,
+                _dialogServiceMock.Object,
+                _locationRepositoryMock.Object,
+                originalCourse
+            );
+
+            _viewModel.Course.Name = "Modified Course";
+
+            // Act
+            _viewModel.CancelCommand.Execute(null);
+
+            // Assert
+            Assert.That(originalCourse.Name, Is.EqualTo("Original Course"), "CancelCommand mag de originele cursus niet wijzigen.");
+        }
+
+        [Test]
+        public void Course_ShouldNotImpactOriginalCourse_WhenModified()
+        {
+            // Arrange
+            var originalCourse = new Course { Name = "Original Course" };
+            _viewModel = new CourseDialogViewModel(
+                _courseRepositoryMock.Object,
+                _dialogServiceMock.Object,
+                _locationRepositoryMock.Object,
+                originalCourse
+            );
+
+            // Act
+            _viewModel.Course.Name = "Modified Course";
+
+            // Assert
+            Assert.That(originalCourse.Name, Is.EqualTo("Original Course"), "Wijzigingen aan de ViewModel Course mogen de originele Course niet beïnvloeden.");
+        }
+
+        [Test]
+        public void SaveCommand_CanExecute_ShouldReturnFalse_WhenEndDateIsBeforeStartDate()
+        {
+            // Arrange
+            _viewModel.Course.StartDate = DateTime.Now;
+            _viewModel.Course.EndDate = DateTime.Now.AddDays(-1);
+
+            // Act
+            var canExecute = _viewModel.SaveCommand.CanExecute(null);
+
+            // Assert
+            Assert.That(canExecute, Is.False, "SaveCommand.CanExecute moet false retourneren als de einddatum vóór de startdatum ligt.");
         }
     }
 }

@@ -95,17 +95,16 @@ namespace CoursesManager.UI.ViewModels.Courses
             ResponseCallback.Invoke(dialogResult);
         }
 
-        private async void ExecuteSave()
+        private void ExecuteSave()
         {
-            try
+            if (Course == null)
             {
-                await OnSaveAsync();
+                throw new InvalidOperationException("Cursusgegevens ontbreken. Opslaan is niet mogelijk.");
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-            }
+
+            _ = OnSaveAsync();
         }
+
 
         private async Task OnSaveAsync()
         {
