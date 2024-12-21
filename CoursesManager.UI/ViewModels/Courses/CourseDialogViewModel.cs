@@ -66,7 +66,7 @@ namespace CoursesManager.UI.ViewModels.Courses
                     Location = null,
                     IsActive = false,
                     StartDate = DateTime.Now,
-                    EndDate =  DateTime.Now,
+                    EndDate = DateTime.Now,
                     Image = null,
 
                 };
@@ -158,36 +158,34 @@ namespace CoursesManager.UI.ViewModels.Courses
 
 
 
-        private async void OnCancel()
+        public async void OnCancel()
         {
             var dialogResult = DialogResult<Course>.Builder()
                 .SetCanceled("Wijzigingen geannuleerd door de gebruiker.")
                 .Build();
-            
+
             await TriggerEndAnimationAsync();
 
             InvokeResponseCallback(dialogResult);
         }
 
-        protected virtual OpenFileDialog CreateOpenFileDialog()
+        private void UploadImage()
         {
-            return new OpenFileDialog
+            var openDialog = new OpenFileDialog
             {
                 Filter = "Image Files|*.bmp;*.jpg;*.png",
                 FilterIndex = 1
             };
-        }
 
-
-
-        private void UploadImage()
-        {
-            var openDialog = CreateOpenFileDialog();
-            
             if (openDialog.ShowDialog() == true)
             {
+
                 var bitmap = new BitmapImage(new Uri(openDialog.FileName));
+
+
                 Course.Image = ConvertImageToByteArray(bitmap);
+
+
                 ImageSource = bitmap;
             }
         }
@@ -202,7 +200,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             {
                 var encoder = new JpegBitmapEncoder
                 {
-                    QualityLevel = 90 
+                    QualityLevel = 90
                 };
 
                 encoder.Frames.Add(BitmapFrame.Create(image));
@@ -211,5 +209,6 @@ namespace CoursesManager.UI.ViewModels.Courses
                 return memoryStream.ToArray();
             }
         }
+
     }
 }

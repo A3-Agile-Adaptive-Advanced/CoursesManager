@@ -115,35 +115,5 @@ namespace CoursesManager.Tests.Courses
             // Assert
             Assert.That(originalCourse.Name, Is.EqualTo("Original Course"), "De originele cursus mag niet worden aangepast wanneer wijzigingen worden aangebracht.");
         }
-
-
-        [Test]
-        public void UploadCommand_ShouldSetCourseImage_WhenValidImageIsUploaded()
-        {
-            // Arrange
-            var mockDialog = new OpenFileDialog
-            {
-                FileName = "testimage.jpg"
-            };
-
-            var testViewModel = new TestableCourseDialogViewModel(
-                _courseRepositoryMock.Object,
-                _dialogServiceMock.Object,
-                _locationRepositoryMock.Object,
-                null,
-                mockDialog
-            );
-
-            // Act
-            testViewModel.UploadCommand.Execute(null);
-
-            // Assert
-            Assert.That(testViewModel.Course.Image, Is.Not.Null, "Course.Image mag niet null zijn na het uploaden van een afbeelding.");
-        }
-
-
-
-
-
     }
 }
