@@ -101,7 +101,7 @@ namespace CoursesManager.UI.DataAccess
                     new MySqlParameter("@p_date_of_birth", student.DateOfBirth)
                 };
 
-                int studentId =  ExecuteNonProcedure(procedureName, parameters);
+                int studentId = ExecuteNonProcedure(procedureName, parameters);
 
                 if (student.Registrations != null)
                 {
@@ -109,8 +109,7 @@ namespace CoursesManager.UI.DataAccess
                     {
                         if (registration.Course == null)
                         {
-                            throw new ArgumentNullException(nameof(registration.Course),
-                                "Registration course cannot be null.");
+                            throw new ArgumentNullException(nameof(registration.Course), "Registration course cannot be null.");
                         }
 
                         registration.StudentId = studentId;
@@ -199,24 +198,46 @@ namespace CoursesManager.UI.DataAccess
             }
         }
 
-        protected Student FillDataModel(Dictionary<string, object> row, List<Address> addresses, List<Registration> registrations)
+        public Student FillDataModel(Dictionary<string, object> row, List<Address> addresses,
+            List<Registration> registrations)
         {
             LogUtil.Info($"Processing row: {string.Join(", ", row.Select(kvp => $"{kvp.Key}={kvp.Value}"))}");
 
             var student = new Student
             {
                 Id = row.ContainsKey("id") && row["id"] != null ? Convert.ToInt32(row["id"]) : 0,
-                FirstName = row.ContainsKey("firstname") && row["firstname"] != null ? row["firstname"].ToString() : string.Empty,
-                LastName = row.ContainsKey("lastname") && row["lastname"] != null ? row["lastname"].ToString() : string.Empty,
-                Email = row.ContainsKey("email") && row["email"] != null ? row["email"].ToString() : string.Empty,
-                Phone = row.ContainsKey("phone") && row["phone"] != null ? row["phone"].ToString() : string.Empty,
-                IsDeleted = row.ContainsKey("is_deleted") && row["is_deleted"] != null && Convert.ToBoolean(row["is_deleted"]),
-                DeletedAt = row.ContainsKey("deleted_at") && row["deleted_at"] != null ? Convert.ToDateTime(row["deleted_at"]) : (DateTime?)null,
-                CreatedAt = row.ContainsKey("created_at") && row["created_at"] != null ? Convert.ToDateTime(row["created_at"]) : DateTime.MinValue,
-                UpdatedAt = row.ContainsKey("updated_at") && row["updated_at"] != null ? Convert.ToDateTime(row["updated_at"]) : DateTime.MinValue,
-                AddressId = row.ContainsKey("address_id") && row["address_id"] != null ? Convert.ToInt32(row["address_id"]) : (int?)null,
-                DateOfBirth = row.ContainsKey("date_of_birth") && row["date_of_birth"] != null ? Convert.ToDateTime(row["date_of_birth"]) : DateTime.MinValue,
-                Insertion = row.ContainsKey("insertion") && row["insertion"] != null ? row["insertion"].ToString() : null
+                FirstName = row.ContainsKey("firstname") && row["firstname"] != null
+                    ? row["firstname"].ToString() ?? string.Empty
+                    : string.Empty,
+                LastName = row.ContainsKey("lastname") && row["lastname"] != null
+                    ? row["lastname"].ToString() ?? string.Empty
+                    : string.Empty,
+                Email = row.ContainsKey("email") && row["email"] != null
+                    ? row["email"].ToString() ?? string.Empty
+                    : string.Empty,
+                Phone = row.ContainsKey("phone") && row["phone"] != null
+                    ? row["phone"].ToString() ?? string.Empty
+                    : string.Empty,
+                IsDeleted = row.ContainsKey("is_deleted") && row["is_deleted"] != null &&
+                            Convert.ToBoolean(row["is_deleted"]),
+                DeletedAt = row.ContainsKey("deleted_at") && row["deleted_at"] != null
+                    ? Convert.ToDateTime(row["deleted_at"])
+                    : (DateTime?)null,
+                CreatedAt = row.ContainsKey("created_at") && row["created_at"] != null
+                    ? Convert.ToDateTime(row["created_at"])
+                    : DateTime.MinValue,
+                UpdatedAt = row.ContainsKey("updated_at") && row["updated_at"] != null
+                    ? Convert.ToDateTime(row["updated_at"])
+                    : DateTime.MinValue,
+                AddressId = row.ContainsKey("address_id") && row["address_id"] != null
+                    ? Convert.ToInt32(row["address_id"])
+                    : (int?)null,
+                DateOfBirth = row.ContainsKey("date_of_birth") && row["date_of_birth"] != null
+                    ? Convert.ToDateTime(row["date_of_birth"])
+                    : DateTime.MinValue,
+                Insertion = row.ContainsKey("insertion") && row["insertion"] != null
+                    ? row["insertion"].ToString()
+                    : null
             };
 
             if (student.AddressId.HasValue)
@@ -224,7 +245,8 @@ namespace CoursesManager.UI.DataAccess
                 student.Address = addresses.FirstOrDefault(a => a.Id == student.AddressId.Value);
             }
 
-            student.Registrations = new ObservableCollection<Registration>(registrations.Where(r => r.StudentId == student.Id));
+            student.Registrations =
+                new ObservableCollection<Registration>(registrations.Where(r => r.StudentId == student.Id));
 
             return student;
         }

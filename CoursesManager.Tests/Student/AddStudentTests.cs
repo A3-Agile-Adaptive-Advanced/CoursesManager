@@ -1,4 +1,5 @@
-﻿using CoursesManager.UI.Models;
+﻿using System.Reflection;
+using CoursesManager.UI.Models;
 using CoursesManager.MVVM.Dialogs;
 using Moq;
 using CoursesManager.UI.Dialogs.ResultTypes;
@@ -10,6 +11,7 @@ using CoursesManager.UI.Repositories.RegistrationRepository;
 using CoursesManager.UI.Repositories.StudentRepository;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.ViewModels.Students;
+using CoursesManager.UI.Services;
 
 namespace CoursesManager.Tests
 {
@@ -96,7 +98,9 @@ namespace CoursesManager.Tests
             _viewModel.SelectedCourse = "Math";
 
             // Act
-            await _viewModel.SaveAsync();
+            await InvokeProtectedMethodAsync(_viewModel, "OnSaveAsync");
+
+            // Assert
             _mockStudentRepository.Verify(repo => repo.Add(It.IsAny<Student>()), Times.Once);
             _mockRegistrationRepository.Verify(repo => repo.Add(It.IsAny<Registration>()), Times.Once);
             _mockDialogService.Verify(service =>
@@ -125,7 +129,7 @@ namespace CoursesManager.Tests
             _viewModel.SelectedCourse = "Math";
 
             // Act
-            await _viewModel.SaveAsync();
+            await InvokeProtectedMethodAsync(_viewModel, "OnSaveAsync");
 
             // Assert
             _mockStudentRepository.Verify(repo => repo.Add(It.IsAny<Student>()), Times.Never);
@@ -160,7 +164,7 @@ namespace CoursesManager.Tests
             _viewModel.SelectedCourse = "InvalidCourse";
 
             // Act
-            await _viewModel.SaveAsync();
+            await InvokeProtectedMethodAsync(_viewModel, "OnSaveAsync");
 
             // Assert
             _mockStudentRepository.Verify(repo => repo.Add(It.IsAny<Student>()), Times.Never);
@@ -173,6 +177,84 @@ namespace CoursesManager.Tests
                     service.ShowDialogAsync<NotifyDialogViewModel, DialogResultType>(
                         It.Is<DialogResultType>(result => result.DialogText == "Cursus is verplicht.")),
                 Times.Once);
+        }
+
+        [Test]
+        public async Task Save_DuplicateEmail_ShowsError()
+        {
+            // Arrange
+            var existingEmails = new List<string> { "s@s.com" };
+            BuildWindowForTestScenario(
+                firstName: addedStudent.FirstName,
+                lastName: addedStudent.LastName,
+                email: addedStudent.Email,
+                phone: addedStudent.Phone,
+                dateOfBirth: new DateTime(1990, 1, 1),
+                houseNumber: addedStudent.Address.HouseNumber,
+                zipCode: addedStudent.Address.ZipCode,
+                city: addedStudent.Address.City,
+                country: addedStudent.Address.Country,
+                street: addedStudent.Address.Street,
+                selectedCourse: "Math"
+            );
+            _viewModel.SelectedCourse = "Math";
+
+            // Act
+            var validationErrors = ValidationService.ValidateRequiredFields(_viewModel.ParentWindow, existingEmails);
+            var errorMessage = string.Join("\n", validationErrors);
+
+            _mockDialogService
+                .Setup(ds => ds.ShowDialogAsync<NotifyDialogViewModel, DialogResultType>(
+                    It.Is<DialogResultType>(result => result.DialogText == errorMessage)))
+                .ReturnsAsync(DialogResult<DialogResultType>.Builder().SetFailure(errorMessage).Build());
+
+            await InvokeProtectedMethodAsync(_viewModel, "OnSaveAsync");
+
+            // Assert
+            _mockStudentRepository.Verify(repo => repo.Add(It.IsAny<Student>()), Times.Never);
+            _mockRegistrationRepository.Verify(repo => repo.Add(It.IsAny<Registration>()), Times.Never);
+            _mockDialogService.Verify(service =>
+                    service.ShowDialogAsync<NotifyDialogViewModel, DialogResultType>(
+                        It.Is<DialogResultType>(result => result.DialogTitle == "Foutmelding")),
+                Times.Once);
+            _mockDialogService.Verify(service =>
+                    service.ShowDialogAsync<NotifyDialogViewModel, DialogResultType>(
+                        It.Is<DialogResultType>(result => result.DialogText == errorMessage)),
+                Times.Once);
+        }
+
+        [Test]
+        public async Task Save_AllFieldsEmpty_ShowsError()
+        {
+            // Arrange
+            BuildWindowForTestScenario(
+                firstName: "",
+                lastName: "",
+                email: "",
+                phone: "",
+                dateOfBirth: default,
+                houseNumber: "",
+                zipCode: "",
+                city: "",
+                country: "",
+                street: "",
+                selectedCourse: ""
+            );
+
+            // Act
+            await InvokeProtectedMethodAsync(_viewModel, "OnSaveAsync");
+
+            // Assert
+            _mockStudentRepository.Verify(repo => repo.Add(It.IsAny<Student>()), Times.Never);
+            _mockRegistrationRepository.Verify(repo => repo.Add(It.IsAny<Registration>()), Times.Never);
+            _mockDialogService.Verify(service =>
+                    service.ShowDialogAsync<NotifyDialogViewModel, DialogResultType>(
+                        It.Is<DialogResultType>(result => result.DialogTitle == "Foutmelding")),
+                Times.Once);
+            _mockDialogService.Verify(service =>
+                    service.ShowDialogAsync<NotifyDialogViewModel, DialogResultType>(
+                        It.Is<DialogResultType>(result => result.DialogText.Contains("is verplicht"))),
+                Times.AtLeastOnce);
         }
 
         private void BuildWindowForTestScenario(
@@ -301,6 +383,16 @@ namespace CoursesManager.Tests
                 }
             };
             _viewModel.ParentWindow = window;
+        }
+
+        private async Task InvokeProtectedMethodAsync(object instance, string methodName)
+        {
+            var method = instance.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
+            if (method != null)
+            {
+                var task = (Task)method.Invoke(instance, null);
+                await task;
+            }
         }
     }
 }

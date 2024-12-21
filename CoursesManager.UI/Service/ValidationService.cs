@@ -10,7 +10,7 @@ namespace CoursesManager.UI.Services
 {
     public static class ValidationService
     {
-        public static List<string> ValidateRequiredFields(DependencyObject parent)
+        public static List<string> ValidateRequiredFields(DependencyObject parent, IEnumerable<string> existingEmails)
         {
             var errors = new List<string>();
 
@@ -33,6 +33,10 @@ namespace CoursesManager.UI.Services
                         else if (ValidationProperties.GetIsPhoneNumber(control) && !IsPhoneNumber(textBox.Text))
                         {
                             errors.Add($"{controlName} is geen geldig telefoonnummer.");
+                        }
+                        else if (ValidationProperties.GetIsEmail(control) && existingEmails.Contains(textBox.Text))
+                        {
+                            errors.Add($"{controlName} bestaat al.");
                         }
                     }
                     else if (control is ComboBox comboBox && comboBox.SelectedItem == null)

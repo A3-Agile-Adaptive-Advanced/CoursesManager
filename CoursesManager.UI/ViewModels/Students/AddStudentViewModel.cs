@@ -28,10 +28,6 @@ public class AddStudentViewModel : StudentViewModelBase, INotifyPropertyChanged
         Courses = new ObservableCollection<string>(_courseRepository.GetAll().Where(c => c.IsActive).Select(c => c.Name));
     }
 
-    public async Task SaveAsync()
-    {
-        await OnSaveAsync();
-    }
 
     protected override async Task OnSaveAsync()
     {
