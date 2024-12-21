@@ -46,11 +46,13 @@ namespace CoursesManager.UI.ViewModels.Students
         }
 
         private ObservableCollection<CourseStudentPayment> _coursePaymentList;
+
         public ObservableCollection<CourseStudentPayment> CoursePaymentList
         {
             get => _coursePaymentList;
             set => SetProperty(ref _coursePaymentList, value);
         }
+
         private bool _isToggled;
 
         public bool IsToggled
@@ -64,6 +66,7 @@ namespace CoursesManager.UI.ViewModels.Students
                 }
             }
         }
+
         #region Commands
 
         public ICommand AddStudentCommand { get; }
@@ -72,7 +75,7 @@ namespace CoursesManager.UI.ViewModels.Students
         public ICommand SearchCommand { get; }
         public ICommand StudentDetailCommand { get; }
         public ICommand CheckboxChangedCommand { get; }
-        public ICommand ToggleIsDeletedCommand { get;  }
+        public ICommand ToggleIsDeletedCommand { get; }
 
 
         #endregion Commands
@@ -89,7 +92,8 @@ namespace CoursesManager.UI.ViewModels.Students
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _studentRepository = studentRepository ?? throw new ArgumentNullException(nameof(studentRepository));
             _courseRepository = courseRepository ?? throw new ArgumentNullException(nameof(courseRepository));
-            _registrationRepository = registrationRepository ?? throw new ArgumentNullException(nameof(registrationRepository));
+            _registrationRepository =
+                registrationRepository ?? throw new ArgumentNullException(nameof(registrationRepository));
             _navigationService = navigationService;
             CoursePaymentList = new ObservableCollection<CourseStudentPayment>();
 
@@ -109,7 +113,8 @@ namespace CoursesManager.UI.ViewModels.Students
 
         public void LoadStudents()
         {
-            Students = new ObservableCollection<Student>(_studentRepository.GetNotDeletedStudents() ?? new List<Student>());
+            Students = new ObservableCollection<Student>(_studentRepository.GetNotDeletedStudents() ??
+                                                         new List<Student>());
             FilteredStudentRecords = new ObservableCollection<Student>(Students);
         }
 
@@ -137,12 +142,14 @@ namespace CoursesManager.UI.ViewModels.Students
                         filtered.Add(student);
                     }
                 }
+
                 FilteredStudentRecords = new ObservableCollection<Student>(filtered);
 
             }
 
             OnPropertyChanged(nameof(FilteredStudentRecords));
         }
+
         private void OnCheckboxChanged(CourseStudentPayment payment)
         {
             if (payment == null || SelectedStudent == null) return;
@@ -175,7 +182,8 @@ namespace CoursesManager.UI.ViewModels.Students
         {
             if (SelectedStudent == null) return;
 
-            var registrations = _registrationRepository.GetAll()?.Where(r => r.StudentId == SelectedStudent.Id) ?? Enumerable.Empty<Registration>();
+            var registrations = _registrationRepository.GetAll()?.Where(r => r.StudentId == SelectedStudent.Id) ??
+                                Enumerable.Empty<Registration>();
             CoursePaymentList.Clear();
 
             foreach (var registration in registrations)

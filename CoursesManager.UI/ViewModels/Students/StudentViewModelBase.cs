@@ -85,7 +85,8 @@ namespace CoursesManager.UI.ViewModels.Students
                 return false;
             }
 
-            var errors = ValidationService.ValidateRequiredFields(ParentWindow);
+            var existingEmails = _studentRepository.GetAll().Select(s => s.Email);
+            var errors = ValidationService.ValidateRequiredFields(ParentWindow, existingEmails);
 
             if (errors.Any())
             {

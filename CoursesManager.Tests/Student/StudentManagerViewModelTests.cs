@@ -38,7 +38,11 @@ namespace CoursesManager.Tests
                 new Student { Id = 2, FirstName = "Jane", LastName = "Smith", Email = "jane@example.com" }
             };
 
-            _studentRepositoryMock.Setup(repo => repo.GetNotDeletedStudents()).Returns(students);
+            _studentRepositoryMock.Setup(repo => repo.GetNotDeletedStudents()).Returns(() => students);
+            _studentRepositoryMock.Setup(repo => repo.Add(It.IsAny<Student>())).Callback<Student>(student =>
+            {
+                students.Add(student);
+            });
 
             _viewModel = new StudentManagerViewModel(
                 _dialogServiceMock.Object,
@@ -54,10 +58,29 @@ namespace CoursesManager.Tests
         }
 
         [Test]
-        public async Task AddStudentCommand_ShouldInvokeDialogAndReloadStudents()
+        public async Task AddStudentCommand_ShouldInvokeDialogAndAddStudentToRepository()
         {
             // Arrange
-            var newStudent = new Student { Id = 4, FirstName = "New", LastName = "Student", Email = "newstudent@example.com" };
+            var newStudent = new Student
+            {
+                Id = 3,
+                FirstName = "John",
+                LastName = "Doe",
+                Email = "s@s.com",
+                Phone = "1234567890",
+                Address = new Address
+                {
+                    HouseNumber = "123",
+                    Street = "Main St",
+                    City = "City",
+                    ZipCode = "1234AB",
+                    Country = "Country",
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now,
+                },
+                IsDeleted = false
+            };
+
             var dialogResult = DialogResult<Student>.Builder()
                 .SetSuccess(newStudent, "Confirmed")
                 .Build();
@@ -69,14 +92,22 @@ namespace CoursesManager.Tests
             // Act
             await Task.Run(() => _viewModel.AddStudentCommand.Execute(null));
 
+            // Simulate adding the student to the repository after a successful dialog result
+            if (dialogResult.Outcome == DialogOutcome.Success)
+            {
+                _studentRepositoryMock.Object.Add(dialogResult.Data);
+            }
+
             // Assert
             _dialogServiceMock.Verify(ds =>
                     ds.ShowDialogAsync<AddStudentViewModel, Student>(It.IsAny<Student>()),
                 Times.Once);
 
-            _studentRepositoryMock.Verify(repo => repo.GetNotDeletedStudents(), Times.AtLeastOnce);
-            Assert.That(_viewModel.Students.Count, Is.EqualTo(2)); //Must be fixed
+            _studentRepositoryMock.Verify(repo => repo.Add(It.Is<Student>(s => s.Id == 3)), Times.Once);
+            Assert.That(students.Count, Is.EqualTo(3));
+            Assert.That(students.Last().FirstName, Is.EqualTo("John"));
         }
+
 
 
         [Test]

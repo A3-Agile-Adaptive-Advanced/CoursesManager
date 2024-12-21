@@ -23,7 +23,7 @@ namespace CoursesManager.Tests.Services
             parent.Children.Add(textBox);
 
             // Act
-            var errors = ValidationService.ValidateRequiredFields(parent);
+            var errors = ValidationService.ValidateRequiredFields(parent, new List<string>());
 
             // Assert
             Assert.That(errors.FirstOrDefault(), Is.EqualTo("Email is verplicht."));
@@ -40,7 +40,7 @@ namespace CoursesManager.Tests.Services
             parent.Children.Add(textBox);
 
             // Act
-            var errors = ValidationService.ValidateRequiredFields(parent);
+            var errors = ValidationService.ValidateRequiredFields(parent, new List<string>());
 
             // Assert
             Assert.That(errors.FirstOrDefault(), Is.EqualTo("Email is geen geldig e-mailadres."));
@@ -57,7 +57,7 @@ namespace CoursesManager.Tests.Services
             parent.Children.Add(textBox);
 
             // Act
-            var errors = ValidationService.ValidateRequiredFields(parent);
+            var errors = ValidationService.ValidateRequiredFields(parent, new List<string>());
 
             // Assert
             Assert.That(errors.FirstOrDefault(), Is.EqualTo("Phone is geen geldig telefoonnummer."));
@@ -73,7 +73,7 @@ namespace CoursesManager.Tests.Services
             parent.Children.Add(comboBox);
 
             // Act
-            var errors = ValidationService.ValidateRequiredFields(parent);
+            var errors = ValidationService.ValidateRequiredFields(parent, new List<string>());
 
             // Assert
             Assert.That(errors.FirstOrDefault(), Is.EqualTo("Course is verplicht."));
@@ -90,7 +90,7 @@ namespace CoursesManager.Tests.Services
             parent.Children.Add(datePicker);
 
             // Act
-            var errors = ValidationService.ValidateRequiredFields(parent);
+            var errors = ValidationService.ValidateRequiredFields(parent, new List<string>());
 
             // Assert
             Assert.That(errors.FirstOrDefault(), Is.EqualTo("Date is geen geldige datum."));

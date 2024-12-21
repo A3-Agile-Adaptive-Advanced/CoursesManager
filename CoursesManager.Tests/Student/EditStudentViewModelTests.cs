@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using System.Reflection;
+using Moq;
 using CoursesManager.UI.Models;
 using CoursesManager.MVVM.Dialogs;
 using CoursesManager.UI.Dialogs.ResultTypes;
@@ -51,6 +52,13 @@ namespace CoursesManager.Tests
             _courseRepositoryMock = new Mock<ICourseRepository>();
             _registrationRepositoryMock = new Mock<IRegistrationRepository>();
             _dialogServiceMock = new Mock<IDialogService>();
+
+            _studentRepositoryMock
+                .Setup(repo => repo.GetAll())
+                .Returns(new List<Student>
+                {
+                    new Student { Email = "existing@example.com" }
+                });
 
             _courseRepositoryMock.Setup(repo => repo.GetAll())
                 .Returns(new List<Course>
@@ -107,7 +115,7 @@ namespace CoursesManager.Tests
                 .ReturnsAsync(DialogResult<DialogResultType>.Builder().SetSuccess(new DialogResultType(), "Notification").Build());
 
             // Act
-            await _viewModel.SaveAsync();
+            await InvokeProtectedMethodAsync(_viewModel, "OnSaveAsync");
 
             // Assert
             _dialogServiceMock.Verify(service =>
@@ -142,7 +150,8 @@ namespace CoursesManager.Tests
                 selectedCourse: "Math"
             );
 
-            var validationErrors = ValidationService.ValidateRequiredFields(_viewModel.ParentWindow);
+            var existingEmails = new List<string> { "john.doe@example.com" };
+            var validationErrors = ValidationService.ValidateRequiredFields(_viewModel.ParentWindow, existingEmails);
             var errorMessage = string.Join("\n", validationErrors);
 
             _dialogServiceMock
@@ -151,7 +160,7 @@ namespace CoursesManager.Tests
                 .ReturnsAsync(DialogResult<DialogResultType>.Builder().SetFailure(errorMessage).Build());
 
             // Act
-            await _viewModel.SaveAsync();
+            await InvokeProtectedMethodAsync(_viewModel, "OnSaveAsync");
 
             // Assert
             _studentRepositoryMock.Verify(repo => repo.Update(It.IsAny<Student>()), Times.Never);
@@ -295,6 +304,16 @@ namespace CoursesManager.Tests
                 }
             };
             _viewModel.ParentWindow = window;
+        }
+
+        private async Task InvokeProtectedMethodAsync(object instance, string methodName)
+        {
+            var method = instance.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
+            if (method != null)
+            {
+                var task = (Task)method.Invoke(instance, null);
+                await task;
+            }
         }
     }
 }
