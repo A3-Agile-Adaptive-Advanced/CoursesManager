@@ -26,3 +26,6 @@
 2024-12-21 16:14:41 [Info] Attempting to save course: New Course, NC123, 0
 2024-12-21 16:14:41 [Info] Course added successfully via repository.
 2024-12-21 16:14:42 [Error] Error in OnSaveAsync: Object reference not set to an instance of an object.
+2024-12-21 16:18:30 [Info] Attempting to save course: New Course, NC123, 0
+2024-12-21 16:18:30 [Info] Course added successfully via repository.
+2024-12-21 16:18:31 [Error] Error in OnSaveAsync: Object reference not set to an instance of an object.
