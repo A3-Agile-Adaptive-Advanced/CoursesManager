@@ -9,20 +9,20 @@ namespace GlobalCacheExample
     [TestFixture]
     public class GlobalCacheTests
     {
-        // Runs before each test to ensure cache is reset
+        // Runs before each test to ensure cache is reset.
         [SetUp]
         public void Setup()
         {
-            GlobalCache.SetTestCapacity(10); // Set a default capacity
+            GlobalCache.SetTestCapacity(10); // Set a default capacity.
             var cache = GlobalCache.CreateForTesting();
-            cache.Clear(); // Ensure cache is cleared before every test
+            cache.Clear();
         }
 
         #region Add and Retrieve
         [Test]
         public void Test_Add_And_Get()
         {
-            // Arrange
+            // Arrange.
             var cache = GlobalCache.CreateForTesting();
             cache.Clear();
 
@@ -30,19 +30,19 @@ namespace GlobalCacheExample
             cache.Put("key1", "value1", isPermanent: false);
             var result = cache.Get("key1");
 
-            // Assert
+            // Assert.
             Assert.That(result, Is.EqualTo("value1"));
         }
 
         [Test]
         public void Test_Throws_KeyNotFoundException_When_Item_Not_Found()
         {
-            // Arrange
+            // Arrange.
             GlobalCache.SetTestCapacity(10);
             var cache = GlobalCache.CreateForTesting();
             cache.Clear();
 
-            // Act & Assert
+            // Act & Assert.
             Assert.Throws<KeyNotFoundException>(() => cache.Get("non_existing_key"));
         }
         #endregion
@@ -115,15 +115,15 @@ namespace GlobalCacheExample
         [Test]
         public void Test_Overwrite_Existing_Item()
         {
-            // Arrange
+            // Arrange.
             var cache = GlobalCache.CreateForTesting();
             cache.Clear();
 
-            // Act
+            // Act.
             cache.Put("key1", "value1", isPermanent: false);
-            cache.Put("key1", "value2", isPermanent: false); // Overwrite
+            cache.Put("key1", "value2", isPermanent: false); // Overwrite.
 
-            // Assert
+            // Assert.
             var result = cache.Get("key1");
             Assert.That(result, Is.EqualTo("value2"));
         }
@@ -131,16 +131,16 @@ namespace GlobalCacheExample
         [Test]
         public void Test_Overwrite_Permanent_Item_Should_Fail()
         {
-            // Arrange
+            // Arrange.
             GlobalCache.SetTestCapacity(1);
             var cache = GlobalCache.CreateForTesting();
             cache.Clear();
 
-            // Act
+            // Act.
             cache.Put("key1", "value1", isPermanent: true);
-            // Attempt to overwrite a permanent item (should not overwrite) with a different type of object
+            // Attempt to overwrite a permanent item (should not overwrite) with a different type of object.
 
-            // Assert: the CantBeOverwrittenException should be thrown
+            // Assert: the CantBeOverwrittenException should be thrown.
             Assert.Throws<CantBeOverwrittenException>(() => cache.Put("key1", 1, isPermanent: false));
 
         }
@@ -148,40 +148,55 @@ namespace GlobalCacheExample
 
         #region Edge Cases and Error Handling
         [Test]
-        public void Test_Clear_Cache()
+        public void Test_Get_Non_Existing_Item()
         {
-            // Arrange
+            // Arrange.
             var cache = GlobalCache.CreateForTesting();
             cache.Clear();
 
-            // Act
+            // Act.
             cache.Put("key1", "value1", isPermanent: false);
-            cache.Clear();  // Clear the cache
+            cache.Clear();  // Making sure the item does no longer exist in the cache.
 
-            // Assert
+            // Assert.
             Assert.Throws<KeyNotFoundException>(() => cache.Get("key1"));
         }
 
         [Test]
         public void Test_Add_Null_Key_Should_Throw_ArgumentNullException()
         {
-            // Arrange
+            // Arrange.
             var cache = GlobalCache.CreateForTesting();
             cache.Clear();
 
-            // Act & Assert
+            // Act & Assert.
             Assert.Throws<ArgumentNullException>(() => cache.Put(null, "value1", isPermanent: false));
         }
 
         [Test]
         public void Test_Add_Null_Value_Should_Throw_ArgumentNullException()
         {
-            // Arrange
+            // Arrange.
             var cache = GlobalCache.CreateForTesting();
             cache.Clear();
 
-            // Act & Assert
+            // Act & Assert.
             Assert.Throws<ArgumentNullException>(() => cache.Put("key1", null, isPermanent: false));
+        }
+
+        public void Test_Update_Permanent_Item_With_Different_Type_Should_Throw_CannotBeOverWrittenException()
+        {
+            // Arrange.
+            var cache = GlobalCache.CreateForTesting();
+            cache.Clear();
+
+            // Act.
+            cache.Put("key1", "value1", true);
+            
+            // Assert.
+            Assert.Throws<CantBeOverwrittenException>(() => cache.Update("key1", 1));
+
+
         }
         #endregion
 

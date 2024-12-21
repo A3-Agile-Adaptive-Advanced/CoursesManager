@@ -22,34 +22,8 @@ namespace CoursesManager.UI.Mailing
         private readonly ICertificateRepository certificateRepository = new CertificateRepository();
         #endregion
         #region Attributes
-        private List<Registration> courseRegistrations = new();
         private List<MailResult> mailResults = new();
         #endregion
-
-        public byte[] GeneratePDF(Course course, Student student)
-        {
-            Template template = templateRepository.GetTemplateByName("Certificate");
-
-            template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
-
-            try
-            {
-                using (var memoryStream = new MemoryStream())
-                {
-                    // Since the way a Certificate is saved is using a html string we can seperate the actual pdf from the template.
-                    // First we are converting the html to pdf, in the event of failure the html is also not saved to the db, preventing the storage of a faulty html string.
-                    HtmlConverter.ConvertToPdf(template.HtmlString, memoryStream);
-                    saveCertificate(template, course, student);
-                    return memoryStream.ToArray();
-                }
-
-            }
-            catch (Exception ex)
-            {
-                LogUtil.Error(ex.Message);
-                throw;
-            }
-        }
 
         public async Task<List<MailResult>> SendCertificates(Course course)
         {
@@ -63,8 +37,8 @@ namespace CoursesManager.UI.Mailing
                     Registration? registration = student.Registrations.FirstOrDefault(r => r.CourseId == course.Id);
                     if (registration.IsAchieved)
                     {
-                        byte[] certificate = GeneratePDF(course, student);
-                        var template = originalTemplate.Copy();
+                        byte[] certificate = GeneratePdf(course, student);
+                        Template template = originalTemplate.Copy();
                         template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
                         messages.Add(CreateMessage("jarnogerrets@gmail.com", template.SubjectString, template.HtmlString, certificate));
                     }
@@ -84,7 +58,6 @@ namespace CoursesManager.UI.Mailing
 
         public async Task<List<MailResult>> SendCourseStartNotifications(Course course)
         {
-
             try
             {
                 List<MailMessage> messages = new();
@@ -92,8 +65,9 @@ namespace CoursesManager.UI.Mailing
 
                 foreach (Student student in course.Students)
                 {
-                    var template = originalTemplate.Copy();
+                    Template template = originalTemplate.Copy();
                     template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
+
                     messages.Add(CreateMessage("jarnogerrets@gmail.com", template.SubjectString, template.HtmlString, null));
                 }
                 if (messages.Any())
@@ -112,8 +86,9 @@ namespace CoursesManager.UI.Mailing
         public async Task<List<MailResult>> SendPaymentNotifications(Course course)
         {
             List<MailMessage> messages = new List<MailMessage>();
-            courseRegistrations = course.Registrations;
+            List<Registration> courseRegistrations = course.Registrations;
             Template originalTemplate = templateRepository.GetTemplateByName("PaymentMail");
+
             try
             {
                 foreach (Registration registration in courseRegistrations)
@@ -122,17 +97,43 @@ namespace CoursesManager.UI.Mailing
                     if (!registration.PaymentStatus)
                     {
                         Student student = course.Students.FirstOrDefault(s => s.Id == registration.StudentId);
-                        var template = originalTemplate.Copy();
+                        Template template = originalTemplate.Copy();
+
                         template.HtmlString = FillTemplate(template.HtmlString, student, course, $"https://tinyurl.com/CourseManager/{student.Id}");
                         messages.Add(CreateMessage("jarnogerrets@gmail.com", template.SubjectString, template.HtmlString, null));
                     }
                 }
-
                 if (messages.Any())
                 {
                     return await mailService.SendMail(messages);
                 }
                 return mailResults;
+            }
+            catch (Exception ex)
+            {
+                LogUtil.Error(ex.Message);
+                throw;
+            }
+        }
+
+        #region Helper methods
+        private byte[] GeneratePdf(Course course, Student student)
+        {
+            Template template = templateRepository.GetTemplateByName("Certificate");
+
+            template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
+
+            try
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    // Since the way a Certificate is saved is using a html string we can seperate the actual pdf from the template.
+                    // First we are converting the html to pdf, in the event of failure the html is also not saved to the db, preventing the storage of a faulty html string.
+                    HtmlConverter.ConvertToPdf(template.HtmlString, memoryStream);
+                    SaveCertificate(template, course, student);
+                    return memoryStream.ToArray();
+                }
+
             }
             catch (Exception ex)
             {
@@ -169,7 +170,7 @@ namespace CoursesManager.UI.Mailing
             return message;
         }
 
-        private void saveCertificate(Template template, Course course, Student student)
+        private void SaveCertificate(Template template, Course course, Student student)
         {
             Certificate certificate = new();
             certificate.PdfString = template.HtmlString;
@@ -179,5 +180,6 @@ namespace CoursesManager.UI.Mailing
             certificateRepository.Add(certificate);
 
         }
+        #endregion
     }
 }

@@ -8,22 +8,6 @@ namespace CoursesManager.UI.DataAccess
 {
     internal class TemplateDataAccess : BaseDataAccess<Template>
     {
-
-        public List<Template> GetAll()
-        {
-            string procedureName = StoredProcedures.GetAllTemplates;
-            try
-            {
-                return ExecuteProcedure(procedureName).Select(row => ToTemplate(row)).ToList();
-
-            }
-            catch (MySqlException ex)
-            {
-                LogUtil.Error($"Error executing procedure '{procedureName}': {ex.Message}");
-                throw;
-            }
-        }
-
         public Template GetByName(string name)
         {
             string procedureName = StoredProcedures.GetTemplateByName;

@@ -4,21 +4,30 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 
+
+/// <summary>
+/// Class to store both permanent and non-permanent objects at runtime to be accessed throughout the whole application.
+/// This class implements the LCU principle while using validation of the entered objects to make sure only that what should be removed will be removed.
+/// The permanent items do not allow removal, but can be updated if the same type is entered into a permanent slot.
+/// </summary>
 public class GlobalCache
 {
-    private int _capacity;
-    private int _InitialCapacity;
-    private int _permanentItemCount;
+    #region Attributes
+    private readonly int _initialCapacity;
     private readonly ConcurrentDictionary<string, LinkedListNode<CacheItem>> _cacheMap;
     private readonly ConcurrentDictionary<string, long> _usageOrder;
     private readonly object _lock = new object();
 
-    private static readonly Lazy<GlobalCache> _instance = new Lazy<GlobalCache>(() => new GlobalCache(10));
+    private int _capacity;
+    private int _permanentItemCount;
+    #endregion
+
+    private static readonly Lazy<GlobalCache> _instance = new (() => new GlobalCache(10));
 
     private GlobalCache(int capacity)
     {
         _capacity = capacity;
-        _InitialCapacity = capacity;
+        _initialCapacity = capacity;
         _permanentItemCount = 0;
         _cacheMap = new ConcurrentDictionary<string, LinkedListNode<CacheItem>>();
         _usageOrder = new ConcurrentDictionary<string, long>();
@@ -26,6 +35,7 @@ public class GlobalCache
 
     public static GlobalCache Instance => _instance.Value;
 
+    #region Control methods
     public object? Get(string key)
     {
         if (!_cacheMap.ContainsKey(key))
@@ -36,24 +46,17 @@ public class GlobalCache
         return _cacheMap[key].Value.Value;
     }
 
-    // When an item is permanent the only thing possible is to update its contents, here we check if the contents match whats already in cache. example:
-    // when the cache contains either a string or collection of strings (List<string>), you can update with a string or collections of strings.
-    // but not with a long or collection of longs (List<long>)
+    // When an item is permanent the only thing possible is to update its contents, a check is done to see if the contents match what is already in cache.
+    // example:
+    // when the cache contains a string it can be updated with a string or when it contains a collection of strings (List<string>) it can be updated with a collections of strings.
+    // but when trying to update a string with a long there will be a CantBeOverWrittenException thrown.
     public void Put(string key, object value, bool isPermanent)
     {
         ArgumentNullException.ThrowIfNull(value, nameof(value));
 
-        if (_cacheMap.TryGetValue(key, out var existingNode) && existingNode != null)
+        if (_cacheMap.TryGetValue(key, out var existingNode))
         {
-            if (existingNode.Value.IsPermanent)
-            {
-                if (!ShouldUpdateValue(existingNode.Value.Value, value))
-                {
-                    throw new CantBeOverwrittenException($"The item with key '{key}' is permanent and cannot be overwritten.");
-                }
-                existingNode.Value.Value = value;
-            }
-            existingNode.Value = new CacheItem(key, value, existingNode.Value.IsPermanent);
+            Update(key, existingNode);
         }
         else
         {
@@ -64,46 +67,18 @@ public class GlobalCache
         _usageOrder[key] = DateTime.Now.Ticks;
     }
 
-
-    private void EnsureCapacity()
+    public bool ContainsKey(string key)
     {
-        if (_cacheMap.Count < _capacity)
-            return; // No action needed if there's room
+        if (_cacheMap.ContainsKey(key))
+        {
+            return true;
+        }
 
-        if (_permanentItemCount == _capacity)
-        {
-            IncreaseCapacity(); // All items are permanent; increase capacity
-        }
-        else
-        {
-            EvictNonPermanentItem(); // Evict the least recently used non-permanent item
-        }
+        return false;
     }
 
 
-    private void IncreaseCapacity()
-    {
-        _capacity += _InitialCapacity * 2;
-    }
-
-    private void DecreaseCapacity()
-    {
-        if (_capacity > _InitialCapacity)
-        {
-            _capacity--;
-        }
-    }
-
-    private void EvictNonPermanentItem()
-    {
-        var leastUsedKey = _usageOrder.OrderBy(kvp => kvp.Value).FirstOrDefault().Key;
-        if (!string.IsNullOrEmpty(leastUsedKey))
-        {
-            _cacheMap.TryRemove(leastUsedKey, out _);
-            _usageOrder.TryRemove(leastUsedKey, out _);
-        }
-    }
-    // Method is not used but implemented non the less for future possibilities.
+    // Method is not used but implemented nonetheless for future possibilities.
     // Whenever an item needs to 'survive' longer than the expected lifecycle but
     // still should be cleaned up at some point this method is there to do so.
     public void RemovePermanentItem(string key)
@@ -119,15 +94,70 @@ public class GlobalCache
                     _cacheMap.TryRemove(key, out _);
                     _usageOrder.TryRemove(key, out _);
 
-                    // If the cache was full with perm items the cache has grown in size. this method ensures capacity never exceeds the applications needs.
+                    // If the cache was full of perm items the cache has grown in size. this method ensures capacity never exceeds the applications needs.
                     DecreaseCapacity();
                 }
             }
         }
     }
+    #endregion
+    #region helper methods and CacheItem class
 
-    // helpermethod to make sure that a permanent item can be updated but not overwritten by another (new/different) type.
-    private bool ShouldUpdateValue(object existingValue, object newValue)
+
+    private void Update(string key, object value)
+    {
+        if (_cacheMap.TryGetValue(key, out var existingNode))
+        {
+            if (existingNode.Value.IsPermanent && ShouldNotUpdateValue(existingNode.Value.Value, value))
+            {
+                throw new CantBeOverwrittenException($"The item with key '{key}' is of a different type and cannot be overwritten.");
+            }
+
+            existingNode.Value.Value = value;
+            _usageOrder[key] = DateTime.Now.Ticks;
+        }
+        else
+        {
+            throw new NullReferenceException();
+        }
+
+    }
+    private void EnsureCapacity()
+    {
+        if (_cacheMap.Count < _capacity) return;
+
+        if (_permanentItemCount == _capacity)
+        {
+            IncreaseCapacity();
+        }
+        else
+        {
+            EvictNonPermanentItem();
+        }
+    }
+
+    private void IncreaseCapacity()
+    {
+        _capacity += _initialCapacity * 2;
+    }
+
+    private void DecreaseCapacity()
+    {
+        if (_capacity > _initialCapacity) _capacity--;
+    }
+
+    private void EvictNonPermanentItem()
+    {
+        var leastUsedKey = _usageOrder.OrderBy(kvp => kvp.Value).FirstOrDefault().Key;
+        if (!string.IsNullOrEmpty(leastUsedKey))
+        {
+            _cacheMap.TryRemove(leastUsedKey, out _);
+            _usageOrder.TryRemove(leastUsedKey, out _);
+        }
+    }
+
+    // helper-method to make sure that a permanent item can be updated but not overwritten by another (new/different) type.
+    private bool ShouldNotUpdateValue(object existingValue, object newValue)
     {
         if (existingValue is System.Collections.IEnumerable existingCollection && newValue is System.Collections.IEnumerable newCollection)
         {
@@ -135,18 +165,16 @@ public class GlobalCache
         }
         else
         {
-            return Equals(existingValue, newValue);
+            return !Equals(existingValue, newValue);
         }
     }
 
 
     private bool CollectionsAreEqual(System.Collections.IEnumerable collection1, System.Collections.IEnumerable collection2)
     {
-        if (ReferenceEquals(collection1, collection2)) return true;
+        if (ReferenceEquals(collection1, collection2)) return false;
 
-        if (collection1 == null || collection2 == null) return false;
-
-        return (collection1.GetType() == collection2.GetType());
+        return !(collection1.GetType() == collection2.GetType());
 
     }
 
@@ -162,20 +190,14 @@ public class GlobalCache
             Value = value;
             IsPermanent = isPermanent;
 
-            // Automatically adjust the permanent item count
             if (isPermanent)
             {
-                // Update the permanent item count directly in GlobalCache
                 GlobalCache.Instance._permanentItemCount++;
             }
         }
     }
-    public int GetCapacity()
-    {
-        return _capacity;
-    }
-
-
+    #endregion
+    #region Debug methods
     /// <summary>
     /// Clears the cache for unit testing purposes.
     /// </summary>
@@ -183,7 +205,6 @@ public class GlobalCache
     {
         _cacheMap.Clear();
         _usageOrder.Clear();
-
     }
 
     // This allows you to create a custom cache instance for testing purposes in DEBUG builds
@@ -195,10 +216,11 @@ public class GlobalCache
         _testCapacity = capacity;
     }
 
-    // Factory method for creating a cache with custom capacity in debug mode so you dont need to enter the default amount for each test.
+    // Factory method for creating a cache with custom capacity in debug mode so you don't need to enter the default amount for each test.
     public static GlobalCache CreateForTesting()
     {
         return new GlobalCache(_testCapacity);
     }
+    #endregion
 
 }

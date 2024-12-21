@@ -56,39 +56,18 @@ namespace CoursesManager.UI.ViewModels.Mailing
             _messageBroker = messageBroker;
             _dialogService = dialogService;
 
-
             VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText("CertificateMail", null))));
             ShowMailCommand = new RelayCommand<string>(SwitchHtmls, s => s != null);
             PreviewPageCommand = new RelayCommand(OpenTemplateViewer);
             SaveTemplateCommand = new RelayCommand(SaveTemplate);
         }
 
-        public string GetTemplateText(string? templateName, Template? template)
+        public void SaveTemplate()
         {
-            if ( (template == null && string.IsNullOrEmpty(templateName)))
-            {
-                
-            }
-
-            string templateText = string.Empty;
-
-            CurrentTemplate = template ?? _templateRepository.GetTemplateByName(templateName);
-
-            Match match = Regex.Match(CurrentTemplate.HtmlString, @"<body>(.*?)</body>", RegexOptions.Singleline);
-
-            string bodyContent = match.Groups[1].Value;
-            templateText = bodyContent;
-
-            return templateText;
-        }
-
-        public async void SaveTemplate()
-        {
-
             string convertedText = GetPlainTextFromFlowDocument(VisibleText);
             List<string> invalidPlaceholders = ValidatePlaceholders(convertedText);
 
-            if (invalidPlaceholders != null && invalidPlaceholders.Count != 0)
+            if (invalidPlaceholders.Count != 0)
             {
                 ReUploadTextWithErrorFormatting(convertedText, invalidPlaceholders);
                 _messageBroker.Publish(new ToastNotificationMessage(true, "1 of meerdere placeholders zijn incorrect.", ToastType.Warning));
@@ -111,7 +90,33 @@ namespace CoursesManager.UI.ViewModels.Mailing
                 VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText(null, CurrentTemplate))));
             }
         }
+        public async void OpenTemplateViewer()
+        {
+            await ExecuteWithOverlayAsync(_messageBroker, async () =>
+            {
+                var dialogResult = await _dialogService.ShowDialogAsync<TemplatePreviewDialogViewModel, DialogResultType>(new DialogResultType
+                {
+                    DialogTitle = CurrentTemplate.Name,
+                    DialogText = UpdateTemplateBody(GetPlainTextFromFlowDocument(VisibleText)),
+                });
+            });
+        }
 
+        #region Helper methods
+        private string GetTemplateText(string? templateName, Template? template)
+        {
+            string templateText = string.Empty;
+            if (!(template == null && string.IsNullOrEmpty(templateName)))
+            {
+                CurrentTemplate = template ?? _templateRepository.GetTemplateByName(templateName);
+
+                Match match = Regex.Match(CurrentTemplate.HtmlString, @"<body>(.*?)</body>", RegexOptions.Singleline);
+
+                string bodyContent = match.Groups[1].Value;
+                templateText = bodyContent;
+            }
+            return templateText;
+        }
         private string UpdateTemplateBody(string updatedBodyContent)
         {
             string tempString = CurrentTemplate.HtmlString;
@@ -123,17 +128,6 @@ namespace CoursesManager.UI.ViewModels.Mailing
             );
 
             return updatedTemplate;
-        }
-        public async void OpenTemplateViewer()
-        {
-            await ExecuteWithOverlayAsync(_messageBroker, async () =>
-            {
-                var dialogResult = await _dialogService.ShowDialogAsync<TemplatePreviewDialogViewModel, DialogResultType>(new DialogResultType
-                {
-                    DialogTitle = CurrentTemplate.Name,
-                    DialogText = UpdateTemplateBody(GetPlainTextFromFlowDocument(VisibleText)),
-                });
-            });
         }
 
         private void SwitchHtmls(string Html)
@@ -224,7 +218,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
 
             VisibleText = newDocument;
         }
-
+#endregion
 
     }
 }
