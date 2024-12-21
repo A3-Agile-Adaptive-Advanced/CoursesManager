@@ -136,7 +136,7 @@
                                         <materialDesign:PackIcon Kind="Picture" Height="90" Width="90" VerticalAlignment="Center" Foreground="DarkGray"/>
                                     </Viewbox>
                                     <Viewbox Width="90" Height="90">
-                                        <Image Source="{Binding Image , FallbackValue={x:Null}, UpdateSourceTrigger=PropertyChanged}" Height="90" Width="90" VerticalAlignment="Center" />
+                                        <Image Source="{Binding ImageAsBitmap, UpdateSourceTrigger=PropertyChanged}" Height="90" Width="90" VerticalAlignment="Center" />
                                     </Viewbox>
 
                                     <!-- Title and Subtitle -->

@@ -4,13 +4,15 @@
              xmlns:local="clr-namespace:CoursesManager.UI"
              xmlns:viewModels="clr-namespace:CoursesManager.UI.ViewModels"
              xmlns:studentsViewModels="clr-namespace:CoursesManager.UI.ViewModels.Students"
-             xmlns:courseViewModels="clr-namespace:CoursesManager.UI.ViewModels.Students"
+             xmlns:courseViewModels="clr-namespace:CoursesManager.UI.ViewModels.Courses"
+             xmlns:mailingViewModels="clr-namespace:CoursesManager.UI.ViewModels.Mailing"
              xmlns:views="clr-namespace:CoursesManager.UI.Views"
              xmlns:courseViews="clr-namespace:CoursesManager.UI.Views.Courses"
              xmlns:students="clr-namespace:CoursesManager.UI.Views.Students"
              xmlns:mailing="clr-namespace:CoursesManager.UI.Views.Mailing"
              xmlns:studentViewModel="clr-namespace:CoursesManager.UI.ViewModels.Students"
              xmlns:converters="clr-namespace:CoursesManager.UI.Helpers.Converters"
+             xmlns:helpers="clr-namespace:CoursesManager.UI.Helpers"
              xmlns:courses="clr-namespace:CoursesManager.UI.ViewModels.Courses">
     <Application.Resources>
         <ResourceDictionary>
@@ -48,8 +50,13 @@
                 <views:ConfigurationView />
             </DataTemplate>
 
+            <DataTemplate DataType="{x:Type mailingViewModels:EditMailTemplatesViewModel}">
+                <mailing:EditMailTemplates />
+            </DataTemplate>
+
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></converters:BoolToVisibilityConverter>
             <converters:StartDateToBooleanConverter x:Key="StartDateToBooleanConverter"></converters:StartDateToBooleanConverter>
+            <converters:ToastTypeToVisibility x:Key="ToastTypeToVisibilityConverter"></converters:ToastTypeToVisibility>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
