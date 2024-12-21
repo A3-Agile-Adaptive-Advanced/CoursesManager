@@ -10,7 +10,6 @@
         AllowsTransparency="True"
         WindowStyle="None"
         Background="Transparent"
-        Loaded="Window_Loaded"
         WindowStartupLocation="CenterScreen"
         Width="600" Height="600">
 

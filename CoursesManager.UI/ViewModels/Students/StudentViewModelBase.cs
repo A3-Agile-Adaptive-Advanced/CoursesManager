@@ -27,7 +27,13 @@ namespace CoursesManager.UI.ViewModels.Students
         public ObservableCollection<SelectableCourse> SelectableCourses { get; protected set; }
         public ICommand SaveCommand { get; protected set; }
         public ICommand CancelCommand { get; protected set; }
-        public Window ParentWindow { get; set; }
+        private Window? _parentWindow;
+
+        public Window ParentWindow
+        {
+            get => _parentWindow ?? Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive) ?? Application.Current.MainWindow;
+            set => _parentWindow = value;
+        }
 
         protected StudentViewModelBase(
             IStudentRepository studentRepository,
@@ -75,7 +81,6 @@ namespace CoursesManager.UI.ViewModels.Students
 
             return new ObservableCollection<SelectableCourse>(selectableCourses);
         }
-
 
         protected async Task<bool> ValidateFields()
         {

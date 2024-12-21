@@ -13,18 +13,5 @@ namespace CoursesManager.UI.Views.Students
         {
             InitializeComponent();
         }
-
-        //can be better but for now it is ok
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (DataContext is AddStudentViewModel viewModel && viewModel != null)
-            {
-                viewModel.ParentWindow = this;
-            }
-            else
-            {
-                Debug.WriteLine("DataContext is either null or not of type AddStudentViewModel.");
-            }
-        }
     }
 }
