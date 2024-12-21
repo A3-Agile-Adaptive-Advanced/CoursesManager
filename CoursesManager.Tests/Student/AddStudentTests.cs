@@ -69,6 +69,13 @@ namespace CoursesManager.Tests
                     new Registration { StudentId = 1, CourseId = 1 }
                 });
 
+            _mockStudentRepository
+                .Setup(repo => repo.GetAll())
+                .Returns(new List<Student>
+                {
+                    new Student { Email = "existing@example.com" }
+                });
+
             _viewModel = new AddStudentViewModel(
                 _student,
                 studentRepository: _mockStudentRepository.Object,
@@ -88,11 +95,11 @@ namespace CoursesManager.Tests
                 email: addedStudent.Email,
                 phone: addedStudent.Phone,
                 dateOfBirth: new DateTime(1990, 1, 1),
-                houseNumber: addedStudent.Address.HouseNumber,
-                zipCode: addedStudent.Address.ZipCode,
-                city: addedStudent.Address.City,
-                country: addedStudent.Address.Country,
-                street: addedStudent.Address.Street,
+                houseNumber: addedStudent.Address?.HouseNumber ?? string.Empty,
+                zipCode: addedStudent.Address?.ZipCode ?? string.Empty,
+                city: addedStudent.Address?.City ?? string.Empty,
+                country: addedStudent.Address?.Country ?? string.Empty,
+                street: addedStudent.Address?.Street ?? string.Empty,
                 selectedCourse: "Math"
             );
             _viewModel.SelectedCourse = "Math";
@@ -119,11 +126,11 @@ namespace CoursesManager.Tests
                 email: "Invalid",
                 phone: addedStudent.Phone,
                 dateOfBirth: new DateTime(1990, 1, 1),
-                houseNumber: addedStudent.Address.HouseNumber,
-                zipCode: addedStudent.Address.ZipCode,
-                city: addedStudent.Address.City,
-                country: addedStudent.Address.Country,
-                street: addedStudent.Address.Street,
+                houseNumber: addedStudent.Address?.HouseNumber ?? string.Empty,
+                zipCode: addedStudent.Address?.ZipCode ?? string.Empty,
+                city: addedStudent.Address?.City ?? string.Empty,
+                country: addedStudent.Address?.Country ?? string.Empty,
+                street: addedStudent.Address?.Street ?? string.Empty,
                 selectedCourse: "Math"
             );
             _viewModel.SelectedCourse = "Math";
@@ -154,11 +161,11 @@ namespace CoursesManager.Tests
                 email: addedStudent.Email,
                 phone: addedStudent.Phone,
                 dateOfBirth: new DateTime(1990, 1, 1),
-                houseNumber: addedStudent.Address.HouseNumber,
-                zipCode: addedStudent.Address.ZipCode,
-                city: addedStudent.Address.City,
-                country: addedStudent.Address.Country,
-                street: addedStudent.Address.Street,
+                houseNumber: addedStudent.Address?.HouseNumber ?? string.Empty,
+                zipCode: addedStudent.Address?.ZipCode ?? string.Empty,
+                city: addedStudent.Address?.City ?? string.Empty,
+                country: addedStudent.Address?.Country ?? string.Empty,
+                street: addedStudent.Address?.Street ?? string.Empty,
                 selectedCourse: "InvalidCourse"
             );
             _viewModel.SelectedCourse = "InvalidCourse";
@@ -183,18 +190,18 @@ namespace CoursesManager.Tests
         public async Task Save_DuplicateEmail_ShowsError()
         {
             // Arrange
-            var existingEmails = new List<string> { "s@s.com" };
+            var existingEmails = new List<string> { "existing@example.com" };
             BuildWindowForTestScenario(
                 firstName: addedStudent.FirstName,
                 lastName: addedStudent.LastName,
-                email: addedStudent.Email,
+                email: "existing@example.com",
                 phone: addedStudent.Phone,
                 dateOfBirth: new DateTime(1990, 1, 1),
-                houseNumber: addedStudent.Address.HouseNumber,
-                zipCode: addedStudent.Address.ZipCode,
-                city: addedStudent.Address.City,
-                country: addedStudent.Address.Country,
-                street: addedStudent.Address.Street,
+                houseNumber: addedStudent.Address?.HouseNumber ?? string.Empty,
+                zipCode: addedStudent.Address?.ZipCode ?? string.Empty,
+                city: addedStudent.Address?.City ?? string.Empty,
+                country: addedStudent.Address?.Country ?? string.Empty,
+                street: addedStudent.Address?.Street ?? string.Empty,
                 selectedCourse: "Math"
             );
             _viewModel.SelectedCourse = "Math";
@@ -390,8 +397,11 @@ namespace CoursesManager.Tests
             var method = instance.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
             if (method != null)
             {
-                var task = (Task)method.Invoke(instance, null);
-                await task;
+                var task = (Task?)method.Invoke(instance, null);
+                if (task != null)
+                {
+                    await task;
+                }
             }
         }
     }
