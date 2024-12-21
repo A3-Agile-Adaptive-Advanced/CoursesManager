@@ -53,6 +53,13 @@ namespace CoursesManager.Tests
             _registrationRepositoryMock = new Mock<IRegistrationRepository>();
             _dialogServiceMock = new Mock<IDialogService>();
 
+            _studentRepositoryMock
+                .Setup(repo => repo.GetAll())
+                .Returns(new List<Student>
+                {
+                    new Student { Email = "existing@example.com" }
+                });
+
             _courseRepositoryMock.Setup(repo => repo.GetAll())
                 .Returns(new List<Course>
                 {
