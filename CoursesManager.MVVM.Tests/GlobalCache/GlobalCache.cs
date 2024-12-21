@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using CoursesManager.MVVM.Exceptions;
 using NUnit.Framework;
@@ -120,11 +121,11 @@ namespace GlobalCacheExample
             cache.Clear();
 
             // Act.
-            cache.Put("key1", "value1", isPermanent: false);
-            cache.Put("key1", "value2", isPermanent: false); // Overwrite.
+            cache.Put("key1", "value1", false);
+            cache.Put("key1", "value2",  false); // Overwrite.
 
             // Assert.
-            var result = cache.Get("key1");
+            var result = cache.Get("key1") as string;
             Assert.That(result, Is.EqualTo("value2"));
         }
 
@@ -184,7 +185,8 @@ namespace GlobalCacheExample
             Assert.Throws<ArgumentNullException>(() => cache.Put("key1", null, isPermanent: false));
         }
 
-        public void Test_Update_Permanent_Item_With_Different_Type_Should_Throw_CannotBeOverWrittenException()
+        [Test]
+        public void Test_Update_Permanent_SingleItem_With_Different_Type_Should_Throw_CannotBeOverWrittenException()
         {
             // Arrange.
             var cache = GlobalCache.CreateForTesting();
@@ -194,9 +196,74 @@ namespace GlobalCacheExample
             cache.Put("key1", "value1", true);
             
             // Assert.
-            Assert.Throws<CantBeOverwrittenException>(() => cache.Update("key1", 1));
+            Assert.Throws<CantBeOverwrittenException>(() => cache.Put("key1", 1, true));
+        }
+        [Test]
+        public void Test_Update_Permanent_SingleItem_With_Same_Type_Should_Update()
+        {
+            // Arrange.
+            var cache = GlobalCache.CreateForTesting();
+            cache.Clear();
 
+            // Act.
+            cache.Put("key1", "value1", true);
+            cache.Put("key1", "value2", true); // Overwrite.
 
+            // Assert.
+            var result = cache.Get("key1") as string;
+            Assert.That(result, Is.EqualTo("value2"));
+        }
+        [Test]
+        public void Test_Update_Permanent_Collection_With_Same_Type_Should_Update()
+        {
+            // Arrange.
+            var cache = GlobalCache.CreateForTesting();
+            cache.Clear();
+            var myCollection1 = new ObservableCollection<string>
+            {
+                "String 1",
+                "String 2",
+                "String 3"
+            };
+            var myCollection2 = new ObservableCollection<string>
+            {
+                "String 4",
+                "String 5",
+                "String 6"
+            };
+
+            // Act.
+            cache.Put("key1", myCollection1, true);
+            cache.Put("key1", myCollection2, true); // Overwrite.
+
+            // Assert.
+            var result = cache.Get("key1") as ObservableCollection<string>;
+            Assert.That(result, Is.EqualTo(myCollection2));
+        }
+        [Test]
+        public void Test_Update_Permanent_Collection_With_Different_Type_Should_Throw_CannotBeOverWrittenException()
+        {
+            // Arrange.
+            var cache = GlobalCache.CreateForTesting();
+            cache.Clear();
+            var myCollection1 = new ObservableCollection<string>
+            {
+                "String 1",
+                "String 2",
+                "String 3"
+            };
+            var myCollection2 = new ObservableCollection<long>
+            {
+                1,
+                2,
+                3
+            };
+
+            // Act.
+            cache.Put("key1", myCollection1, true);
+
+            // Assert.
+            Assert.Throws<CantBeOverwrittenException>(() => cache.Put("key1", myCollection2, true));
         }
         #endregion
 

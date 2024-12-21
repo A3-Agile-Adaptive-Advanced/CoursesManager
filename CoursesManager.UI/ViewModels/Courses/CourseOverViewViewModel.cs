@@ -97,7 +97,7 @@ namespace CoursesManager.UI.ViewModels.Courses
 
         private void LoadCourseData()
         {
-            CurrentCourse = (Course)GlobalCache.Instance.Get("Opened Course");
+            CurrentCourse = GlobalCache.Instance.Get("Opened Course") as Course;
 
             if (CurrentCourse != null)
             {

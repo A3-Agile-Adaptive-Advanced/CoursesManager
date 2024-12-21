@@ -38,7 +38,6 @@ namespace CoursesManager.Tests.Courses
             _messageBrokerMock = new Mock<IMessageBroker>();
             _navigationServiceMock = new Mock<INavigationService>();
             _mailProviderMock = new Mock<IMailProvider>();
-            GlobalCache.Instance.Clear();
             GlobalCache.Instance.Put("Opened Course", new Course { Id = 1, Name = "Test Course" }, false);
 
             List<Student> students = new()
@@ -71,7 +70,6 @@ namespace CoursesManager.Tests.Courses
         public void LoadCourseData_WhenCourseIsSet_ShouldPopulateStudentsAndPayments()
         {
             // Arrange
-            GlobalCache.Instance.Clear();
             GlobalCache.Instance.Put("Opened Course", new Course { Id = 1, Name = "Test Course" }, false);
 
             List<Student> students = new()

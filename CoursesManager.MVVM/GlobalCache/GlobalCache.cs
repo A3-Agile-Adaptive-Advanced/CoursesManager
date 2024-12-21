@@ -14,7 +14,7 @@ public class GlobalCache
 {
     #region Attributes
     private readonly int _initialCapacity;
-    private readonly ConcurrentDictionary<string, LinkedListNode<CacheItem>> _cacheMap;
+    private readonly ConcurrentDictionary<string, CacheItem>_cacheMap;
     private readonly ConcurrentDictionary<string, long> _usageOrder;
     private readonly object _lock = new object();
 
@@ -29,7 +29,7 @@ public class GlobalCache
         _capacity = capacity;
         _initialCapacity = capacity;
         _permanentItemCount = 0;
-        _cacheMap = new ConcurrentDictionary<string, LinkedListNode<CacheItem>>();
+        _cacheMap = new ConcurrentDictionary<string, CacheItem>();
         _usageOrder = new ConcurrentDictionary<string, long>();
     }
 
@@ -38,12 +38,12 @@ public class GlobalCache
     #region Control methods
     public object? Get(string key)
     {
-        if (!_cacheMap.ContainsKey(key))
+        if (!_cacheMap.TryGetValue(key, out var existingItem))
             throw new KeyNotFoundException();
 
         _usageOrder[key] = DateTime.Now.Ticks;
 
-        return _cacheMap[key].Value.Value;
+        return _cacheMap[key].Value;
     }
 
     // When an item is permanent the only thing possible is to update its contents, a check is done to see if the contents match what is already in cache.
@@ -53,30 +53,22 @@ public class GlobalCache
     public void Put(string key, object value, bool isPermanent)
     {
         ArgumentNullException.ThrowIfNull(value, nameof(value));
-
-        if (_cacheMap.TryGetValue(key, out var existingNode))
+        if (_cacheMap.TryGetValue(key, out var existingItem))
         {
-            Update(key, existingNode);
+            if ((existingItem.IsPermanent != isPermanent))
+            {
+                throw new CantBeOverwrittenException($"The item with key '{key}' is not a permanent item.");
+            }
+            Update(key, value);
         }
         else
         {
             EnsureCapacity();
-            _cacheMap[key] = new LinkedListNode<CacheItem>(new CacheItem(key, value, isPermanent));
+            _cacheMap[key] = new CacheItem(key, value, isPermanent);
         }
 
         _usageOrder[key] = DateTime.Now.Ticks;
     }
-
-    public bool ContainsKey(string key)
-    {
-        if (_cacheMap.ContainsKey(key))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
 
     // Method is not used but implemented nonetheless for future possibilities.
     // Whenever an item needs to 'survive' longer than the expected lifecycle but
@@ -88,7 +80,7 @@ public class GlobalCache
             if (_cacheMap.ContainsKey(key))
             {
                 var node = _cacheMap[key];
-                if (node.Value.IsPermanent)
+                if (node.IsPermanent)
                 {
                     _permanentItemCount--;
                     _cacheMap.TryRemove(key, out _);
@@ -106,19 +98,20 @@ public class GlobalCache
 
     private void Update(string key, object value)
     {
-        if (_cacheMap.TryGetValue(key, out var existingNode))
+        if (_cacheMap.TryGetValue(key, out var existingItem))
         {
-            if (existingNode.Value.IsPermanent && ShouldNotUpdateValue(existingNode.Value.Value, value))
+            if (existingItem.IsPermanent && ShouldNotUpdateValue(existingItem.Value, value))
             {
                 throw new CantBeOverwrittenException($"The item with key '{key}' is of a different type and cannot be overwritten.");
             }
 
-            existingNode.Value.Value = value;
+
+            existingItem.Value = value;
             _usageOrder[key] = DateTime.Now.Ticks;
         }
         else
         {
-            throw new NullReferenceException();
+            throw new NullReferenceException($"The item with key '{key}' does not exist in the cache.");
         }
 
     }
@@ -165,6 +158,7 @@ public class GlobalCache
         }
         else
         {
+            Console.WriteLine("hey ;)");
             return !Equals(existingValue, newValue);
         }
     }
