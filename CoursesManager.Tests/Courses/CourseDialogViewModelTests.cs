@@ -115,6 +115,57 @@ namespace CoursesManager.Tests.Courses
             Assert.That(originalCourse.Name, Is.EqualTo("Original Course"), "De originele cursus mag niet worden aangepast wanneer wijzigingen worden aangebracht.");
         }
 
+        [Test]
+        public async Task SaveCommand_ShouldUpdateExistingCourse_WhenOriginalCourseIsNotNull()
+        {
+            // Arrange
+            var originalCourse = new Course { Name = "Original Course" };
+            _viewModel = new CourseDialogViewModel(
+                _courseRepositoryMock.Object,
+                _dialogServiceMock.Object,
+                _locationRepositoryMock.Object,
+                originalCourse
+            );
+
+            _viewModel.Course.Name = "Updated Course";
+
+            // Act
+            await Task.Run(() => _viewModel.SaveCommand.Execute(null));
+
+            // Assert
+            _courseRepositoryMock.Verify(repo => repo.Update(It.IsAny<Course>()), Times.Once, "De Update-methode van de repository moet één keer worden aangeroepen voor een bestaande cursus.");
+        }
+
+        [Test]
+        public void Constructor_ShouldThrowException_WhenDependenciesAreNull()
+        {
+            // Arrange & Act & Assert
+            Assert.Throws<ArgumentNullException>(() => new CourseDialogViewModel(
+                null,
+                _dialogServiceMock.Object,
+                _locationRepositoryMock.Object,
+                null
+            ), "De constructor moet een ArgumentNullException gooien als courseRepository null is.");
+
+            Assert.Throws<ArgumentNullException>(() => new CourseDialogViewModel(
+                _courseRepositoryMock.Object,
+                null,
+                _locationRepositoryMock.Object,
+                null
+            ), "De constructor moet een ArgumentNullException gooien als dialogService null is.");
+
+            Assert.Throws<ArgumentNullException>(() => new CourseDialogViewModel(
+                _courseRepositoryMock.Object,
+                _dialogServiceMock.Object,
+                null,
+                null
+            ), "De constructor moet een ArgumentNullException gooien als locationRepository null is.");
+        }
+
+
+
+
+
         // unhappy flows
 
         [Test]
