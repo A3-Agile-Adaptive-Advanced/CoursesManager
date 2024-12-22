@@ -92,7 +92,7 @@ namespace CoursesManager.UI.ViewModels.Courses
         private Course? OriginalCourse { get; }
         protected override void InvokeResponseCallback(DialogResult<Course> dialogResult)
         {
-            ResponseCallback.Invoke(dialogResult);
+            ResponseCallback?.Invoke(dialogResult);
         }
 
         private void ExecuteSave()
