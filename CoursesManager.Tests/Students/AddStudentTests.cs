@@ -13,7 +13,7 @@ using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.ViewModels.Students;
 using CoursesManager.UI.Services;
 
-namespace CoursesManager.Tests
+namespace CoursesManager.Tests.Students
 {
     [TestFixture]
     [Apartment(System.Threading.ApartmentState.STA)]

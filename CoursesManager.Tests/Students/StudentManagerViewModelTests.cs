@@ -8,7 +8,7 @@ using CoursesManager.UI.Repositories.StudentRepository;
 using CoursesManager.UI.ViewModels.Students;
 using Moq;
 
-namespace CoursesManager.Tests
+namespace CoursesManager.Tests.Students
 {
     [TestFixture]
     public class StudentManagerViewModelTests

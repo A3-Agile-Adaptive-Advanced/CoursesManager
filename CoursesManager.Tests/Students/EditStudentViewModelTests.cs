@@ -12,9 +12,8 @@ using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.ViewModels.Students;
 using CoursesManager.UI.Helpers;
 using CoursesManager.UI.Services;
-using System.Windows.Media;
 
-namespace CoursesManager.Tests
+namespace CoursesManager.Tests.Students
 {
     [TestFixture]
     [Apartment(System.Threading.ApartmentState.STA)]
@@ -25,12 +24,12 @@ namespace CoursesManager.Tests
         private Mock<IRegistrationRepository> _registrationRepositoryMock;
         private Mock<IDialogService> _dialogServiceMock;
         private EditStudentViewModel _viewModel;
-        private Student _student;
+        private UI.Models.Student _student;
 
         [SetUp]
         public void SetUp()
         {
-            _student = new Student
+            _student = new UI.Models.Student
             {
                 Id = 1,
                 FirstName = "John",

@@ -147,13 +147,15 @@ public abstract class BaseDataAccess<T>(string? modelTableName = null) where T :
         if (parameters is { Length: > 0 })
             mySqlCommand.Parameters.AddRange(parameters);
 
-
         try
         {
             mySqlConnection.Open();
-            mySqlCommand.ExecuteNonQuery();
+        
+            // Execute the stored procedure only once
+            int rowsAffected = mySqlCommand.ExecuteNonQuery();
 
-            return mySqlCommand.ExecuteNonQuery() > 0 ? GetLastInsertedId() : false;
+            // Check rows affected and return appropriate result
+            return rowsAffected > 0 ? GetLastInsertedId() : false;
         }
         catch (MySqlException exception)
         {
@@ -161,6 +163,7 @@ public abstract class BaseDataAccess<T>(string? modelTableName = null) where T :
             throw;
         }
     }
+
 
     private int GetLastInsertedId()
     {

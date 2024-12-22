@@ -77,15 +77,16 @@ namespace CoursesManager.UI.DataAccess
         {
             try
             {
-                // Add the address first
-                if (student.Address == null)
-                {
-                    throw new ArgumentNullException(nameof(student.Address), "Student address cannot be null.");
-                }
-
+                // Step 1: Add the address and get its ID
                 int addressId = _addressDataAccess.Add(student.Address);
+                if (addressId <= 0)
+                {
+                    throw new InvalidOperationException("Failed to create address.");
+                }
+                student.AddressId = addressId; // Assign FK to the student
 
-                string procedureName = StoredProcedures.AddStudent;
+                // Step 2: Add the student with the retrieved address ID
+                string procedureName = "spStudents_Add";
                 var parameters = new MySqlParameter[]
                 {
                     new MySqlParameter("@p_firstname", student.FirstName),
@@ -101,26 +102,14 @@ namespace CoursesManager.UI.DataAccess
                     new MySqlParameter("@p_date_of_birth", student.DateOfBirth)
                 };
 
-                int studentId = ExecuteNonProcedure(procedureName, parameters);
+                ExecuteNonProcedure(procedureName, parameters);
 
-                if (student.Registrations != null)
-                {
-                    foreach (var registration in student.Registrations)
-                    {
-                        if (registration.Course == null)
-                        {
-                            throw new ArgumentNullException(nameof(registration.Course), "Registration course cannot be null.");
-                        }
-
-                        registration.StudentId = studentId;
-                        registration.CourseId = registration.Course.Id;
-                        _registrationDataAccess.Add(registration);
-                    }
-                }
+                LogUtil.Log($"Student added successfully with Address ID: {addressId}");
             }
-            catch (MySqlException ex)
+            catch (Exception ex)
             {
-                throw new InvalidOperationException(ex.Message, ex);
+                LogUtil.Error($"Error adding student: {ex.Message}");
+                throw;
             }
         }
 
@@ -147,7 +136,7 @@ namespace CoursesManager.UI.DataAccess
             {
                 // Update the address first
                 _addressDataAccess.Update(student.Address);
-                
+
                 int? addressId = student.AddressId;
 
                 ExecuteNonProcedure(
@@ -198,7 +187,7 @@ namespace CoursesManager.UI.DataAccess
             }
         }
 
-        public Student FillDataModel(Dictionary<string, object> row, List<Address> addresses,
+        protected Student FillDataModel(Dictionary<string, object> row, List<Address> addresses,
             List<Registration> registrations)
         {
             LogUtil.Info($"Processing row: {string.Join(", ", row.Select(kvp => $"{kvp.Key}={kvp.Value}"))}");
@@ -207,17 +196,13 @@ namespace CoursesManager.UI.DataAccess
             {
                 Id = row.ContainsKey("id") && row["id"] != null ? Convert.ToInt32(row["id"]) : 0,
                 FirstName = row.ContainsKey("firstname") && row["firstname"] != null
-                    ? row["firstname"].ToString() ?? string.Empty
+                    ? row["firstname"].ToString()
                     : string.Empty,
                 LastName = row.ContainsKey("lastname") && row["lastname"] != null
-                    ? row["lastname"].ToString() ?? string.Empty
+                    ? row["lastname"].ToString()
                     : string.Empty,
-                Email = row.ContainsKey("email") && row["email"] != null
-                    ? row["email"].ToString() ?? string.Empty
-                    : string.Empty,
-                Phone = row.ContainsKey("phone") && row["phone"] != null
-                    ? row["phone"].ToString() ?? string.Empty
-                    : string.Empty,
+                Email = row.ContainsKey("email") && row["email"] != null ? row["email"].ToString() : string.Empty,
+                Phone = row.ContainsKey("phone") && row["phone"] != null ? row["phone"].ToString() : string.Empty,
                 IsDeleted = row.ContainsKey("is_deleted") && row["is_deleted"] != null &&
                             Convert.ToBoolean(row["is_deleted"]),
                 DeletedAt = row.ContainsKey("deleted_at") && row["deleted_at"] != null
