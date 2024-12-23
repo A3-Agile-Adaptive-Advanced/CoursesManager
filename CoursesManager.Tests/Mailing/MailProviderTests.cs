@@ -25,7 +25,6 @@ public class MailProviderTests
         _mockMailService = new Mock<IMailService>();
         _mockTemplateRepository = new Mock<ITemplateRepository>();
         _mockCertificateRepository = new Mock<ICertificateRepository>();
-
         _mailProvider = new MailProvider(_mockMailService.Object, _mockTemplateRepository.Object, _mockCertificateRepository.Object);
     }
 
@@ -134,7 +133,7 @@ public class MailProviderTests
             .Setup(service => service.SendMail(It.IsAny<IEnumerable<MailMessage>>()))
             .Callback<IEnumerable<MailMessage>>(messages => sentMessages = messages.ToList())
             .ReturnsAsync(() => sentMessages.Select(_ => new MailResult { Outcome = MailOutcome.Success }).ToList());
-        
+
         // Act
         var results = await _mailProvider.SendPaymentNotifications(course);
 
@@ -144,12 +143,12 @@ public class MailProviderTests
         Assert.That(results.All(r => r.Outcome == MailOutcome.Success));
 
     }
-
+    #region Unhappy flow
     [Test]
     public async Task Test_Null_Certificate_Should_Throw_Exception()
     {
         // Arrange
-        var course = new Course { Id = 1, Students = new ObservableCollection<Student> { new Student { Id = 1, Registrations = new ObservableCollection<Registration> { new Registration { CourseId = 1, IsAchieved = true } } } } };
+        var course = new Course { Id = 1, Students = new ObservableCollection<Student> { new Student { Id = 1, Email = "x@x.com", Registrations = new ObservableCollection<Registration> { new Registration { CourseId = 1, IsAchieved = true } } } } };
         var templateMail = new Template { Name = "CertificateMail", HtmlString = "[Cursist naam]", SubjectString = "CertificateMail" };
         Template? templateCertificate = null;
 
@@ -189,4 +188,68 @@ public class MailProviderTests
         Assert.That(exception.Message, Is.EqualTo("Template 'Certificate' not found."));
     }
 
+    [Test]
+    public async Task Test_No_Students_Should_Throw_Exception()
+    {
+        // Arrange
+        var course = new Course
+        {
+            Id = 1
+        };
+        var template = new Template { HtmlString = "[Placeholder]", SubjectString = "Payment Due" };
+
+        _mockTemplateRepository.Setup(repo => repo.GetTemplateByName("PaymentMail"))
+            .Returns(template);
+
+        _mockMailService.Setup(service => service.SendMail(It.IsAny<List<MailMessage>>()))
+            .ReturnsAsync(new List<MailResult> { new MailResult { Outcome = MailOutcome.Success } });
+
+        // Act & Assert
+        var exception = Assert.ThrowsAsync<NullReferenceException>(async () => await _mailProvider.SendPaymentNotifications(course));
+        Assert.That(exception.Message, Is.EqualTo("There are no students attached to this course"));
+    }
+
+    [Test]
+    public async Task Test_Empty_Email_Should_Throw_Exception()
+    {
+        // Arrange
+        var course = new Course
+        {
+            Id = 1,
+            Registrations = new List<Registration>
+            {
+                new Registration { CourseId = 1, StudentId = 1, PaymentStatus = false },
+                new Registration { CourseId = 1, StudentId = 2, PaymentStatus = false }
+            },
+            Students = new ObservableCollection<Student>
+            {
+                new Student { Id = 1, Email = "" },
+                new Student { Id = 2, Email = "x@x.com" }
+            }
+        };
+        var template = new Template { HtmlString = "[Placeholder]", SubjectString = "Payment Due" };
+
+        _mockTemplateRepository.Setup(repo => repo.GetTemplateByName("PaymentMail"))
+            .Returns(template);
+
+        MailAddress email = new MailAddress("x@x.com");
+        _mockMailService.Setup(service => service.SendMail(It.Is<List<MailMessage>>(messages =>
+                    messages.Any(m => m.To.Contains(email))
+            )))
+            .ReturnsAsync(new List<MailResult>
+            {
+                new MailResult { Outcome = MailOutcome.Success },
+                new MailResult { Outcome = MailOutcome.Failure }
+            });
+
+        // Act
+        var results = await _mailProvider.SendPaymentNotifications(course);
+
+        // Assert
+        Assert.That(results, Is.Not.Empty);
+        Assert.That(results.Count, Is.EqualTo(3));
+        Assert.That(results[0].Outcome, Is.EqualTo(MailOutcome.Failure));
+        Assert.That(results[1].Outcome, Is.EqualTo(MailOutcome.Success));
+    }
+    #endregion
 }

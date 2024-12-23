@@ -8,7 +8,9 @@ using iText.Html2pdf;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Mail;
+using CoursesManager.MVVM.Exceptions;
 using CoursesManager.MVVM.Mail.MailService;
+using System.Text.RegularExpressions;
 
 
 namespace CoursesManager.UI.Mailing
@@ -21,7 +23,7 @@ namespace CoursesManager.UI.Mailing
         private readonly ICertificateRepository _certificateRepository;
         #endregion
         #region Attributes
-        private List<MailResult> mailResults = new();
+        List<MailResult> allMailResults = new();
         #endregion
 
         public MailProvider(IMailService mailService, ITemplateRepository templateRepository,
@@ -38,9 +40,14 @@ namespace CoursesManager.UI.Mailing
             {
                 List<MailMessage> messages = new();
                 Template originalTemplate = GetTemplateByName("CertificateMail");
-
+                if (course.Students == null)
+                    throw new NullReferenceException("There are no students attached to this course");
                 foreach (Student student in course.Students)
                 {
+                    if (ValidateStudentEmail(student))
+                    {
+                        continue;
+                    }
                     Registration? registration = student.Registrations.FirstOrDefault(r => r.CourseId == course.Id);
                     if (registration.IsAchieved)
                     {
@@ -52,7 +59,7 @@ namespace CoursesManager.UI.Mailing
                 }
                 if (messages.Any())
                 {
-                    mailResults = await _mailService.SendMail(messages);
+                    allMailResults = await _mailService.SendMail(messages);
                 }
             }
             catch (Exception ex)
@@ -60,19 +67,23 @@ namespace CoursesManager.UI.Mailing
                 LogUtil.Error(ex.Message);
                 throw;
             }
-            return mailResults;
+            return allMailResults;
         }
 
         public async Task<List<MailResult>> SendCourseStartNotifications(Course course)
         {
-            //Console.WriteLine(course.Students[1].Id);
             try
             {
                 List<MailMessage> messages = new();
                 Template originalTemplate = GetTemplateByName("CourseStartMail");
-
+                if (course.Students == null)
+                    throw new NullReferenceException("There are no students attached to this course");
                 foreach (Student student in course.Students)
                 {
+                    if (ValidateStudentEmail(student))
+                    {
+                        continue;
+                    }
                     Template template = originalTemplate.Copy();
                     template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
 
@@ -80,7 +91,7 @@ namespace CoursesManager.UI.Mailing
                 }
                 if (messages.Any())
                 {
-                   return await _mailService.SendMail(messages);
+                    allMailResults.AddRange(await _mailService.SendMail(messages));
                 }
             }
             catch (Exception ex)
@@ -88,7 +99,7 @@ namespace CoursesManager.UI.Mailing
                 LogUtil.Error(ex.Message);
                 throw;
             }
-            return mailResults;
+            return allMailResults;
         }
 
         public async Task<List<MailResult>> SendPaymentNotifications(Course course)
@@ -99,23 +110,29 @@ namespace CoursesManager.UI.Mailing
 
             try
             {
+                if (course.Students == null)
+                    throw new NullReferenceException("There are no students attached to this course");
                 foreach (Registration registration in courseRegistrations)
                 {
-
                     if (!registration.PaymentStatus)
                     {
                         Student student = course.Students.FirstOrDefault(s => s.Id == registration.StudentId);
+                        if (student == null) continue;
+                        if (ValidateStudentEmail(student))
+                        {
+                            continue;
+                        }
                         Template template = originalTemplate.Copy();
-
                         template.HtmlString = FillTemplate(template.HtmlString, student, course, $"https://tinyurl.com/CourseManager/{student.Id}");
                         messages.Add(CreateMessage(student.Email, template.SubjectString, template.HtmlString, null));
                     }
                 }
                 if (messages.Any())
                 {
-                    return await _mailService.SendMail(messages);
+
+                    allMailResults.AddRange(await _mailService.SendMail(messages));
                 }
-                return mailResults;
+                return allMailResults;
             }
             catch (Exception ex)
             {
@@ -125,6 +142,16 @@ namespace CoursesManager.UI.Mailing
         }
 
         #region Helper methods
+
+        private bool ValidateStudentEmail(Student student)
+        {
+            if (!Regex.IsMatch(student.Email, @"^[^@]+@[^@]+\.[^@\s]{2,}$"))
+            {
+                allMailResults.Add(new MailResult { Outcome = MailOutcome.Failure, StudentName = $"{student.FirstName} {student.Insertion} {student.LastName}" });
+                return true;
+            }
+            return false;
+        }
         private byte[] GeneratePdf(Course course, Student student)
         {
             try
@@ -150,8 +177,8 @@ namespace CoursesManager.UI.Mailing
 
         private Template GetTemplateByName(string name)
         {
-                return _templateRepository.GetTemplateByName(name) ??
-                       throw new NullReferenceException("Template 'Certificate' not found.");
+            return _templateRepository.GetTemplateByName(name) ??
+                   throw new NullReferenceException("Template 'Certificate' not found.");
         }
 
         private string FillTemplate(string template, Student student, Course course, string? URL)
