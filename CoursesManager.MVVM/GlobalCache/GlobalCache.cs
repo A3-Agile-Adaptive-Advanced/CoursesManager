@@ -19,7 +19,7 @@ public class GlobalCache
     private readonly object _lock = new object();
 
     private int _capacity;
-    private int _permanentItemCount;
+    private static int _permanentItemCount;
     #endregion
 
     private static readonly Lazy<GlobalCache> _instance = new (() => new GlobalCache(10));
@@ -118,7 +118,6 @@ public class GlobalCache
     private void EnsureCapacity()
     {
         if (_cacheMap.Count < _capacity) return;
-
         if (_permanentItemCount == _capacity)
         {
             IncreaseCapacity();
@@ -131,7 +130,7 @@ public class GlobalCache
 
     private void IncreaseCapacity()
     {
-        _capacity += _initialCapacity * 2;
+        _capacity = _initialCapacity * 2;
     }
 
     private void DecreaseCapacity()
@@ -158,7 +157,6 @@ public class GlobalCache
         }
         else
         {
-            Console.WriteLine("hey ;)");
             return !Equals(existingValue, newValue);
         }
     }
@@ -186,7 +184,7 @@ public class GlobalCache
 
             if (isPermanent)
             {
-                GlobalCache.Instance._permanentItemCount++;
+                _permanentItemCount++;
             }
         }
     }
@@ -214,6 +212,12 @@ public class GlobalCache
     public static GlobalCache CreateForTesting()
     {
         return new GlobalCache(_testCapacity);
+    }
+
+    public int GetCapacity()
+    {
+        return _capacity;
+        
     }
     #endregion
 

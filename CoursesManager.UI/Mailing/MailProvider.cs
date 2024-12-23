@@ -8,7 +8,7 @@ using iText.Html2pdf;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Mail;
-
+using CoursesManager.MVVM.Mail.MailService;
 
 
 namespace CoursesManager.UI.Mailing
@@ -16,22 +16,29 @@ namespace CoursesManager.UI.Mailing
     public class MailProvider : IMailProvider
     {
         #region Services
-        private readonly MailService mailService = new MailService();
-        private readonly IRegistrationRepository registrationRepository = new RegistrationRepository();
-        private readonly ITemplateRepository templateRepository = new TemplateRepository();
-        private readonly ICertificateRepository certificateRepository = new CertificateRepository();
+        private readonly IMailService _mailService;
+        private readonly ITemplateRepository _templateRepository;
+        private readonly ICertificateRepository _certificateRepository;
         #endregion
         #region Attributes
         private List<MailResult> mailResults = new();
         #endregion
+
+        public MailProvider(IMailService mailService, ITemplateRepository templateRepository,
+            ICertificateRepository certificateRepository)
+        {
+            _mailService = mailService;
+            _templateRepository = templateRepository;
+            _certificateRepository = certificateRepository;
+        }
 
         public async Task<List<MailResult>> SendCertificates(Course course)
         {
             try
             {
                 List<MailMessage> messages = new();
-                Template originalTemplate = templateRepository.GetTemplateByName("CertificateMail");
-                
+                Template originalTemplate = GetTemplateByName("CertificateMail");
+
                 foreach (Student student in course.Students)
                 {
                     Registration? registration = student.Registrations.FirstOrDefault(r => r.CourseId == course.Id);
@@ -40,12 +47,12 @@ namespace CoursesManager.UI.Mailing
                         byte[] certificate = GeneratePdf(course, student);
                         Template template = originalTemplate.Copy();
                         template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
-                        messages.Add(CreateMessage("jarnogerrets@gmail.com", template.SubjectString, template.HtmlString, certificate));
+                        messages.Add(CreateMessage(student.Email, template.SubjectString, template.HtmlString, certificate));
                     }
                 }
                 if (messages.Any())
                 {
-                    mailResults = await mailService.SendMail(messages);
+                    mailResults = await _mailService.SendMail(messages);
                 }
             }
             catch (Exception ex)
@@ -58,21 +65,22 @@ namespace CoursesManager.UI.Mailing
 
         public async Task<List<MailResult>> SendCourseStartNotifications(Course course)
         {
+            //Console.WriteLine(course.Students[1].Id);
             try
             {
                 List<MailMessage> messages = new();
-                Template originalTemplate = templateRepository.GetTemplateByName("CourseStartMail");
+                Template originalTemplate = GetTemplateByName("CourseStartMail");
 
                 foreach (Student student in course.Students)
                 {
                     Template template = originalTemplate.Copy();
                     template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
 
-                    messages.Add(CreateMessage("jarnogerrets@gmail.com", template.SubjectString, template.HtmlString, null));
+                    messages.Add(CreateMessage(student.Email, template.SubjectString, template.HtmlString, null));
                 }
                 if (messages.Any())
                 {
-                    await mailService.SendMail(messages);
+                   return await _mailService.SendMail(messages);
                 }
             }
             catch (Exception ex)
@@ -87,7 +95,7 @@ namespace CoursesManager.UI.Mailing
         {
             List<MailMessage> messages = new List<MailMessage>();
             List<Registration> courseRegistrations = course.Registrations;
-            Template originalTemplate = templateRepository.GetTemplateByName("PaymentMail");
+            Template originalTemplate = GetTemplateByName("PaymentMail");
 
             try
             {
@@ -100,12 +108,12 @@ namespace CoursesManager.UI.Mailing
                         Template template = originalTemplate.Copy();
 
                         template.HtmlString = FillTemplate(template.HtmlString, student, course, $"https://tinyurl.com/CourseManager/{student.Id}");
-                        messages.Add(CreateMessage("jarnogerrets@gmail.com", template.SubjectString, template.HtmlString, null));
+                        messages.Add(CreateMessage(student.Email, template.SubjectString, template.HtmlString, null));
                     }
                 }
                 if (messages.Any())
                 {
-                    return await mailService.SendMail(messages);
+                    return await _mailService.SendMail(messages);
                 }
                 return mailResults;
             }
@@ -119,12 +127,10 @@ namespace CoursesManager.UI.Mailing
         #region Helper methods
         private byte[] GeneratePdf(Course course, Student student)
         {
-            Template template = templateRepository.GetTemplateByName("Certificate");
-
-            template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
-
             try
             {
+                Template template = GetTemplateByName("Certificate");
+                template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
                 using (var memoryStream = new MemoryStream())
                 {
                     // Since the way a Certificate is saved is using a html string we can seperate the actual pdf from the template.
@@ -142,10 +148,25 @@ namespace CoursesManager.UI.Mailing
             }
         }
 
+        private Template GetTemplateByName(string name)
+        {
+                return _templateRepository.GetTemplateByName(name) ??
+                       throw new NullReferenceException("Template 'Certificate' not found.");
+        }
+
         private string FillTemplate(string template, Student student, Course course, string? URL)
         {
-            template = course.ReplaceCoursePlaceholders(template, course);
-            template = student.ReplaceStudentPlaceholders(template, student);
+            try
+            {
+                template = course.ReplaceCoursePlaceholders(template, course);
+                template = student.ReplaceStudentPlaceholders(template, student);
+            }
+            catch (Exception ex)
+            {
+                LogUtil.Error(ex.Message);
+                throw;
+            }
+
             if (URL != null)
             {
                 template = template.Replace("[Betaal Link]", URL);
@@ -177,7 +198,7 @@ namespace CoursesManager.UI.Mailing
             certificate.StudentCode = student.Id;
             certificate.CourseCode = course.Code;
 
-            certificateRepository.Add(certificate);
+            _certificateRepository.Add(certificate);
 
         }
         #endregion

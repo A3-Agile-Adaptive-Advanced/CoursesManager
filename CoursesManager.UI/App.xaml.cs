@@ -2,6 +2,7 @@
 using System.Windows;
 using CoursesManager.MVVM.Dialogs;
 using CoursesManager.MVVM.Env;
+using CoursesManager.MVVM.Mail.MailService;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.ViewModels;
 using CoursesManager.MVVM.Messages;
@@ -50,7 +51,8 @@ public partial class App : Application
     public static INavigationService NavigationService { get; set; } = new NavigationService();
     public static IMessageBroker MessageBroker { get; set; } = new MessageBroker();
     public static IDialogService DialogService { get; set; } = new DialogService();
-    public static IMailProvider MailProvider { get; set; } = new MailProvider();
+    public static IMailService MailService { get; set; }
+    public static IMailProvider MailProvider { get; set; } = new MailProvider(MailService, TemplateRepository, CertificateRepository);
 
     public static IConfigurationService ConfigurationService { get; set; } = new ConfigurationService(new EncryptionService("SmpjQzNZMWdCdW11bTlER2owdFRzOHIzQUpWWmhYQ0U="));
 

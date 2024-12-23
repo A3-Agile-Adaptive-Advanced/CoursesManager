@@ -15,6 +15,7 @@ using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using CoursesManager.MVVM.Mail.MailService;
 using CoursesManager.UI.Enums;
 
 namespace CoursesManager.UI.ViewModels.Mailing
@@ -48,11 +49,11 @@ namespace CoursesManager.UI.ViewModels.Mailing
         public ICommand SaveTemplateCommand { get; }
         #endregion
 
-        public EditMailTemplatesViewModel(ITemplateRepository templateRepository, IDialogService dialogService, IMessageBroker messageBroker, INavigationService navigationService) : base(navigationService)
+        public EditMailTemplatesViewModel(IMailProvider mailProvider, ITemplateRepository templateRepository, IDialogService dialogService, IMessageBroker messageBroker, INavigationService navigationService) : base(navigationService)
         {
             _templateRepository = templateRepository;
             _navigationService = navigationService;
-            _mailProvider = new MailProvider();
+            _mailProvider = mailProvider;
             _messageBroker = messageBroker;
             _dialogService = dialogService;
 

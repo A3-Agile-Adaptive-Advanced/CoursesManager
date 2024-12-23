@@ -49,7 +49,48 @@ namespace GlobalCacheExample
         #endregion
 
         #region Eviction and Capacity
+
         [Test]
+        public void Test_Deleting_Permanent_Item_To_Decrease_Capacity()
+        {
+            // Arrange
+            GlobalCache.SetTestCapacity(2);
+            var cache = GlobalCache.CreateForTesting();
+            cache.Clear();
+
+            // Act
+            cache.Put("key1", "value1",  true);
+            cache.Put("key2", "value2", true);
+            cache.Put("key3", "value3",  true);
+            int increasedCapacity = cache.GetCapacity();
+            cache.RemovePermanentItem("key3");
+            int newCapacity = cache.GetCapacity();
+
+            // Assert: Capacity should be 3.
+            Assert.That(increasedCapacity > newCapacity);
+            Assert.That(newCapacity == 3);
+        }
+        [Test]
+        public void Test_Capacity_Decreases_When_Same_As_InitialCapacity()
+        {
+            // Arrange
+            int intialCapacity = 2;
+            GlobalCache.SetTestCapacity(intialCapacity);
+            var cache = GlobalCache.CreateForTesting();
+            cache.Clear();
+
+            // Act
+            cache.Put("key1", "value1", true);
+            cache.Put("key2", "value2", true);
+            cache.Put("key3", "value3", true);
+            cache.RemovePermanentItem("key1");
+            cache.RemovePermanentItem("key2");
+            cache.RemovePermanentItem("key3"); // this would cause the capacity to become 1 without the comparison of the initial capacity against current capacity
+            int newCapacity = cache.GetCapacity();
+
+            // Assert: Capacity should be equal to initial capacity
+            Assert.That(intialCapacity == newCapacity);
+        }
         public void Test_Evict_LRU_When_Capacity_Is_Exceeded()
         {
             // Arrange
@@ -58,9 +99,9 @@ namespace GlobalCacheExample
             cache.Clear();
 
             // Act
-            cache.Put("key1", "value1", isPermanent: false);
-            cache.Put("key2", "value2", isPermanent: false);
-            cache.Put("key3", "value3", isPermanent: false); // This should trigger eviction
+            cache.Put("key1", "value1", false);
+            cache.Put("key2", "value2", false);
+            cache.Put("key3", "value3", false); // This should trigger eviction
 
 
             // Assert: Key3 should be evicted as it's the least recently used
@@ -128,23 +169,6 @@ namespace GlobalCacheExample
             var result = cache.Get("key1") as string;
             Assert.That(result, Is.EqualTo("value2"));
         }
-
-        [Test]
-        public void Test_Overwrite_Permanent_Item_Should_Fail()
-        {
-            // Arrange.
-            GlobalCache.SetTestCapacity(1);
-            var cache = GlobalCache.CreateForTesting();
-            cache.Clear();
-
-            // Act.
-            cache.Put("key1", "value1", isPermanent: true);
-            // Attempt to overwrite a permanent item (should not overwrite) with a different type of object.
-
-            // Assert: the CantBeOverwrittenException should be thrown.
-            Assert.Throws<CantBeOverwrittenException>(() => cache.Put("key1", 1, isPermanent: false));
-
-        }
         #endregion
 
         #region Edge Cases and Error Handling
@@ -186,7 +210,7 @@ namespace GlobalCacheExample
         }
 
         [Test]
-        public void Test_Update_Permanent_SingleItem_With_Different_Type_Should_Throw_CannotBeOverWrittenException()
+        public void Test_Update_Permanent_SingleItem_With_Different_Type()
         {
             // Arrange.
             var cache = GlobalCache.CreateForTesting();
@@ -199,7 +223,7 @@ namespace GlobalCacheExample
             Assert.Throws<CantBeOverwrittenException>(() => cache.Put("key1", 1, true));
         }
         [Test]
-        public void Test_Update_Permanent_SingleItem_With_Same_Type_Should_Update()
+        public void Test_Update_Permanent_SingleItem_With_Same_Type()
         {
             // Arrange.
             var cache = GlobalCache.CreateForTesting();
@@ -214,7 +238,7 @@ namespace GlobalCacheExample
             Assert.That(result, Is.EqualTo("value2"));
         }
         [Test]
-        public void Test_Update_Permanent_Collection_With_Same_Type_Should_Update()
+        public void Test_Update_Permanent_Collection_With_Same_Type()
         {
             // Arrange.
             var cache = GlobalCache.CreateForTesting();
@@ -241,7 +265,7 @@ namespace GlobalCacheExample
             Assert.That(result, Is.EqualTo(myCollection2));
         }
         [Test]
-        public void Test_Update_Permanent_Collection_With_Different_Type_Should_Throw_CannotBeOverWrittenException()
+        public void Test_Update_Permanent_Collection_With_Different_Type()
         {
             // Arrange.
             var cache = GlobalCache.CreateForTesting();
