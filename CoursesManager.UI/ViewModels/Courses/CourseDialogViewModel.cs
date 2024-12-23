@@ -131,7 +131,6 @@ namespace CoursesManager.UI.ViewModels.Courses
                 }
 
 
-
                 var successDialogResult = DialogResult<Course>.Builder()
                     .SetSuccess(
                         Course,
