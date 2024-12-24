@@ -41,3 +41,4 @@
 2024-12-22 17:11:41 [Info] Course updated successfully via repository.
 2024-12-22 17:11:41 [Error] Error in OnSaveAsync: Object reference not set to an instance of an object.
 2024-12-22 17:11:41 [Error] Error in OnSaveAsync: Object reference not set to an instance of an object.
+2024-12-24 11:18:22 [Error] Error in OnSaveAsync: Test exception
