@@ -15,6 +15,7 @@ using CoursesManager.UI.Repositories.StudentRepository;
 using iText.Bouncycastle.Crypto;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using CoursesManager.MVVM.Exceptions;
 
 namespace CoursesManager.UI.ViewModels.Courses
 {
@@ -216,19 +217,44 @@ namespace CoursesManager.UI.ViewModels.Courses
 
         private async void SendPaymentMail()
         {
-            List<MailResult> mailResults = await _mailProvider.SendPaymentNotifications(CurrentCourse);
+            List<MailResult> mailResults = new ();
+            try
+            {
+                mailResults = await _mailProvider.SendPaymentNotifications(CurrentCourse);
+            }
+            catch (DataAccessException)
+            {
+                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error));
+            }
+
             CheckMailOutcome(mailResults);
         }
 
         private async void SendStartCourseMail()
         {
-            List<MailResult> mailResults = await _mailProvider.SendCourseStartNotifications(CurrentCourse);
+            List<MailResult> mailResults = new();
+            try
+            {
+                mailResults = await _mailProvider.SendCourseStartNotifications(CurrentCourse);
+            }
+            catch (DataAccessException)
+            {
+                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error));
+            }
             CheckMailOutcome(mailResults);
         }
 
         private async void SendCertificateMail()
         {
-            List<MailResult> mailResults = await _mailProvider.SendCertificates(CurrentCourse);
+            List<MailResult> mailResults = new();
+            try
+            {
+                mailResults = await _mailProvider.SendCertificates(CurrentCourse);
+            }
+            catch (DataAccessException)
+            {
+                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error));
+            }
             CheckMailOutcome(mailResults);
         }
 

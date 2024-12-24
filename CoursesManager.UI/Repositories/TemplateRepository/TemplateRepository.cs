@@ -1,4 +1,5 @@
-﻿using CoursesManager.UI.DataAccess;
+﻿using CoursesManager.MVVM.Exceptions;
+using CoursesManager.UI.DataAccess;
 using CoursesManager.UI.Models;
 
 namespace CoursesManager.UI.Repositories.TemplateRepository
@@ -6,19 +7,23 @@ namespace CoursesManager.UI.Repositories.TemplateRepository
     public class TemplateRepository : ITemplateRepository
     {
         private readonly TemplateDataAccess _templateDataAccess;
-        public TemplateRepository() 
+        public TemplateRepository()
         {
             _templateDataAccess = new TemplateDataAccess();
         }
 
         public Template GetTemplateByName(string name)
         {
-                return _templateDataAccess.GetByName(name);
+
+            return _templateDataAccess.GetByName(name);
+
         }
 
         public void Update(Template template)
         {
-                _templateDataAccess.UpdateTemplate(template);
+
+            _templateDataAccess.UpdateTemplate(template);
+
         }
 
         public void Add(Template data)

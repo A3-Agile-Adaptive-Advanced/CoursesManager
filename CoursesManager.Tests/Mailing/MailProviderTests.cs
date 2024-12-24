@@ -27,7 +27,7 @@ public class MailProviderTests
         _mockCertificateRepository = new Mock<ICertificateRepository>();
         _mailProvider = new MailProvider(_mockMailService.Object, _mockTemplateRepository.Object, _mockCertificateRepository.Object);
     }
-
+    #region Happy flow
     [Test]
     public async Task Test_Send_Certificates_When_Students_Are_Eligible()
     {
@@ -143,6 +143,7 @@ public class MailProviderTests
         Assert.That(results.All(r => r.Outcome == MailOutcome.Success));
 
     }
+#endregion
     #region Unhappy flow
     [Test]
     public async Task Test_Null_Certificate_Should_Throw_Exception()

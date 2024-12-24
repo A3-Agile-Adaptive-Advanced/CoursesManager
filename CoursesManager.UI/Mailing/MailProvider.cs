@@ -24,6 +24,7 @@ namespace CoursesManager.UI.Mailing
         #endregion
         #region Attributes
         List<MailResult> allMailResults = new();
+        List<MailMessage> messages = new();
         #endregion
 
         public MailProvider(IMailService mailService, ITemplateRepository templateRepository,
@@ -36,109 +37,94 @@ namespace CoursesManager.UI.Mailing
 
         public async Task<List<MailResult>> SendCertificates(Course course)
         {
-            try
+
+            List<MailMessage> messages = new();
+            Template originalTemplate = GetTemplateByName("CertificateMail");
+
+            if (course.Students == null)
+                throw new NullReferenceException("There are no students attached to this course");
+
+            foreach (Student student in course.Students)
             {
-                List<MailMessage> messages = new();
-                Template originalTemplate = GetTemplateByName("CertificateMail");
-                if (course.Students == null)
-                    throw new NullReferenceException("There are no students attached to this course");
-                foreach (Student student in course.Students)
+                if (ValidateStudentEmail(student))
                 {
-                    if (ValidateStudentEmail(student))
-                    {
-                        continue;
-                    }
-                    Registration? registration = student.Registrations.FirstOrDefault(r => r.CourseId == course.Id);
-                    if (registration.IsAchieved)
-                    {
-                        byte[] certificate = GeneratePdf(course, student);
-                        Template template = originalTemplate.Copy();
-                        template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
-                        messages.Add(CreateMessage(student.Email, template.SubjectString, template.HtmlString, certificate));
-                    }
+                    continue;
                 }
-                if (messages.Any())
+                Registration? registration = student.Registrations.FirstOrDefault(r => r.CourseId == course.Id);
+                if (registration == null) throw new NullReferenceException("There are no registrations attached to this student");
+                if (registration.IsAchieved)
                 {
-                    allMailResults = await _mailService.SendMail(messages);
+                    byte[] certificate = GeneratePdf(course, student);
+                    Template template = originalTemplate.Copy();
+                    template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
+                    messages.Add(CreateMessage(student.Email, template.SubjectString, template.HtmlString, certificate));
                 }
             }
-            catch (Exception ex)
+            if (messages.Any())
             {
-                LogUtil.Error(ex.Message);
-                throw;
+                allMailResults = await _mailService.SendMail(messages);
             }
             return allMailResults;
         }
 
         public async Task<List<MailResult>> SendCourseStartNotifications(Course course)
         {
-            try
-            {
-                List<MailMessage> messages = new();
-                Template originalTemplate = GetTemplateByName("CourseStartMail");
-                if (course.Students == null)
-                    throw new NullReferenceException("There are no students attached to this course");
-                foreach (Student student in course.Students)
-                {
-                    if (ValidateStudentEmail(student))
-                    {
-                        continue;
-                    }
-                    Template template = originalTemplate.Copy();
-                    template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
+            if (course.Students == null)
+                throw new NullReferenceException("There are no students attached to this course");
 
-                    messages.Add(CreateMessage(student.Email, template.SubjectString, template.HtmlString, null));
-                }
-                if (messages.Any())
-                {
-                    allMailResults.AddRange(await _mailService.SendMail(messages));
-                }
-            }
-            catch (Exception ex)
+            List<MailMessage> messages = new();
+            Template originalTemplate = GetTemplateByName("CourseStartMail");
+
+            foreach (Student student in course.Students)
             {
-                LogUtil.Error(ex.Message);
-                throw;
+                if (ValidateStudentEmail(student))
+                {
+                    continue;
+                }
+                Template template = originalTemplate.Copy();
+                template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
+
+                messages.Add(CreateMessage(student.Email, template.SubjectString, template.HtmlString, null));
             }
+            if (messages.Any())
+            {
+                allMailResults.AddRange(await _mailService.SendMail(messages));
+            }
+
             return allMailResults;
         }
 
         public async Task<List<MailResult>> SendPaymentNotifications(Course course)
         {
+
             List<MailMessage> messages = new List<MailMessage>();
             List<Registration> courseRegistrations = course.Registrations;
             Template originalTemplate = GetTemplateByName("PaymentMail");
 
-            try
+            if (course.Students == null)
+                throw new NullReferenceException("There are no students attached to this course");
+            foreach (Registration registration in courseRegistrations)
             {
-                if (course.Students == null)
-                    throw new NullReferenceException("There are no students attached to this course");
-                foreach (Registration registration in courseRegistrations)
+                if (!registration.PaymentStatus)
                 {
-                    if (!registration.PaymentStatus)
+                    Student student = course.Students.FirstOrDefault(s => s.Id == registration.StudentId);
+                    if (student == null) continue;
+                    if (ValidateStudentEmail(student))
                     {
-                        Student student = course.Students.FirstOrDefault(s => s.Id == registration.StudentId);
-                        if (student == null) continue;
-                        if (ValidateStudentEmail(student))
-                        {
-                            continue;
-                        }
-                        Template template = originalTemplate.Copy();
-                        template.HtmlString = FillTemplate(template.HtmlString, student, course, $"https://tinyurl.com/CourseManager/{student.Id}");
-                        messages.Add(CreateMessage(student.Email, template.SubjectString, template.HtmlString, null));
+                        continue;
                     }
+                    Template template = originalTemplate.Copy();
+                    template.HtmlString = FillTemplate(template.HtmlString, student, course, $"https://tinyurl.com/CourseManager/{student.Id}");
+                    messages.Add(CreateMessage(student.Email, template.SubjectString, template.HtmlString, null));
                 }
-                if (messages.Any())
-                {
-
-                    allMailResults.AddRange(await _mailService.SendMail(messages));
-                }
-                return allMailResults;
             }
-            catch (Exception ex)
+            if (messages.Any())
             {
-                LogUtil.Error(ex.Message);
-                throw;
+
+                allMailResults.AddRange(await _mailService.SendMail(messages));
             }
+            return allMailResults;
+
         }
 
         #region Helper methods
@@ -154,24 +140,16 @@ namespace CoursesManager.UI.Mailing
         }
         private byte[] GeneratePdf(Course course, Student student)
         {
-            try
-            {
-                Template template = GetTemplateByName("Certificate");
-                template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
-                using (var memoryStream = new MemoryStream())
-                {
-                    // Since the way a Certificate is saved is using a html string we can seperate the actual pdf from the template.
-                    // First we are converting the html to pdf, in the event of failure the html is also not saved to the db, preventing the storage of a faulty html string.
-                    HtmlConverter.ConvertToPdf(template.HtmlString, memoryStream);
-                    SaveCertificate(template, course, student);
-                    return memoryStream.ToArray();
-                }
 
-            }
-            catch (Exception ex)
+            Template template = GetTemplateByName("Certificate");
+            template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
+            using (var memoryStream = new MemoryStream())
             {
-                LogUtil.Error(ex.Message);
-                throw;
+                // Since the way a Certificate is saved is using a html string we can seperate the actual pdf from the template.
+                // First we are converting the html to pdf, in the event of failure the html is also not saved to the db, preventing the storage of a faulty html string.
+                HtmlConverter.ConvertToPdf(template.HtmlString, memoryStream);
+                SaveCertificate(template, course, student);
+                return memoryStream.ToArray();
             }
         }
 
@@ -183,16 +161,9 @@ namespace CoursesManager.UI.Mailing
 
         private string FillTemplate(string template, Student student, Course course, string? URL)
         {
-            try
-            {
-                template = course.ReplaceCoursePlaceholders(template, course);
-                template = student.ReplaceStudentPlaceholders(template, student);
-            }
-            catch (Exception ex)
-            {
-                LogUtil.Error(ex.Message);
-                throw;
-            }
+
+            template = course.ReplaceCoursePlaceholders(template, course);
+            template = student.ReplaceStudentPlaceholders(template, student);
 
             if (URL != null)
             {

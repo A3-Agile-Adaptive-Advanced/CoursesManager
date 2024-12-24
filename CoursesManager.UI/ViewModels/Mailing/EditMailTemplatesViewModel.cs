@@ -18,6 +18,7 @@ using System.Windows.Media;
 using CoursesManager.MVVM.Mail.MailService;
 using CoursesManager.UI.Enums;
 using MySql.Data.MySqlClient;
+using CoursesManager.MVVM.Exceptions;
 
 namespace CoursesManager.UI.ViewModels.Mailing
 {
@@ -111,47 +112,31 @@ namespace CoursesManager.UI.ViewModels.Mailing
                 _messageBroker.Publish(new ToastNotificationMessage(true,
                     "Template opgeslagen", ToastType.Confirmation));
             }
-            catch (MySqlException)
+            catch (DataAccessException)
             {
                 _messageBroker.Publish(new ToastNotificationMessage(true,
                     "Er is een fout opgetreden, template niet opgeslagen in de database",
-                    ToastType.Error));
-            }
-            catch (Exception ex)
-            {
-                LogUtil.Error(ex.Message);
-                _messageBroker.Publish(new ToastNotificationMessage(true,
-                    "Er is een fout opgetreden, neem contact op met de systeembeheerder",
                     ToastType.Error));
             }
         }
         private string GetTemplateText(string? templateName, Template? template)
         {
             string templateText = string.Empty;
-            try
+            if (!(template == null && string.IsNullOrEmpty(templateName)))
             {
-                if (!(template == null && string.IsNullOrEmpty(templateName)))
+                try
                 {
-                    try
-                    {
-                        CurrentTemplate = template ?? _templateRepository.GetTemplateByName(templateName);
-                    }
-                    catch (Exception)
-                    {
-                        _messageBroker.Publish(new ToastNotificationMessage(true,
-                            "Er is een fout opgetreden, template kon niet worden opgehaald uit de database",
-                            ToastType.Error));
-                    }
-                    Match match = Regex.Match(CurrentTemplate.HtmlString, @"<body>(.*?)</body>", RegexOptions.Singleline);
-                    string bodyContent = match.Groups[1].Value;
-                    templateText = bodyContent;
+                    CurrentTemplate = template ?? _templateRepository.GetTemplateByName(templateName);
                 }
-            }
-            catch (Exception ex)
-            {
-                LogUtil.Error(ex.Message);
-                _messageBroker.Publish(new ToastNotificationMessage(true,
-                    "Er is een onverwachte fout opgetreden bij het ophalen van het template.", ToastType.Error));
+                catch (DataAccessException)
+                {
+                    _messageBroker.Publish(new ToastNotificationMessage(true,
+                        "Er is een fout opgetreden, template kon niet worden opgehaald uit de database",
+                        ToastType.Error));
+                }
+                Match match = Regex.Match(CurrentTemplate.HtmlString, @"<body>(.*?)</body>", RegexOptions.Singleline);
+                string bodyContent = match.Groups[1].Value;
+                templateText = bodyContent;
             }
 
             return templateText;
