@@ -14,6 +14,11 @@ using CoursesManager.UI.Repositories.StudentRepository;
 
 namespace CoursesManager.UI.ViewModels.Students
 {
+    /// <summary>
+    /// ViewModel responsible for managing a list of students.
+    /// Supports operations such as searching, toggling between active and deleted students, and navigation.
+    /// required to manage the "StudentManagerView".
+    /// </summary>
     public class StudentManagerViewModel : ViewModelWithNavigation
     {
         private readonly IDialogService _dialogService;

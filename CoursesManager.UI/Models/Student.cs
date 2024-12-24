@@ -89,7 +89,7 @@ namespace CoursesManager.UI.Models
         public DateTime DateOfBirth
         {
             get => _dateOfBirth;
-            set => SetProperty(ref _dateOfBirth, value);
+            set => SetProperty(ref _dateOfBirth, value.Date);
         }
 
         private string? _insertion;

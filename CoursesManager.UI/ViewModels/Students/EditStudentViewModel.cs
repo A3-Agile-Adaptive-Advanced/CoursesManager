@@ -7,6 +7,11 @@ using CoursesManager.UI.Repositories.CourseRepository;
 
 namespace CoursesManager.UI.ViewModels.Students
 {
+    /// <summary>
+    /// ViewModel responsible for editing an existing student's details.
+    /// It encapsulates logic for validating, saving, and updating student data and registrations.
+    /// required to manage the "EditStudentPopup" dialog.
+    /// </summary>
     public class EditStudentViewModel : StudentViewModelBase
     {
         public EditStudentViewModel(
@@ -39,7 +44,6 @@ namespace CoursesManager.UI.ViewModels.Students
                 InvokeResponseCallback(DialogResult<Student>.Builder().SetSuccess(Student, "Success").Build());
             }
         }
-
         private void UpdateStudentDetails()
         {
             Student.Id = StudentCopy.Id;

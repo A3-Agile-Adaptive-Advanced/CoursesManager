@@ -1,13 +1,12 @@
 ﻿using System.Collections.ObjectModel;
-
 using System.Windows;
 using System.Windows.Input;
 using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Dialogs;
-using CoursesManager.UI.Models;
+using CoursesManager.UI.Dialogs.Enums;
 using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Dialogs.ViewModels;
-using CoursesManager.UI.Dialogs.Enums;
+using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Repositories.RegistrationRepository;
 using CoursesManager.UI.Repositories.StudentRepository;
@@ -15,6 +14,11 @@ using CoursesManager.UI.Services;
 
 namespace CoursesManager.UI.ViewModels.Students
 {
+    /// <summary>
+    /// The base class for all student-related ViewModels.
+    /// It implements common functionality such as saving, canceling, and initializing selectable courses.
+    /// This follows the MVVM pattern to separate concerns and ensure a clean architecture.
+    /// </summary>
     public abstract class StudentViewModelBase : DialogViewModel<Student>
     {
         protected readonly IStudentRepository _studentRepository;
@@ -29,6 +33,16 @@ namespace CoursesManager.UI.ViewModels.Students
         public ICommand CancelCommand { get; protected set; }
         private Window? _parentWindow;
 
+        /// <summary>
+        /// Gets or sets the parent window for the current ViewModel.
+        /// This property ensures that the parent window is always determined, even if not explicitly set:
+        /// - If _parentWindow is not set, it attempts to find the currently active window.
+        /// - As a fallback, it uses the application's main window.
+        /// 
+        /// This approach ensures that modal dialogs or UI-related actions always have a valid parent window,
+        /// aligning with the MVVM pattern by abstracting away direct dependencies on specific window instances.
+        /// </summary>
+        /// 
         public Window ParentWindow
         {
             get => _parentWindow ?? Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive) ?? Application.Current.MainWindow;
@@ -82,6 +96,10 @@ namespace CoursesManager.UI.ViewModels.Students
             return new ObservableCollection<SelectableCourse>(selectableCourses);
         }
 
+        /// <summary>
+        /// Validates that all required fields are properly filled out.
+        /// Utilizes ValidationService to ensure no code duplication and encapsulates validation logic.
+        /// </summary>
         protected async Task<bool> ValidateFields()
         {
             if (ParentWindow == null)
@@ -101,6 +119,10 @@ namespace CoursesManager.UI.ViewModels.Students
             return true;
         }
 
+        /// <summary>
+        /// Displays a dialog of the specified type with a custom message.
+        /// Abstracts dialog display logic to centralize it in one method.
+        /// </summary>
         protected async Task<bool> ShowDialogAsync(DialogType dialogType, string message, string dialogTitle)
         {
             void SetIsDialogOpen(bool value)
@@ -158,8 +180,10 @@ namespace CoursesManager.UI.ViewModels.Students
             InvokeResponseCallback(dialogResult);
         }
 
+        /// This method must be implemented by subclasses to provide specific save logic.
         protected abstract Task OnSaveAsync();
 
+        /// Invokes the response callback, ensuring the consumer of this ViewModel is notified.
         protected override void InvokeResponseCallback(DialogResult<Student> dialogResult)
         {
             ResponseCallback?.Invoke(dialogResult);
