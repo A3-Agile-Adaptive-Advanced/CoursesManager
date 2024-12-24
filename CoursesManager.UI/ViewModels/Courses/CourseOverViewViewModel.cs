@@ -101,22 +101,7 @@ namespace CoursesManager.UI.ViewModels.Courses
 
             if (CurrentCourse != null)
             {
-                if (CurrentCourse.Students != null)
-                {
-                    IsPaid = !CurrentCourse.IsPayed;
-                    HasStarted = false;
-                    IsFinished = false;
-                    if ((CurrentCourse.StartDate - DateTime.Now).TotalDays <= 7 && CurrentCourse.StartDate > DateTime.Now)
-                    {
-                        HasStarted = true;
-                    }
-                    if (CurrentCourse.EndDate <= DateTime.Now)
-                    {
-                        HasStarted = false;
-                        IsPaid = false;
-                        IsFinished = true;
-                    }
-                }
+                SetupEmailButtons();
 
                 var registrations = _registrationRepository.GetAll()
                     .Where(r => r.CourseId == CurrentCourse.Id)
@@ -138,6 +123,30 @@ namespace CoursesManager.UI.ViewModels.Courses
             else
             {
                 _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de beheerder", ToastType.Error));
+            }
+        }
+
+        //Making sure the correct email buttons are shown to the user.
+        //HasStarted will display the 'send course start mail' button
+        //IsPaid will show the 'send payment mail' button
+        //IsFinished will display the 'send certificates' button
+        private void SetupEmailButtons()
+        {
+            if (CurrentCourse.Students != null)
+            {
+                IsPaid = !CurrentCourse.IsPayed;
+                HasStarted = false;
+                IsFinished = false;
+                if ((CurrentCourse.StartDate - DateTime.Now).TotalDays <= 7 && CurrentCourse.StartDate > DateTime.Now)
+                {
+                    HasStarted = true;
+                }
+                if (CurrentCourse.EndDate <= DateTime.Now)
+                {
+                    HasStarted = false;
+                    IsPaid = false;
+                    IsFinished = true;
+                }
             }
         }
 
@@ -205,19 +214,20 @@ namespace CoursesManager.UI.ViewModels.Courses
             });
         }
 
-        public async void SendPaymentMail()
+        // i need to loop through results to retrieve all the 'failed' mails and display to the user.
+        private async void SendPaymentMail()
         {
             List<MailResult> mailResults = await _mailProvider.SendPaymentNotifications(CurrentCourse);
             CheckMailOutcome(mailResults);
         }
 
-        public async void SendStartCourseMail()
+        private async void SendStartCourseMail()
         {
             List<MailResult> mailResults = await _mailProvider.SendCourseStartNotifications(CurrentCourse);
             CheckMailOutcome(mailResults);
         }
 
-        public async void SendCertificateMail()
+        private async void SendCertificateMail()
         {
             List<MailResult> mailResults = await _mailProvider.SendCertificates(CurrentCourse);
             CheckMailOutcome(mailResults);

@@ -98,33 +98,39 @@ public class GlobalCache
 
     private void Update(string key, object value)
     {
-        if (_cacheMap.TryGetValue(key, out var existingItem))
+        lock (_lock)
         {
-            if (existingItem.IsPermanent && ShouldNotUpdateValue(existingItem.Value, value))
+            if (_cacheMap.TryGetValue(key, out var existingItem))
             {
-                throw new CantBeOverwrittenException($"The item with key '{key}' is of a different type and cannot be overwritten.");
+                if (existingItem.IsPermanent && ShouldNotUpdateValue(existingItem.Value, value))
+                {
+                    throw new CantBeOverwrittenException(
+                        $"The item with key '{key}' is of a different type and cannot be overwritten.");
+                }
+
+
+                existingItem.Value = value;
+                _usageOrder[key] = DateTime.Now.Ticks;
             }
-
-
-            existingItem.Value = value;
-            _usageOrder[key] = DateTime.Now.Ticks;
+            else
+            {
+                throw new NullReferenceException($"The item with key '{key}' does not exist in the cache.");
+            }
         }
-        else
-        {
-            throw new NullReferenceException($"The item with key '{key}' does not exist in the cache.");
-        }
-
     }
     private void EnsureCapacity()
     {
-        if (_cacheMap.Count < _capacity) return;
-        if (_permanentItemCount == _capacity)
+        lock (_lock)
         {
-            IncreaseCapacity();
-        }
-        else
-        {
-            EvictNonPermanentItem();
+            if (_cacheMap.Count < _capacity) return;
+            if (_permanentItemCount == _capacity)
+            {
+                IncreaseCapacity();
+            }
+            else
+            {
+                EvictNonPermanentItem();
+            }
         }
     }
 
@@ -140,11 +146,14 @@ public class GlobalCache
 
     private void EvictNonPermanentItem()
     {
-        var leastUsedKey = _usageOrder.OrderBy(kvp => kvp.Value).FirstOrDefault().Key;
-        if (!string.IsNullOrEmpty(leastUsedKey))
+        lock (_lock)
         {
-            _cacheMap.TryRemove(leastUsedKey, out _);
-            _usageOrder.TryRemove(leastUsedKey, out _);
+            var leastUsedKey = _usageOrder.OrderBy(kvp => kvp.Value).FirstOrDefault().Key;
+            if (!string.IsNullOrEmpty(leastUsedKey))
+            {
+                _cacheMap.TryRemove(leastUsedKey, out _);
+                _usageOrder.TryRemove(leastUsedKey, out _);
+            }
         }
     }
 
