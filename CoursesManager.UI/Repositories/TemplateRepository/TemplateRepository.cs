@@ -13,26 +13,12 @@ namespace CoursesManager.UI.Repositories.TemplateRepository
 
         public Template GetTemplateByName(string name)
         {
-            try
-            {
                 return _templateDataAccess.GetByName(name);
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
         }
 
         public void Update(Template template)
         {
-            try
-            {
                 _templateDataAccess.UpdateTemplate(template);
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
         }
 
         public void Add(Template data)

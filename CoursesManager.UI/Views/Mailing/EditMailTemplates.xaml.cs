@@ -229,14 +229,14 @@ namespace CoursesManager.UI.Views.Mailing
         {
             if (!string.IsNullOrEmpty(selectedText))
             {
-                    richTextBox.Selection.Text = selectedText;
-                    TextPointer selectionStart = richTextBox.Selection.Start;
-                    TextPointer previousPosition = selectionStart.GetPositionAtOffset(-1, LogicalDirection.Backward);
+                richTextBox.Selection.Text = selectedText;
+                TextPointer selectionStart = richTextBox.Selection.Start;
+                TextPointer previousPosition = selectionStart.GetPositionAtOffset(-1, LogicalDirection.Backward);
 
-                    if (previousPosition != null)
-                    {
-                        previousPosition.DeleteTextInRun(1);
-                    }
+                if (previousPosition != null)
+                {
+                    previousPosition.DeleteTextInRun(1);
+                }
 
                 richTextBox.CaretPosition = richTextBox.Selection.End;
 

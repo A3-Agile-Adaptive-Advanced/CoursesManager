@@ -17,6 +17,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using CoursesManager.MVVM.Mail.MailService;
 using CoursesManager.UI.Enums;
+using MySql.Data.MySqlClient;
 
 namespace CoursesManager.UI.ViewModels.Mailing
 {
@@ -36,11 +37,11 @@ namespace CoursesManager.UI.ViewModels.Mailing
             set => SetProperty(ref _visibleText, value);
         }
 
-        private Template _currenttemplate;
+        private Template _currentTemplate;
         public Template CurrentTemplate
         {
-            get => _currenttemplate;
-            set => SetProperty(ref _currenttemplate, value);
+            get => _currentTemplate;
+            set => SetProperty(ref _currentTemplate, value);
         }
         #endregion
         #region Commands
@@ -57,10 +58,11 @@ namespace CoursesManager.UI.ViewModels.Mailing
             _messageBroker = messageBroker;
             _dialogService = dialogService;
 
-            VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText("CertificateMail", null))));
             ShowMailCommand = new RelayCommand<string>(SwitchHtmls, s => s != null);
             PreviewPageCommand = new RelayCommand(OpenTemplateViewer);
             SaveTemplateCommand = new RelayCommand(SaveTemplate);
+
+            VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText("CertificateMail", null))));
         }
 
         public void SaveTemplate()
@@ -71,25 +73,15 @@ namespace CoursesManager.UI.ViewModels.Mailing
             if (invalidPlaceholders.Count != 0)
             {
                 ReUploadTextWithErrorFormatting(convertedText, invalidPlaceholders);
-                _messageBroker.Publish(new ToastNotificationMessage(true, "1 of meerdere placeholders zijn incorrect.", ToastType.Warning));
+                _messageBroker.Publish(new ToastNotificationMessage(true,
+                    "1 of meerdere placeholders zijn incorrect.", ToastType.Warning));
+                return;
             }
-            else
-            {
-                string updatedHtmlString = UpdateTemplateBody(convertedText);
 
-                CurrentTemplate.HtmlString = updatedHtmlString;
-                try
-                {
-                    _templateRepository.Update(CurrentTemplate);
-                }
-                catch (Exception ex)
-                {
-                    _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden", ToastType.Error));
-                }
-                _messageBroker.Publish(new ToastNotificationMessage(true, "Template opgeslagen", ToastType.Confirmation));
+            string updatedHtmlString = UpdateTemplateBody(convertedText);
+            CurrentTemplate.HtmlString = updatedHtmlString;
 
-                VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText(null, CurrentTemplate))));
-            }
+            UpdateTemplate(CurrentTemplate);
         }
         public async void OpenTemplateViewer()
         {
@@ -104,18 +96,59 @@ namespace CoursesManager.UI.ViewModels.Mailing
         }
 
         #region Helper methods
+
+        private void UpdateTemplate(Template template)
+        {
+            try
+            {
+                _templateRepository.Update(template);
+                VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText(null, CurrentTemplate))));
+                _messageBroker.Publish(new ToastNotificationMessage(true,
+                    "Template opgeslagen", ToastType.Confirmation));
+            }
+            catch (MySqlException)
+            {
+                _messageBroker.Publish(new ToastNotificationMessage(true,
+                    "Er is een fout opgetreden, template niet opgeslagen in de database",
+                    ToastType.Error));
+            }
+            catch (Exception ex)
+            {
+                LogUtil.Error(ex.Message);
+                _messageBroker.Publish(new ToastNotificationMessage(true,
+                    "Er is een fout opgetreden, neem contact op met de systeembeheerder",
+                    ToastType.Error));
+            }
+        }
         private string GetTemplateText(string? templateName, Template? template)
         {
             string templateText = string.Empty;
-            if (!(template == null && string.IsNullOrEmpty(templateName)))
+            try
             {
-                CurrentTemplate = template ?? _templateRepository.GetTemplateByName(templateName);
-
-                Match match = Regex.Match(CurrentTemplate.HtmlString, @"<body>(.*?)</body>", RegexOptions.Singleline);
-
-                string bodyContent = match.Groups[1].Value;
-                templateText = bodyContent;
+                if (!(template == null && string.IsNullOrEmpty(templateName)))
+                {
+                    try
+                    {
+                        CurrentTemplate = template ?? _templateRepository.GetTemplateByName(templateName);
+                    }
+                    catch (Exception)
+                    {
+                        _messageBroker.Publish(new ToastNotificationMessage(true,
+                            "Er is een fout opgetreden, template kon niet worden opgehaald uit de database",
+                            ToastType.Error));
+                    }
+                    Match match = Regex.Match(CurrentTemplate.HtmlString, @"<body>(.*?)</body>", RegexOptions.Singleline);
+                    string bodyContent = match.Groups[1].Value;
+                    templateText = bodyContent;
+                }
             }
+            catch (Exception ex)
+            {
+                LogUtil.Error(ex.Message);
+                _messageBroker.Publish(new ToastNotificationMessage(true,
+                    "Er is een onverwachte fout opgetreden bij het ophalen van het template.", ToastType.Error));
+            }
+
             return templateText;
         }
         private string UpdateTemplateBody(string updatedBodyContent)
@@ -138,10 +171,17 @@ namespace CoursesManager.UI.ViewModels.Mailing
 
         private string GetPlainTextFromFlowDocument(FlowDocument document)
         {
-            if (document == null)
-                return string.Empty;
 
-            return new TextRange(document.ContentStart, document.ContentEnd).Text;
+            if (document == null)
+            {
+                _messageBroker.Publish(new ToastNotificationMessage(true,
+                    "Er is een onverwachte fout opgetreden, neem contact op met de systeembeheerder",
+                    ToastType.Error));
+                return string.Empty;
+            }
+
+            string plainText = new TextRange(document.ContentStart, document.ContentEnd).Text;
+            return plainText.TrimEnd();
         }
 
         private List<string> ValidatePlaceholders(string htmlString)
@@ -219,7 +259,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
 
             VisibleText = newDocument;
         }
-#endregion
+        #endregion
 
     }
 }
