@@ -151,7 +151,6 @@ public abstract class BaseDataAccess<T>(string? modelTableName = null) where T :
         try
         {
             mySqlConnection.Open();
-            mySqlCommand.ExecuteNonQuery();
 
             return mySqlCommand.ExecuteNonQuery() > 0 ? GetLastInsertedId() : false;
         }
