@@ -62,7 +62,7 @@ namespace CoursesManager.Tests.Mailing
             _mockTemplateRepository.Setup(repo => repo.Update(It.IsAny<Template>())).Throws<System.Exception>();
 
             // Act
-            _viewModel.SaveTemplate();
+           _viewModel.SaveTemplateCommand.Execute(null);
 
             // Assert
             _mockMessageBroker.Verify(mb => mb.Publish(It.Is<ToastNotificationMessage>(msg => msg.NotificationText.Contains("incorrect"))), Times.Once);

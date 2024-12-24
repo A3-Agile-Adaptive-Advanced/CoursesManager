@@ -16,6 +16,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using CoursesManager.UI.Enums;
 
 namespace CoursesManager.UI.Views.Mailing
 {
@@ -227,24 +228,32 @@ namespace CoursesManager.UI.Views.Mailing
 
         private void InsertSelectedText(string selectedText)
         {
-            if (!string.IsNullOrEmpty(selectedText))
+            try
             {
-                richTextBox.Selection.Text = selectedText;
-                TextPointer selectionStart = richTextBox.Selection.Start;
-                TextPointer previousPosition = selectionStart.GetPositionAtOffset(-1, LogicalDirection.Backward);
-
-                if (previousPosition != null)
+                if (!string.IsNullOrEmpty(selectedText))
                 {
-                    previousPosition.DeleteTextInRun(1);
+                    richTextBox.Selection.Text = selectedText;
+                    TextPointer selectionStart = richTextBox.Selection.Start;
+                    TextPointer previousPosition = selectionStart.GetPositionAtOffset(-1, LogicalDirection.Backward);
+
+                    if (previousPosition != null)
+                    {
+                        previousPosition.DeleteTextInRun(1);
+                    }
+
+                    richTextBox.CaretPosition = richTextBox.Selection.End;
+
+                    SuggestionsPopup.IsOpen = false;
+                    SuggestionsList.SelectedItem = null;
+                    richTextBox.Focus();
                 }
-
-                richTextBox.CaretPosition = richTextBox.Selection.End;
-
-                SuggestionsPopup.IsOpen = false;
-                SuggestionsList.SelectedItem = null;
-                richTextBox.Focus();
+            }
+            catch (Exception ex)
+            {
+                viewModel.ShowErrorMessage("Er is een overwachte fout opgetreden, probeer opnieuw", ToastType.Warning);
             }
         }
+
 
         private void SuggestionsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

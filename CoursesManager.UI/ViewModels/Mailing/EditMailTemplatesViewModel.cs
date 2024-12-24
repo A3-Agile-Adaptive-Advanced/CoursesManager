@@ -26,7 +26,6 @@ namespace CoursesManager.UI.ViewModels.Mailing
         #region Services
         private readonly IMessageBroker _messageBroker;
         private readonly IDialogService _dialogService;
-        private readonly IMailProvider _mailProvider;
         private readonly ITemplateRepository _templateRepository;
         #endregion
         #region Attributes
@@ -50,11 +49,10 @@ namespace CoursesManager.UI.ViewModels.Mailing
         public ICommand SaveTemplateCommand { get; }
         #endregion
 
-        public EditMailTemplatesViewModel(IMailProvider mailProvider, ITemplateRepository templateRepository, IDialogService dialogService, IMessageBroker messageBroker, INavigationService navigationService) : base(navigationService)
+        public EditMailTemplatesViewModel(ITemplateRepository templateRepository, IDialogService dialogService, IMessageBroker messageBroker, INavigationService navigationService) : base(navigationService)
         {
             _templateRepository = templateRepository;
             _navigationService = navigationService;
-            _mailProvider = mailProvider;
             _messageBroker = messageBroker;
             _dialogService = dialogService;
 
@@ -74,7 +72,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
             {
                 ReUploadTextWithErrorFormatting(convertedText, invalidPlaceholders);
                 _messageBroker.Publish(new ToastNotificationMessage(true,
-                    "1 of meerdere placeholders zijn incorrect.", ToastType.Warning));
+                    "1 of meerdere placeholders zijn incorrect. Druk op toets '[' om alle geldige opties in te zien.", ToastType.Warning));
                 return;
             }
 
@@ -93,6 +91,13 @@ namespace CoursesManager.UI.ViewModels.Mailing
                     DialogText = UpdateTemplateBody(GetPlainTextFromFlowDocument(VisibleText)),
                 });
             });
+        }
+        //This gives the codebehind the abillity to show feedback to the user. this method is only used by the codebehind of EditMailTemplates.
+        public void ShowErrorMessage(string errorMessage, ToastType type)
+        {
+            _messageBroker.Publish(new ToastNotificationMessage(true,
+                errorMessage,
+                type));
         }
 
         #region Helper methods
@@ -258,6 +263,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
 
             VisibleText = newDocument;
         }
+
         #endregion
 
     }
