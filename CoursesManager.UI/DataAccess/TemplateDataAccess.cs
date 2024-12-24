@@ -3,41 +3,30 @@ using CoursesManager.UI.Models;
 using MySql.Data.MySqlClient;
 using System;
 using System.Data;
+using CoursesManager.MVVM.Exceptions;
 
 namespace CoursesManager.UI.DataAccess
 {
     internal class TemplateDataAccess : BaseDataAccess<Template>
     {
-
-        public List<Template> GetAll()
-        {
-            string procedureName = StoredProcedures.GetAllTemplates;
-            try
-            {
-                return ExecuteProcedure(procedureName).Select(row => ToTemplate(row)).ToList();
-
-            }
-            catch (MySqlException ex)
-            {
-                LogUtil.Error($"Error executing procedure '{procedureName}': {ex.Message}");
-                throw;
-            }
-        }
-
         public Template GetByName(string name)
         {
             string procedureName = StoredProcedures.GetTemplateByName;
             try
             {
                 Template template = new();
-                template = ExecuteProcedure(procedureName, new MySqlParameter("@p_name", name)).Select(row => ToTemplate(row)).FirstOrDefault() ?? template;
+                template = ExecuteProcedure(procedureName, new MySqlParameter("@p_name", name))
+                    .Select(row => ToTemplate(row)).FirstOrDefault() ?? template;
+                if (template == null) throw new DataAccessException("Template not found");
                 return template;
             }
             catch (MySqlException ex)
             {
+                Console.WriteLine("MYSQL");
                 LogUtil.Error($"Error executing procedure '{procedureName}': {ex.Message}");
-                throw;
+                throw new DataAccessException("Something went wrong while accessing the database");
             }
+
 
         }
 
@@ -57,12 +46,16 @@ namespace CoursesManager.UI.DataAccess
             catch (MySqlException ex)
             {
                 LogUtil.Error(ex.Message);
-                throw;
+                throw new DataAccessException("Something went wrong while accessing the database");
             }
         }
 
-        private Template ToTemplate(Dictionary<string, object> row)
+        private Template ToTemplate(Dictionary<string, object>? row)
         {
+            if (row == null)
+            {
+                throw new DataAccessException("Row data is null.");
+            }
             return new Template
             {
                 Id = Convert.ToInt32(row["id"]),

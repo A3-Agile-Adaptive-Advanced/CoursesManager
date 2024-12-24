@@ -1,4 +1,5 @@
-﻿using CoursesManager.UI.Database;
+﻿using CoursesManager.MVVM.Exceptions;
+using CoursesManager.UI.Database;
 using CoursesManager.UI.Models;
 using MySql.Data.MySqlClient;
 using System.Data;
@@ -23,7 +24,7 @@ namespace CoursesManager.UI.DataAccess
             catch (MySqlException ex)
             {
                 LogUtil.Error(ex.Message);
-                throw;
+                throw new DataAccessException("Something went wrong while accessing the database");
             }
         }
 

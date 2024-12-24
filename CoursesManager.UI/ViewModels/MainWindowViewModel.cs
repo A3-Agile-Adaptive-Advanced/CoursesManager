@@ -211,34 +211,38 @@ public class MainWindowViewModel : ViewModelWithNavigation
 
         try
         {
-            ToastText = message.NotificationText;
-            ToastDisplayed = message.SetVisibillity;
-            ToastType = message.ToastType;
+            await SetToastMessageDetails(message.NotificationText, message.SetVisibillity, message.ToastType);
 
             await Task.Delay(5000, token);
         }
         catch (TaskCanceledException)
         {
+            // Making sure that the above process is canceled when the token is used.
         }
+        await SetToastMessageDetails(string.Empty, false, ToastType.None);
+        _isToastProcessing = false;
 
-        ToastDisplayed = false;
-
-            await Task.Delay(1000);
-        
-            ToastText = string.Empty;
-            ToastType = ToastType.None;
-
-            if (_toastCancellationTokenSource?.Token == token)
-            {
-                _toastCancellationTokenSource.Dispose();
-                _toastCancellationTokenSource = null;
-            }
-            _isToastProcessing = false;
+        if (_toastCancellationTokenSource?.Token == token)
+        {
+            _toastCancellationTokenSource.Dispose();
+            _toastCancellationTokenSource = null;
+        }
 
         if (_nextMessage != null)
         {
             ShowToastNotification(_nextMessage);
         }
+    }
+
+    private async Task SetToastMessageDetails(string text, bool visibility, ToastType toastType)
+    {
+        ToastDisplayed = visibility;
+        if (!visibility)
+        {
+            await Task.Delay(1000);
+        }
+        ToastText = text;
+        ToastType = toastType;
     }
 
     private static BitmapImage LoadImage(string relativePath)

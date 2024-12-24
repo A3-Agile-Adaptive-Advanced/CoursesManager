@@ -1,14 +1,4 @@
-﻿using MySqlX.XDevAPI.Common;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CoursesManager.MVVM.Exceptions
+﻿namespace CoursesManager.MVVM.Exceptions
 {
     [Serializable]
     public class CantBeOverwrittenException : System.Exception
