@@ -214,7 +214,6 @@ namespace CoursesManager.UI.ViewModels.Courses
             });
         }
 
-        // i need to loop through results to retrieve all the 'failed' mails and display to the user.
         private async void SendPaymentMail()
         {
             List<MailResult> mailResults = await _mailProvider.SendPaymentNotifications(CurrentCourse);
@@ -249,14 +248,22 @@ namespace CoursesManager.UI.ViewModels.Courses
             });
         }
 
-        private async void CheckMailOutcome(List<MailResult> mailResults)
+        private void CheckMailOutcome(List<MailResult> mailResults)
         {
             string failedEmails = string.Empty;
             foreach (MailResult mailResult in mailResults)
             {
                 if (!(mailResult.Outcome == MailOutcome.Success))
                 {
-                    failedEmails += mailResult.MailMessage.To.First().Address + "; ";
+                    if (mailResult.MailMessage != null)
+                    {
+                        failedEmails += mailResult.MailMessage.To.First().Address + "; ";
+                    }
+                    else
+                    {
+                        failedEmails += mailResult.StudentName + "; ";
+                    }
+
                 }
             }
 

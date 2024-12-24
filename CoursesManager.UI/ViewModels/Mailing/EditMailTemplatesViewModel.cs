@@ -244,7 +244,6 @@ namespace CoursesManager.UI.ViewModels.Mailing
             foreach (string word in words)
             {
                 Run run = new Run(word);
-                Debug.WriteLine(word);
                 if (flaggedWords.Contains(word))
                 {
                     run.FontWeight = FontWeights.Bold;
