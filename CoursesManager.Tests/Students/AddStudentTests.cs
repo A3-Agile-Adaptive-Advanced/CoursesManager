@@ -104,6 +104,17 @@ namespace CoursesManager.Tests.Students
             );
             _viewModel.SelectedCourse = "Math";
 
+            // Mock the Add method to add the student to the list
+            var students = new List<Student>();
+            _mockStudentRepository
+                .Setup(repo => repo.Add(It.IsAny<Student>()))
+                .Callback<Student>(s => students.Add(s));
+
+            // Mock the GetAll method to return the list of students
+            _mockStudentRepository
+                .Setup(repo => repo.GetAll())
+                .Returns(students);
+
             // Act
             await InvokeProtectedMethodAsync(_viewModel, "OnSaveAsync");
 
