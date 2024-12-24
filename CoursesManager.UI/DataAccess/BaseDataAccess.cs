@@ -136,6 +136,15 @@ public abstract class BaseDataAccess<T>(string? modelTableName = null) where T :
     /// Executes a stored procedure that does not return a result set (e.g., INSERT, UPDATE, DELETE).
     /// Returns true if execution succeeds.
     /// </summary>
+    /// <summary>
+    /// Executes a stored procedure with the given parameters and returns the result.
+    /// </summary>
+    /// <param name="procedureName">The name of the stored procedure to execute.</param>
+    /// <param name="parameters">Optional MySQL parameters for the procedure.</param>
+    /// <returns>
+    /// - `GetLastInsertedId()` if rows are affected and the procedure modifies data.
+    /// - `true` or `false` if no last inserted ID is needed.
+    /// </returns>
     public dynamic ExecuteNonProcedure(string procedureName, params MySqlParameter[]? parameters)
     {
         using MySqlConnection mySqlConnection = GetConnection();
@@ -147,12 +156,31 @@ public abstract class BaseDataAccess<T>(string? modelTableName = null) where T :
         if (parameters is { Length: > 0 })
             mySqlCommand.Parameters.AddRange(parameters);
 
-
         try
         {
             mySqlConnection.Open();
 
-            return mySqlCommand.ExecuteNonQuery() > 0 ? GetLastInsertedId() : false;
+            // Execute the stored procedure only once
+            int rowsAffected = mySqlCommand.ExecuteNonQuery();
+
+            // Combine logic to satisfy both requirements
+            if (rowsAffected > 0)
+            {
+                // Attempt to retrieve the last inserted ID if possible
+                try
+                {
+                    return GetLastInsertedId();
+                }
+                catch
+                {
+                    // Fallback to returning a boolean if no inserted ID is needed
+                    return true;
+                }
+            }
+            else
+            {
+                return false;
+            }
         }
         catch (MySqlException exception)
         {

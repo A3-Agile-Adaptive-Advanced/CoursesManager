@@ -7,7 +7,6 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
-        Loaded="Window_Loaded"
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
