@@ -36,10 +36,15 @@ public class AddStudentViewModel : StudentViewModelBase, INotifyPropertyChanged
         }
 
         var course = _courseRepository.GetAll().FirstOrDefault(c => c.Name == SelectedCourse);
+      
+        _studentRepository.Add(Student);
+
+        var newStudent = _studentRepository.GetAll().FirstOrDefault(s => s.Email == Student.Email);
+
         var registration = new Registration
         {
-            StudentId = Student.Id,
-            Student = Student,
+            StudentId = newStudent.Id,
+            Student = newStudent,
             CourseId = course!.Id,
             Course = course,
             RegistrationDate = DateTime.Now,
@@ -47,7 +52,6 @@ public class AddStudentViewModel : StudentViewModelBase, INotifyPropertyChanged
             IsActive = true
         };
 
-        _studentRepository.Add(Student);
         _registrationRepository.Add(registration);
 
         await ShowDialogAsync(DialogType.Notify, "Student succesvol toegevoegd", "Succes");
