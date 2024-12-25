@@ -11,5 +11,7 @@ namespace CoursesManager.MVVM.Mail
     {
         public MailOutcome Outcome;
         public MailMessage MailMessage;
+        public string? StudentName;
+        public string? StudentEmail;
     }
 }
