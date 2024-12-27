@@ -30,32 +30,6 @@ namespace CoursesManager.UI.DataAccess
             }
         }
 
-        //public int Add(Address address)
-        //{
-        //    string procedureName = "spAddresses_Add";
-        //    var parameters = new MySqlParameter[]
-        //    {
-        //        new MySqlParameter("@p_country", address.Country),
-        //        new MySqlParameter("@p_zipcode", address.ZipCode),
-        //        new MySqlParameter("@p_city", address.City),
-        //        new MySqlParameter("@p_street", address.Street),
-        //        new MySqlParameter("@p_house_number", address.HouseNumber),
-        //        new MySqlParameter("@p_house_number_extension", address.HouseNumberExtension ?? (object)DBNull.Value),
-        //        new MySqlParameter("@p_created_at", DateTime.Now),
-        //        new MySqlParameter("@p_updated_at", DateTime.Now),
-        //        new MySqlParameter("@p_id", MySqlDbType.Int32)
-        //        {
-        //            Direction = ParameterDirection.Output
-        //        }
-        //    };
-
-        //    ExecuteNonProcedure(procedureName, parameters);
-
-        //    int addressId = Convert.ToInt32(parameters.Single(p => p.ParameterName == "@p_id").Value);
-        //    LogUtil.Log($"Address created successfully with ID: {addressId}");
-        //    return addressId;
-        //}
-
         public dynamic Add(Address address)
         {
             string procedureName = "spAddresses_Add";
