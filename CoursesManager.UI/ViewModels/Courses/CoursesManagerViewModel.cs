@@ -43,7 +43,7 @@ namespace CoursesManager.UI.ViewModels
         {
             get => _searchTerm;
             set { 
-                if (SetProperty(ref _searchTerm, value)) 
+                if (SetProperty(ref _searchTerm, value.Trim())) 
                     _ = FilterCoursesAsync(); 
             }
         }
@@ -90,9 +90,10 @@ namespace CoursesManager.UI.ViewModels
 
         private async Task FilterCoursesAsync()
         {
-            string searchTerm = string.IsNullOrWhiteSpace(SearchTerm)
+            string searchTerm = (string.IsNullOrWhiteSpace(SearchTerm)
                 ? String.Empty
-                : SearchTerm.Trim().ToLower();
+                : SearchTerm
+            ).ToLower();
 
             var now = DateTime.Now;
             var twoWeeksFromNow = now.AddDays(14);
@@ -121,6 +122,7 @@ namespace CoursesManager.UI.ViewModels
 
         private void OpenCourseOptions(Course parameter)
         {
+
             GlobalCache.Instance.Put("Opened Course", parameter, false);
             _navigationService.NavigateTo<CourseOverViewViewModel>();
         }
