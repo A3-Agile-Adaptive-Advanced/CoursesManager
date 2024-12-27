@@ -33,7 +33,6 @@ namespace CoursesManager.UI.ViewModels.Students
 
         private Student _student;
         private ObservableCollection<CourseStudentPayment> _courseDetails = new ObservableCollection<CourseStudentPayment>();
-        public ICommand EditStudent { get; set; }
 
         public ObservableCollection<CourseStudentPayment> CourseDetails
         {

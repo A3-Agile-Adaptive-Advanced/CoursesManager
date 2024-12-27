@@ -75,7 +75,6 @@ namespace CoursesManager.UI.ViewModels.Students
         #region Commands
 
         public ICommand AddStudentCommand { get; }
-        public ICommand EditStudentCommand { get; }
         public ICommand DeleteStudentCommand { get; }
         public ICommand SearchCommand { get; }
         public ICommand StudentDetailCommand { get; }

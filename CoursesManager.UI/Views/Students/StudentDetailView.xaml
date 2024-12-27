@@ -68,7 +68,7 @@
             </Grid>
 
             <!-- Wijzigen Button -->
-            <Button Command="{Binding EditStudent }" 
+            <Button Command="{Binding EditStudentCommand }" 
                     CommandParameter="{Binding Student}"  
                     Content="Wijzigen"
                      Grid.Row="1" 
