@@ -28,6 +28,7 @@ namespace CoursesManager.UI.ViewModels.Students
         private readonly IRegistrationRepository _registrationRepository;
         public ObservableCollection<Student> Students { get; set; }
         public ObservableCollection<Student> FilteredStudentRecords { get; set; }
+        public ICommand EditStudentCommand { get; }
 
         private string _searchText;
 

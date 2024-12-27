@@ -30,7 +30,7 @@ namespace CoursesManager.UI.ViewModels.Students
         private readonly IMessageBroker _messageBroker;
 
         public event PropertyChangedEventHandler PropertyChanged;
-
+        public ICommand EditStudent { get; }
         private Student _student;
         private ObservableCollection<CourseStudentPayment> _courseDetails = new ObservableCollection<CourseStudentPayment>();
 

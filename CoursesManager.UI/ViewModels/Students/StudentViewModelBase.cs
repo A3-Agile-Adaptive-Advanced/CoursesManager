@@ -31,7 +31,6 @@ namespace CoursesManager.UI.ViewModels.Students
         public ObservableCollection<SelectableCourse> SelectableCourses { get; protected set; }
         public ICommand SaveCommand { get; protected set; }
         public ICommand CancelCommand { get; protected set; }
-        public ICommand EditStudentCommand { get; }
 
         private Window? _parentWindow;
 
