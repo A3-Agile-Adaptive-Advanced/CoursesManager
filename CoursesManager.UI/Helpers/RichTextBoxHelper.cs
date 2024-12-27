@@ -4,6 +4,9 @@ using System.Windows;
 
 namespace CoursesManager.UI.Helpers
 {
+
+    // Natively the RichTextBox does not have a data binding property. this helper makes sure that we can create flowdocuments in the viewmodel
+    // fill them with data retrieved from the db and display them in the ui.
     public static class RichTextBoxHelper
     {
         public static readonly DependencyProperty DocumentProperty =

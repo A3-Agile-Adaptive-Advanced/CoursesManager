@@ -13,30 +13,25 @@ namespace CoursesManager.UI.ViewModels
 {
     public class CoursesManagerViewModel : ViewModelWithNavigation
     {
-        // Properties
         private readonly ICourseRepository _courseRepository;
         private readonly IDialogService _dialogService;
         private readonly IMessageBroker _messageBroker;
 
-        private string _searchText = String.Empty;
-        private bool _isToggled = true;
+        private string _searchTerm = String.Empty;
+        private bool _isSwitchToggled = true;
+        private ObservableCollection<Course> _courses;
+        private ObservableCollection<Course> _filteredCourses;
 
-        // Getters and Setters
         public ICommand SearchCommand { get; }
-
-        public ICommand ToggleCommand { get; }
+        public ICommand SwitchToggleCommand { get; }
         public ICommand AddCourseCommand { get; }
         public ICommand CourseOptionCommand { get; }
-
-        private ObservableCollection<Course> _courses;
 
         public ObservableCollection<Course> Courses
         {
             get => _courses;
-            private set => SetProperty(ref _courses, value);
+            set => SetProperty(ref _courses, value);
         }
-
-        private ObservableCollection<Course> _filteredCourses;
 
         public ObservableCollection<Course> FilteredCourses
         {
@@ -44,26 +39,29 @@ namespace CoursesManager.UI.ViewModels
             private set => SetProperty(ref _filteredCourses, value);
         }
 
-        public string SearchText
+        public string SearchTerm
         {
-            get => _searchText;
-            set { if (SetProperty(ref _searchText, value)) _ = FilterRecordsAsync(); }
-        }
-        private bool _isPayed;
-        public bool IsPayed
-        {
-            get => _isPayed;
-            set => SetProperty(ref _isPayed, value);
+            get => _searchTerm;
+            set { 
+                if (SetProperty(ref _searchTerm, value)) 
+                    _ = FilterCoursesAsync(); 
+            }
         }
 
-        public bool IsToggled
+        public bool IsSwitchToggled
         {
-            get => _isToggled;
-            set { if (SetProperty(ref _isToggled, value)) _ = FilterRecordsAsync(); }
+            get => _isSwitchToggled;
+            set { 
+                if (SetProperty(ref _isSwitchToggled, value))
+                    _ = FilterCoursesAsync(); 
+            }
         }
 
-        // Constructor
-        public CoursesManagerViewModel(ICourseRepository courseRepository, IMessageBroker messageBroker, IDialogService dialogService, INavigationService navigationService) : base(navigationService)
+        public CoursesManagerViewModel(
+            ICourseRepository courseRepository,
+            IMessageBroker messageBroker,
+            IDialogService dialogService,
+            INavigationService navigationService) : base(navigationService)
         {
             _courseRepository = courseRepository;
             _messageBroker = messageBroker;
@@ -72,44 +70,40 @@ namespace CoursesManager.UI.ViewModels
             _messageBroker.Subscribe<CoursesChangedMessage, CoursesManagerViewModel>(OnCoursesChangedMessage, this);
 
             ViewTitle = "Cursus beheer";
-            _messageBroker = messageBroker;
-            SearchCommand = new RelayCommand(() => _ = FilterRecordsAsync());
-            ToggleCommand = new RelayCommand(() => _ = FilterRecordsAsync());
+
+            SearchCommand = new RelayCommand(() => _ = FilterCoursesAsync());
+            SwitchToggleCommand = new RelayCommand(() => _ = FilterCoursesAsync());
             CourseOptionCommand = new RelayCommand<Course>(OpenCourseOptions);
             AddCourseCommand = new RelayCommand(OpenCourseDialog);
 
             LoadCourses();
         }
 
-        private void OnCoursesChangedMessage(CoursesChangedMessage obj)
-        {
-            LoadCourses();
-        }
+        private void OnCoursesChangedMessage(CoursesChangedMessage obj) => LoadCourses();
 
         private void LoadCourses()
         {
             Courses = new ObservableCollection<Course>(_courseRepository.GetAll());
             FilteredCourses = new ObservableCollection<Course>(Courses);
-
-            FilterRecordsAsync();
+            _ = FilterCoursesAsync();
         }
 
-        private async Task FilterRecordsAsync()
+        private async Task FilterCoursesAsync()
         {
-            string searchTerm = string.IsNullOrWhiteSpace(SearchText)
+            string searchTerm = string.IsNullOrWhiteSpace(SearchTerm)
                 ? String.Empty
-                : SearchText.Trim().Replace(" ", "").ToLower();
+                : SearchTerm.Trim().ToLower();
 
             var now = DateTime.Now;
             var twoWeeksFromNow = now.AddDays(14);
 
-            var filtered = await Task.Run(() =>
+            var filteredCourses = await Task.Run(() =>
                 Courses
                 .Where(course =>
                     // Filter courses based on the search string and ensure they are active
                     (string.IsNullOrEmpty(searchTerm)
                         || course.GenerateFilterString().Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase))
-                    && course.IsActive == IsToggled
+                    && course.IsActive == IsSwitchToggled
                 )
                 .OrderBy(course =>
                     // Put courses that start within 2 weeks and are not paid at the top
@@ -119,13 +113,10 @@ namespace CoursesManager.UI.ViewModels
                 .ToList()
             );
 
-            UpdateFilteredCourses(filtered);
-        }
-
-        private void UpdateFilteredCourses(IEnumerable<Course> filteredCourses)
-        {
+            // Update the filtered courses collection
             FilteredCourses.Clear();
-            foreach (var course in filteredCourses) FilteredCourses.Add(course);
+            foreach (var course in filteredCourses) 
+                FilteredCourses.Add(course);
         }
 
         private void OpenCourseOptions(Course parameter)

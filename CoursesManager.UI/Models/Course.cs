@@ -152,6 +152,7 @@ namespace CoursesManager.UI.Models
             };
         }
 
+       
         public string ReplaceCoursePlaceholders(string template, Course course)
         {
             var placeholders = new Dictionary<string, string>
@@ -162,13 +163,13 @@ namespace CoursesManager.UI.Models
                 { "[Cursus categorie]", course.Category },
                 { "[Cursus startdatum]", course.StartDate.ToString("dd-MM-yyyy") },
                 { "[Cursus einddatum]", course.EndDate.ToString("dd-MM-yyyy") },
-                { "[Cursus locatie naam]", course.Location?.Name ?? "Geen locatie" },
-                { "[Cursus locatie land]", course.Location?.Address?.Country ?? "Geen land" },
-                { "[Cursus locatie postcode]", course.Location?.Address?.ZipCode ?? "Geen postcode" },
-                { "[Cursus locatie stad]", course.Location?.Address?.City ?? "Geen stad" },
-                { "[Cursus locatie straat]", course.Location?.Address?.Street ?? "Geen straat" },
-                { "[Cursus locatie huisnummer]", course.Location?.Address?.HouseNumber ?? "Geen huisnummer" },
-                { "[Cursus locatie toevoeging]", course.Location?.Address?.HouseNumberExtension ?? "Geen toevoeging" },
+                { "[Cursus locatie naam]", course.Location?.Name  ?? "" },
+                { "[Cursus locatie land]", course.Location?.Address?.Country  ?? "" },
+                { "[Cursus locatie postcode]", course.Location?.Address?.ZipCode  ?? "" },
+                { "[Cursus locatie stad]", course.Location?.Address?.City  ?? "" },
+                { "[Cursus locatie straat]", course.Location?.Address?.Street  ?? "" },
+                { "[Cursus locatie huisnummer]", course.Location?.Address?.HouseNumber  ?? "" },
+                { "[Cursus locatie toevoeging]", course.Location?.Address?.HouseNumberExtension  ?? "" },
                 { "[Betaal link]", "Betaal link"}
             };
 

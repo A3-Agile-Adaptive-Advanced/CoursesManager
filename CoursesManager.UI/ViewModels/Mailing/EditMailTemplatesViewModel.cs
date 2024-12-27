@@ -15,7 +15,10 @@ using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using CoursesManager.MVVM.Mail.MailService;
 using CoursesManager.UI.Enums;
+using MySql.Data.MySqlClient;
+using CoursesManager.MVVM.Exceptions;
 
 namespace CoursesManager.UI.ViewModels.Mailing
 {
@@ -24,7 +27,6 @@ namespace CoursesManager.UI.ViewModels.Mailing
         #region Services
         private readonly IMessageBroker _messageBroker;
         private readonly IDialogService _dialogService;
-        private readonly IMailProvider _mailProvider;
         private readonly ITemplateRepository _templateRepository;
         #endregion
         #region Attributes
@@ -35,11 +37,11 @@ namespace CoursesManager.UI.ViewModels.Mailing
             set => SetProperty(ref _visibleText, value);
         }
 
-        private Template _template;
-        public Template Template
+        private Template _currentTemplate;
+        public Template CurrentTemplate
         {
-            get => _template;
-            set => SetProperty(ref _template, value);
+            get => _currentTemplate;
+            set => SetProperty(ref _currentTemplate, value);
         }
         #endregion
         #region Commands
@@ -52,61 +54,96 @@ namespace CoursesManager.UI.ViewModels.Mailing
         {
             _templateRepository = templateRepository;
             _navigationService = navigationService;
-            _mailProvider = new MailProvider();
             _messageBroker = messageBroker;
             _dialogService = dialogService;
 
-
-            VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText("CertificateMail"))));
             ShowMailCommand = new RelayCommand<string>(SwitchHtmls, s => s != null);
             PreviewPageCommand = new RelayCommand(OpenTemplateViewer);
             SaveTemplateCommand = new RelayCommand(SaveTemplate);
+
+            VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText("CertificateMail", null))));
         }
 
-        public string GetTemplateText(string templateName)
+        public void SaveTemplate()
         {
-            string templateText = string.Empty;
-            Template = _templateRepository.GetTemplateByName(templateName);
-
-            Match match = Regex.Match(Template.HtmlString, @"<body>(.*?)</body>", RegexOptions.Singleline);
-
-            string bodyContent = match.Groups[1].Value;
-            templateText = bodyContent;
-
-            return templateText;
-        }
-
-        public async void SaveTemplate()
-        {
-
             string convertedText = GetPlainTextFromFlowDocument(VisibleText);
             List<string> invalidPlaceholders = ValidatePlaceholders(convertedText);
 
-            if (invalidPlaceholders != null && invalidPlaceholders.Count != 0)
+            if (invalidPlaceholders.Count != 0)
             {
                 ReUploadTextWithErrorFormatting(convertedText, invalidPlaceholders);
-                _messageBroker.Publish(new ToastNotificationMessage(true, "1 of meerdere placeholders zijn incorrect.", ToastType.Warning));
+                _messageBroker.Publish(new ToastNotificationMessage(true,
+                    "1 of meerdere placeholders zijn incorrect. Druk op toets '[' om alle geldige opties in te zien.", ToastType.Warning));
+                return;
             }
-            else
-            {
-                string updatedHtmlString = UpdateTemplateBody(convertedText);
 
-                Template.HtmlString = updatedHtmlString;
-                try
+            string updatedHtmlString = UpdateTemplateBody(convertedText);
+            CurrentTemplate.HtmlString = updatedHtmlString;
+
+            UpdateTemplate(CurrentTemplate);
+        }
+        public async void OpenTemplateViewer()
+        {
+            await ExecuteWithOverlayAsync(_messageBroker, async () =>
+            {
+                var dialogResult = await _dialogService.ShowDialogAsync<TemplatePreviewDialogViewModel, DialogResultType>(new DialogResultType
                 {
-                    _templateRepository.Update(Template);
-                }
-                catch (Exception ex)
-                {
-                    _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden", ToastType.Error));
-                }
-                _messageBroker.Publish(new ToastNotificationMessage(true, "Template opgeslagen", ToastType.Confirmation));
-            }
+                    DialogTitle = CurrentTemplate.Name,
+                    DialogText = UpdateTemplateBody(GetPlainTextFromFlowDocument(VisibleText)),
+                });
+            });
+        }
+        //This gives the codebehind the abillity to show feedback to the user. this method is only used by the codebehind of EditMailTemplates.
+        public void ShowErrorMessage(string errorMessage, ToastType type)
+        {
+            _messageBroker.Publish(new ToastNotificationMessage(true,
+                errorMessage,
+                type));
         }
 
+        #region Helper methods
+
+        private void UpdateTemplate(Template template)
+        {
+            try
+            {
+                _templateRepository.Update(template);
+                VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText(null, CurrentTemplate))));
+                _messageBroker.Publish(new ToastNotificationMessage(true,
+                    "Template opgeslagen", ToastType.Confirmation));
+            }
+            catch (DataAccessException)
+            {
+                _messageBroker.Publish(new ToastNotificationMessage(true,
+                    "Er is een fout opgetreden, template niet opgeslagen in de database",
+                    ToastType.Error));
+            }
+        }
+        private string GetTemplateText(string? templateName, Template? template)
+        {
+            string templateText = string.Empty;
+            if (!(template == null && string.IsNullOrEmpty(templateName)))
+            {
+                try
+                {
+                    CurrentTemplate = template ?? _templateRepository.GetTemplateByName(templateName);
+                }
+                catch (DataAccessException)
+                {
+                    _messageBroker.Publish(new ToastNotificationMessage(true,
+                        "Er is een fout opgetreden, template kon niet worden opgehaald uit de database",
+                        ToastType.Error));
+                }
+                Match match = Regex.Match(CurrentTemplate.HtmlString, @"<body>(.*?)</body>", RegexOptions.Singleline);
+                string bodyContent = match.Groups[1].Value;
+                templateText = bodyContent;
+            }
+
+            return templateText;
+        }
         private string UpdateTemplateBody(string updatedBodyContent)
         {
-            string tempString = Template.HtmlString;
+            string tempString = CurrentTemplate.HtmlString;
             string updatedTemplate = Regex.Replace(
                 tempString,
                 @"<body>(.*?)</body>",
@@ -116,29 +153,25 @@ namespace CoursesManager.UI.ViewModels.Mailing
 
             return updatedTemplate;
         }
-        public async void OpenTemplateViewer()
-        {
-            await ExecuteWithOverlayAsync(_messageBroker, async () =>
-            {
-                var dialogResult = await _dialogService.ShowDialogAsync<TemplatePreviewDialogViewModel, DialogResultType>(new DialogResultType
-                {
-                    DialogTitle = Template.Name,
-                    DialogText = UpdateTemplateBody(GetPlainTextFromFlowDocument(VisibleText)),
-                });
-            });
-        }
 
         private void SwitchHtmls(string Html)
         {
-            VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText(Html))));
+            VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText(Html, null))));
         }
 
         private string GetPlainTextFromFlowDocument(FlowDocument document)
         {
-            if (document == null)
-                return string.Empty;
 
-            return new TextRange(document.ContentStart, document.ContentEnd).Text;
+            if (document == null)
+            {
+                _messageBroker.Publish(new ToastNotificationMessage(true,
+                    "Er is een onverwachte fout opgetreden, neem contact op met de systeembeheerder",
+                    ToastType.Error));
+                return string.Empty;
+            }
+
+            string plainText = new TextRange(document.ContentStart, document.ContentEnd).Text;
+            return plainText.TrimEnd();
         }
 
         private List<string> ValidatePlaceholders(string htmlString)
@@ -201,7 +234,6 @@ namespace CoursesManager.UI.ViewModels.Mailing
             foreach (string word in words)
             {
                 Run run = new Run(word);
-                Debug.WriteLine(word);
                 if (flaggedWords.Contains(word))
                 {
                     run.FontWeight = FontWeights.Bold;
@@ -217,6 +249,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
             VisibleText = newDocument;
         }
 
+        #endregion
 
     }
 }
