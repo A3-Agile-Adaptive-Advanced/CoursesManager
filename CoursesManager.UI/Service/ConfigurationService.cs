@@ -10,34 +10,38 @@ namespace CoursesManager.UI.Service
     public class ConfigurationService : IConfigurationService
     {
 
-        private readonly EncryptionService _encryptionService;
+        private readonly IEncryptionService _encryptionService;
 
 
-        public ConfigurationService(EncryptionService encryptionService)
+        public ConfigurationService(IEncryptionService encryptionService)
         {
             _encryptionService = encryptionService ?? throw new ArgumentNullException(nameof(encryptionService));
         }
 
         public void SaveEnvSettings(Dictionary<string, string> dbParams, Dictionary<string, string> mailParams)
         {
-            Console.WriteLine("Encryptie van instellingen gestart...");
+            try
+            {
+                Console.WriteLine("Encryptie van instellingen gestart...");
 
-            var dbConnectionString = BuildConnectionString(dbParams);
-            var mailConnectionString = BuildConnectionString(mailParams);
+                var dbConnectionString = BuildConnectionString(dbParams);
+                var mailConnectionString = BuildConnectionString(mailParams);
 
+                EnvManager<EnvModel>.Values.ConnectionString = _encryptionService.Encrypt(dbConnectionString);
+                EnvManager<EnvModel>.Values.MailConnectionString = _encryptionService.Encrypt(mailConnectionString);
 
+                EnvManager<EnvModel>.Save();
 
-            EnvManager<EnvModel>.Values.ConnectionString = _encryptionService.Encrypt(dbConnectionString);
-            EnvManager<EnvModel>.Values.MailConnectionString = _encryptionService.Encrypt(mailConnectionString);
-
-
-
-            EnvManager<EnvModel>.Save();
-
-            EnvManager<EnvModel>.Values.ConnectionString = _encryptionService.Decrypt(EnvManager<EnvModel>.Values.ConnectionString);
-            EnvManager<EnvModel>.Values.MailConnectionString = _encryptionService.Decrypt(EnvManager<EnvModel>.Values.MailConnectionString);
-
+                EnvManager<EnvModel>.Values.ConnectionString = _encryptionService.Decrypt(EnvManager<EnvModel>.Values.ConnectionString);
+                EnvManager<EnvModel>.Values.MailConnectionString = _encryptionService.Decrypt(EnvManager<EnvModel>.Values.MailConnectionString);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Fout tijdens het opslaan van instellingen: {ex.Message}");
+                
+            }
         }
+
 
 
         public string SafeDecrypt(string encryptedText)

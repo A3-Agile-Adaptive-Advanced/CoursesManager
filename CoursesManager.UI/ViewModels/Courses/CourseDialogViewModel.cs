@@ -22,6 +22,7 @@ namespace CoursesManager.UI.ViewModels.Courses
         private Course? OriginalCourse { get; }
 
         private BitmapImage? _imageSource;
+
         public BitmapImage? ImageSource
         {
             get => _imageSource;
@@ -29,6 +30,7 @@ namespace CoursesManager.UI.ViewModels.Courses
         }
 
         private Course? _course;
+
         public Course? Course
         {
             get => _course;
@@ -36,15 +38,13 @@ namespace CoursesManager.UI.ViewModels.Courses
         }
 
         public ICommand SaveCommand { get; }
-
         public ICommand CancelCommand { get; }
-
         public ICommand UploadCommand { get; }
-
 
         public ObservableCollection<Location> Locations { get; set; }
 
-        public CourseDialogViewModel(ICourseRepository courseRepository, IDialogService dialogService, ILocationRepository locationRepository, Course? course) : base(course)
+        public CourseDialogViewModel(ICourseRepository courseRepository, IDialogService dialogService,
+            ILocationRepository locationRepository, Course? course) : base(course)
         {
             _courseRepository = courseRepository ?? throw new ArgumentNullException(nameof(courseRepository));
             _locationRepository = locationRepository ?? throw new ArgumentNullException(nameof(locationRepository));
@@ -53,7 +53,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             IsStartAnimationTriggered = true;
 
             OriginalCourse = course;
-            
+
             Locations = GetLocations();
 
             Course = course != null
@@ -66,14 +66,14 @@ namespace CoursesManager.UI.ViewModels.Courses
                     Location = null,
                     IsActive = false,
                     StartDate = DateTime.Now,
-                    EndDate =  DateTime.Now,
+                    EndDate = DateTime.Now,
                     Image = null,
 
                 };
 
             Course.Location = Locations.FirstOrDefault(l => l.Id == Course.LocationId);
 
-            SaveCommand = new RelayCommand(ExecuteSave,CanExecuteSave);
+            SaveCommand = new RelayCommand(ExecuteSave, CanExecuteSave);
             CancelCommand = new RelayCommand(ExecuteCancel);
             UploadCommand = new RelayCommand(UploadImage);
         }
@@ -84,15 +84,13 @@ namespace CoursesManager.UI.ViewModels.Courses
         }
 
         private bool CanExecuteSave() =>
-                Course is not null &&
-                !string.IsNullOrWhiteSpace(Course.Name) &&
-                !string.IsNullOrWhiteSpace(Course.Code) &&
-                Course.StartDate != default &&
-                Course.EndDate != default &&
-                Course.Location is not null &&
-                !string.IsNullOrWhiteSpace(Course.Description);
-
-
+            Course is not null &&
+            !string.IsNullOrWhiteSpace(Course.Name) &&
+            !string.IsNullOrWhiteSpace(Course.Code) &&
+            Course.StartDate != default &&
+            Course.EndDate != default &&
+            Course.Location is not null &&
+            !string.IsNullOrWhiteSpace(Course.Description);
 
         protected override void InvokeResponseCallback(DialogResult<Course> dialogResult)
         {
@@ -116,15 +114,14 @@ namespace CoursesManager.UI.ViewModels.Courses
             _ = ExecuteSaveAsync();
         }
 
-        
-
         private async Task OnSaveAsync()
         {
             try
             {
                 if (Course == null)
                 {
-                    throw new InvalidOperationException("Course mag niet null zijn bij het uploaden van een afbeelding.");
+                    throw new InvalidOperationException(
+                        "Course mag niet null zijn bij het uploaden van een afbeelding.");
                 }
 
                 if (Course.Location != null) Course.LocationId = Course.Location.Id;
@@ -163,14 +160,12 @@ namespace CoursesManager.UI.ViewModels.Courses
             }
         }
 
-
-
         public async Task OnCancel()
         {
             var dialogResult = DialogResult<Course>.Builder()
                 .SetCanceled("Wijzigingen geannuleerd door de gebruiker.")
                 .Build();
-            
+
             await TriggerEndAnimationAsync();
 
             InvokeResponseCallback(dialogResult);
@@ -188,18 +183,16 @@ namespace CoursesManager.UI.ViewModels.Courses
 
             if (openDialog.ShowDialog() == true)
             {
-                
+
                 var bitmap = new BitmapImage(new Uri(openDialog.FileName));
 
-              
+
                 Course!.Image = ConvertImageToByteArray(bitmap);
 
-                
+
                 ImageSource = bitmap;
             }
         }
-
-
 
         public static byte[] ConvertImageToByteArray(BitmapImage image)
         {
@@ -209,7 +202,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             {
                 var encoder = new JpegBitmapEncoder
                 {
-                    QualityLevel = 90 
+                    QualityLevel = 90
                 };
 
                 encoder.Frames.Add(BitmapFrame.Create(image));
@@ -218,6 +211,5 @@ namespace CoursesManager.UI.ViewModels.Courses
                 return memoryStream.ToArray();
             }
         }
-
     }
 }

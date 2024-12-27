@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 
 namespace CoursesManager.UI.Service
 {
-    public class EncryptionService
+    public class EncryptionService : IEncryptionService
     {
         private string _key;
 
