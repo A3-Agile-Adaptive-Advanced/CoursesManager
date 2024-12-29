@@ -20,6 +20,7 @@ namespace CoursesManager.UI.ViewModels
         {
             get => _dbServer;
             set => SetProperty(ref _dbServer, value);
+
         }
 
         private string _dbPort;
@@ -42,7 +43,6 @@ namespace CoursesManager.UI.ViewModels
             get => _dbPassword;
             set => SetProperty(ref _dbPassword, value);
         }
-
 
 
         private string _dbName;
@@ -97,7 +97,7 @@ namespace CoursesManager.UI.ViewModels
             _configurationService = configurationService;
             
             InitializeSettings();
-            SaveCommand = new RelayCommand(ValidateAndSave);
+            SaveCommand = new RelayCommand(ValidateAndSave, CanSave);
 
             if (!CanSave() || !_configurationService.ValidateSettings())
             {
@@ -131,6 +131,7 @@ namespace CoursesManager.UI.ViewModels
                 if (!CanSave())
                 {
                     MessageBox.Show("Instellingen zijn ongeldig. Controleer de ingevoerde waarden.");
+                    return;
                 }
 
                 var dbParams = new Dictionary<string, string>
