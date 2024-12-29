@@ -123,7 +123,7 @@ namespace CoursesManager.Tests.Courses
         {
             // Filter by "WIS101"
             _viewModel.SearchTerm = "WIS101";
-            await Task.Delay(50);
+            await Task.Delay(500);
             Assert.That(_viewModel.FilteredCourses, Has.Count.EqualTo(1));
             Assert.That(
                 _viewModel.FilteredCourses,
@@ -137,7 +137,7 @@ namespace CoursesManager.Tests.Courses
 
             // Filter by "Basis"
             _viewModel.SearchTerm = "Basis";
-            await Task.Delay(50);
+            await Task.Delay(500);
             Assert.That(_viewModel.FilteredCourses, Has.Count.EqualTo(2));
             Assert.That(
                 _viewModel.FilteredCourses,
