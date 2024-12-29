@@ -28,7 +28,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Searchbox -->
-            <rs:SearchBox Margin="10 0 0 0" SearchCommand="{Binding SearchCommand}" Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <rs:SearchBox Margin="10 0 0 0" SearchCommand="{Binding SearchCommand}" Text="{Binding SearchTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
             <!-- Toggle Switch Row -->
             <Grid Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center">
@@ -47,11 +47,11 @@
                             <Setter Property="Text" Value="Inactive" />
                             <!-- Default Text -->
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsToggled}" Value="True">
+                                <DataTrigger Binding="{Binding IsSwitchToggled}" Value="True">
                                     <Setter Property="Text" Value="Actief" />
                                     <Setter Property="Foreground" Value="#02008C"/>
                                 </DataTrigger>
-                                <DataTrigger Binding="{Binding IsToggled}" Value="False">
+                                <DataTrigger Binding="{Binding IsSwitchToggled}" Value="False">
                                     <Setter Property="Text" Value="Inactief" />
                                     <Setter Property="Foreground" Value="#939393"/>
                                 </DataTrigger>
@@ -59,7 +59,7 @@
                         </Style>
                     </TextBlock.Style>
                 </TextBlock>
-                <rs:Toggle Grid.Column="1" IsToggled="{Binding IsToggled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToggleCommand="{Binding ToggleCommand}"/>
+                <rs:Toggle Grid.Column="1" IsToggled="{Binding IsSwitchToggled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToggleCommand="{Binding SwitchToggleCommand}"/>
             </Grid>
             <Grid Grid.Column="4" Width="295" Margin="0 0 105 0">
             <!-- Add Course Button -->

@@ -6,6 +6,7 @@ using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.ViewModels;
 using CoursesManager.UI.ViewModels.Courses;
 using Moq;
+using System.Diagnostics;
 
 namespace CoursesManager.Tests.Courses
 {
@@ -111,57 +112,75 @@ namespace CoursesManager.Tests.Courses
             );
         }
 
-        //[Test]
-        //public void Should_Load_Courses_On_Initialization()
-        //{
-        //    Assert.That(_courses, Has.Count.EqualTo(_viewModel.Courses.Count));
-        //    //Assert.That(_courses, Has.Count.EqualTo(_viewModel.FilteredCourses.Count)); <- dit is niet correct lijkt me?
-        //}
-
-        //[Test]
-        //public async Task Should_Filter_Courses_Based_On_SearchText()
-        //{
-        //    // Filter by "WIS101"
-        //    _viewModel.SearchText = "WIS101";
-        //    await Task.Delay(50);
-        //    Assert.That(_viewModel.FilteredCourses, Has.Count.EqualTo(1));
-        //    Assert.That(
-        //        _viewModel.FilteredCourses,
-        //        Has.All.Matches<Course>(c => c.GenerateFilterString().Contains(_viewModel.SearchText, StringComparison.CurrentCultureIgnoreCase))
-        //    );
-
-        //    // Filter by "Basis"
-        //    _viewModel.SearchText = "Basis";
-        //    await Task.Delay(50);
-        //    Assert.That(_viewModel.FilteredCourses, Has.Count.EqualTo(2));
-        //    Assert.That(
-        //        _viewModel.FilteredCourses,
-        //        Has.All.Matches<Course>(c => c.GenerateFilterString().Contains(_viewModel.SearchText, StringComparison.CurrentCultureIgnoreCase))
-        //    );
-        //}
+        [Test]
+        public void Should_Load_Courses_On_Initialization()
+        {
+            Assert.That(_viewModel.Courses, Has.Count.EqualTo(_courses.Count));
+        }
 
         [Test]
-        public async Task Should_Toggle_Course_Active_Status_When_IsToggled_Changes()
+        public async Task Should_Filter_Courses_Based_On_SearchTerm()
         {
-            _viewModel.IsToggled = true;
+            // Filter by "WIS101"
+            _viewModel.SearchTerm = "WIS101";
+            await Task.Delay(50);
+            Assert.That(_viewModel.FilteredCourses, Has.Count.EqualTo(1));
+            Assert.That(
+                _viewModel.FilteredCourses,
+                Has.All.Matches<Course>(c => 
+                    c.GenerateFilterString().Contains(
+                        _viewModel.SearchTerm, 
+                        StringComparison.CurrentCultureIgnoreCase
+                    )
+                )
+            );
+
+            // Filter by "Basis"
+            _viewModel.SearchTerm = "Basis";
+            await Task.Delay(50);
+            Assert.That(_viewModel.FilteredCourses, Has.Count.EqualTo(2));
+            Assert.That(
+                _viewModel.FilteredCourses,
+                Has.All.Matches<Course>(c => 
+                    c.GenerateFilterString().Contains(
+                        _viewModel.SearchTerm, 
+                        StringComparison.CurrentCultureIgnoreCase
+                    )
+                )
+            );
+
+            // Reset SearchTerm
+            _viewModel.SearchTerm = String.Empty;
+        }
+
+        [Test]
+        public async Task Should_Return_Empty_When_SearchTerm_Does_Not_Match_Any_Course()
+        {
+            _viewModel.SearchTerm = "NonExistentCourseName";
             await Task.Delay(50);
 
-            Assert.Multiple(() =>
-            {
-                Assert.That(_viewModel.IsToggled, Is.True);
-                Assert.That(_viewModel.FilteredCourses, Has.Count.EqualTo(3));
-            });
+            Assert.That(_viewModel.FilteredCourses, Is.Empty);
+        }
+
+        [Test]
+        public async Task Should_Toggle_Course_Active_Status_When_IsSwitchToggled_Changes()
+        {
+            // Toggling to true should filter active courses only
+            _viewModel.IsSwitchToggled = true;
+            await Task.Delay(50);
+
+            var activeCourses = _courses.Where(c => c.IsActive).ToList();
+            Assert.That(_viewModel.FilteredCourses, Has.Count.EqualTo(activeCourses.Count));
             Assert.That(_viewModel.FilteredCourses.All(c => c.IsActive), Is.True);
 
-            _viewModel.IsToggled = false;
+
+            // Toggle back to false should show only inactive courses
+            _viewModel.IsSwitchToggled = false;
             await Task.Delay(50);
 
-            Assert.Multiple(() =>
-            {
-                Assert.That(_viewModel.IsToggled, Is.False);
-                Assert.That(_viewModel.FilteredCourses, Has.Count.EqualTo(2));
-                Assert.That(_viewModel.FilteredCourses.All(c => c.IsActive), Is.False);
-            });
+            var inactiveCourses = _courses.Where(c => c.IsActive == false).ToList();
+            Assert.That(_viewModel.FilteredCourses, Has.Count.EqualTo(inactiveCourses.Count));
+            Assert.That(_viewModel.FilteredCourses.All(c => !c.IsActive), Is.True);
         }
 
         [Test]
@@ -170,7 +189,10 @@ namespace CoursesManager.Tests.Courses
             var testCourse = _viewModel.Courses.First();
             _viewModel.CourseOptionCommand.Execute(testCourse);
 
-            _mockedNavigationService.Verify(nav => nav.NavigateTo<CourseOverViewViewModel>(), Times.Once);
+            _mockedNavigationService.Verify(nav => 
+                nav.NavigateTo<CourseOverViewViewModel>(),
+                Times.Once
+            );
         }
 
         [Test]
@@ -192,7 +214,8 @@ namespace CoursesManager.Tests.Courses
                 DateCreated = DateTime.Now.AddDays(-7),
             };
 
-            _mockedDialogService.Setup(ds => ds.ShowDialogAsync<CourseDialogViewModel, Course>())
+            _mockedDialogService
+                .Setup(ds => ds.ShowDialogAsync<CourseDialogViewModel, Course>())
                 .ReturnsAsync(DialogResult<Course>.Builder().SetSuccess(newCourse, "Success").Build());
 
             Assert.That(_viewModel.Courses.Count, Is.EqualTo(5));
@@ -201,10 +224,72 @@ namespace CoursesManager.Tests.Courses
             _mockedCourseRepository.Setup(repo => repo.GetAll()).Returns(_courses);
 
             await Task.Run(() => _viewModel.AddCourseCommand.Execute(newCourse));
-            await Task.Delay(100);
+            await Task.Delay(50);
 
             Assert.That(_viewModel.Courses, Has.Count.EqualTo(6));
             Assert.That(_viewModel.Courses.Any(c => c == newCourse));
+        }
+
+        [Test]
+        public async Task Should_Not_Add_Course_When_Dialog_Is_Cancelled()
+        {
+            _mockedDialogService
+                .Setup(ds => ds.ShowDialogAsync<CourseDialogViewModel, Course>())
+                .ReturnsAsync(DialogResult<Course>.Builder().SetFailure("User cancelled").Build());
+
+            var originalCount = _viewModel.Courses.Count;
+
+            await Task.Run(() => _viewModel.AddCourseCommand.Execute(null));
+            await Task.Delay(50);
+
+            Assert.That(_viewModel.Courses.Count, Is.EqualTo(originalCount));
+        }
+
+        [Test]
+        public async Task Should_Not_Add_Course_When_User_Cancels_In_Dialog()
+        {
+            _mockedDialogService
+                .Setup(ds => ds.ShowDialogAsync<CourseDialogViewModel, Course>())
+                .ReturnsAsync(DialogResult<Course>.Builder().SetFailure("User cancelled").Build());
+
+            var originalCount = _viewModel.Courses.Count;
+
+            _viewModel.AddCourseCommand.Execute(null);
+            await Task.Delay(50);
+
+            Assert.That(_viewModel.Courses.Count, Is.EqualTo(originalCount));
+        }
+
+        [Test]
+        public async Task Should_Not_Add_Course_When_Dialog_Returns_Null_Course()
+        {
+            _mockedDialogService
+                .Setup(ds => ds.ShowDialogAsync<CourseDialogViewModel, Course>())
+                .ReturnsAsync(DialogResult<Course>.Builder().SetSuccess(null, "Weird success").Build());
+
+            var originalCount = _viewModel.Courses.Count;
+
+            _viewModel.AddCourseCommand.Execute(null);
+            await Task.Delay(50);
+
+            Assert.That(_viewModel.Courses.Count, Is.EqualTo(originalCount));
+        }
+
+        [Test]
+        public void Should_Throw_Exception_When_Repository_Throws_On_GetAll()
+        {
+            var brokenRepo = new Mock<ICourseRepository>();
+            brokenRepo.Setup(repo => repo.GetAll()).Throws(new Exception("Database down!"));
+
+            Assert.Throws<Exception>(() =>
+            {
+                var badViewModel = new CoursesManagerViewModel(
+                    brokenRepo.Object,
+                    _mockedMessageBroker.Object,
+                    _mockedDialogService.Object,
+                    _mockedNavigationService.Object
+                );
+            });
         }
     }
 }
