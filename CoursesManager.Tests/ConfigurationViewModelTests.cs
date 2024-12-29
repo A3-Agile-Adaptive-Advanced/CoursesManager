@@ -1,4 +1,5 @@
-﻿using CoursesManager.MVVM.Navigation;
+﻿using CoursesManager.MVVM.Messages;
+using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Service;
 using CoursesManager.UI.ViewModels;
 using Moq;
@@ -10,11 +11,14 @@ namespace CoursesManager.Tests
     {
         private Mock<IConfigurationService> _configurationServiceMock;
         private ConfigurationViewModel _viewModel;
+        private Mock<IMessageBroker> _messageBrokerMock;
 
         [SetUp]
         public void SetUp()
         {
             _configurationServiceMock = new Mock<IConfigurationService>();
+            _messageBrokerMock = new Mock<IMessageBroker>();
+            
 
             // mock voor de DB gegevens
             _configurationServiceMock
@@ -39,7 +43,7 @@ namespace CoursesManager.Tests
                     { "Password", "password" }
                 });
 
-            _viewModel = new ConfigurationViewModel(_configurationServiceMock.Object);
+            _viewModel = new ConfigurationViewModel(_configurationServiceMock.Object, _messageBrokerMock.Object );
         }
 
         [Test]

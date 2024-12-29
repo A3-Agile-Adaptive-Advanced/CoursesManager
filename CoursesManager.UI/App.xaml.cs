@@ -95,7 +95,7 @@ public partial class App : Application
         MessageBroker.Subscribe<ApplicationCloseRequestedMessage, App>(ApplicationCloseRequestedHandler, this);
 
 
-        var startupmanager = new StartupManager(ConfigurationService, NavigationService);
+        var startupmanager = new StartupManager(ConfigurationService, NavigationService, MessageBroker);
         startupmanager.CheckConfigurationOnStartup();
 
 

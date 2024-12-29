@@ -1,18 +1,22 @@
 ﻿
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Navigation;
 using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Data;
+using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
+using CoursesManager.UI.Enums;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Service;
+using CoursesManager.UI.ViewModels.Courses;
 
 namespace CoursesManager.UI.ViewModels
 {
     public class ConfigurationViewModel : ViewModel
     {
         private readonly IConfigurationService _configurationService;
-
+        private readonly IMessageBroker _messageBroker;
 
 
         private string _dbServer;
@@ -92,17 +96,14 @@ namespace CoursesManager.UI.ViewModels
 
         public ICommand SaveCommand { get; }
 
-        public ConfigurationViewModel(IConfigurationService configurationService)
+        public ConfigurationViewModel(IConfigurationService configurationService, IMessageBroker messageBroker)
         {
             _configurationService = configurationService;
+            _messageBroker = messageBroker;
+            
             
             InitializeSettings();
             SaveCommand = new RelayCommand(ValidateAndSave, CanSave);
-
-            if (!CanSave() || !_configurationService.ValidateSettings())
-            {
-                MessageBox.Show("Instellingen zijn ongeldig. Controleer de ingevoerde waarden.");
-            }
         }
 
         public void InitializeSettings()
@@ -130,8 +131,8 @@ namespace CoursesManager.UI.ViewModels
             {
                 if (!CanSave())
                 {
-                    MessageBox.Show("Instellingen zijn ongeldig. Controleer de ingevoerde waarden.");
-                    return;
+                    _messageBroker.Publish(new ToastNotificationMessage(true,
+                        "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.", ToastType.Warning)); return;
                 }
 
                 var dbParams = new Dictionary<string, string>
@@ -156,7 +157,8 @@ namespace CoursesManager.UI.ViewModels
 
                 if (!_configurationService.ValidateSettings())
                 {
-                    MessageBox.Show("Instellingen zijn ongeldig. Controleer de ingevoerde waarden.");
+                    _messageBroker.Publish(new ToastNotificationMessage(true,
+                        "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.", ToastType.Warning));
                     INavigationService.CanNavigate = false;
                     return;
                 }
@@ -164,15 +166,16 @@ namespace CoursesManager.UI.ViewModels
                 INavigationService.CanNavigate = true;
 
 
-                MessageBox.Show("Instellingen succesvol opgeslagen!");
+                _messageBroker.Publish(new ToastNotificationMessage(true,
+                    "Instellingen succesvol opgeslagen!", ToastType.Confirmation));
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Fout bij opslaan: {ex.Message}");
+                _messageBroker.Publish(new ToastNotificationMessage(true,
+                    $"Fout bij opslaan: {ex.Message}", ToastType.Error));
             }
         }
-
-
+       
         private bool CanSave()
         {
             return !string.IsNullOrWhiteSpace(DbServer) &&
