@@ -3,7 +3,6 @@ using System.Reflection;
 using CoursesManager.MVVM.Env;
 using CoursesManager.UI.Models;
 using System.Data;
-using CoursesManager.UI.Service;
 
 namespace CoursesManager.UI.DataAccess;
 
@@ -189,15 +188,6 @@ public abstract class BaseDataAccess<T>(string? modelTableName = null) where T :
         }
     }
 
-    private int GetLastInsertedId()
-    {
-        using var mySqlConnection = GetConnection();
-        using var mySqlCommand = new MySqlCommand("SELECT LAST_INSERT_ID()", mySqlConnection);
-
-        mySqlConnection.Open();
-        return Convert.ToInt32(mySqlCommand.ExecuteScalar());
-    }
-
     protected MySqlConnection GetConnection()
     {
         var connectionString = EnvManager<EnvModel>.Values.ConnectionString;
@@ -227,6 +217,15 @@ public abstract class BaseDataAccess<T>(string? modelTableName = null) where T :
         }
 
         return model;
+    }
+
+    private int GetLastInsertedId()
+    {
+        using var mySqlConnection = GetConnection();
+        using var mySqlCommand = new MySqlCommand("SELECT LAST_INSERT_ID()", mySqlConnection);
+
+        mySqlConnection.Open();
+        return Convert.ToInt32(mySqlCommand.ExecuteScalar());
     }
 
     /// <summary>Executes a non-query command (INSERT, UPDATE, DELETE).</summary>
@@ -261,7 +260,7 @@ public abstract class BaseDataAccess<T>(string? modelTableName = null) where T :
     }
 
     private static MySqlParameter[] DictionaryToParameters(Dictionary<string, object> data) =>
-        data.Select(kvp => new MySqlParameter($"@{kvp.Key}", kvp.Value ?? DBNull.Value)).ToArray();
+        data.Select(parameter => new MySqlParameter($"@{parameter.Key}", parameter.Value ?? DBNull.Value)).ToArray();
 
     private static bool HasColumn(MySqlDataReader mySqlReader, string columnName)
     {
