@@ -42,8 +42,8 @@ public class GlobalCache
             throw new KeyNotFoundException();
 
         _usageOrder[key] = DateTime.Now.Ticks;
-
         return _cacheMap[key].Value;
+        
     }
 
     // When an item is permanent the only thing possible is to update its contents, a check is done to see if the contents match what is already in cache.
@@ -64,7 +64,7 @@ public class GlobalCache
         else
         {
             EnsureCapacity();
-            _cacheMap[key] = new CacheItem(key, value, isPermanent);
+            _cacheMap[key] = new CacheItem(value, isPermanent);
         }
 
         _usageOrder[key] = DateTime.Now.Ticks;
@@ -73,6 +73,7 @@ public class GlobalCache
     // Method is not used but implemented nonetheless for future possibilities.
     // Whenever an item needs to 'survive' longer than the expected lifecycle but
     // still should be cleaned up at some point this method is there to do so.
+    // Turned off by default, but in current scenario turned on to run unittests.
     public void RemovePermanentItem(string key)
     {
         lock (_lock)
@@ -143,28 +144,27 @@ public class GlobalCache
 
     private void EvictLruNonPermanentItem()
     {
-        lock (_lock)
+        var leastUsedKey = _usageOrder.OrderBy(kvp => kvp.Value).FirstOrDefault().Key;
+        if (!string.IsNullOrEmpty(leastUsedKey))
         {
-            var leastUsedKey = _usageOrder.OrderBy(kvp => kvp.Value).FirstOrDefault().Key;
-            if (!string.IsNullOrEmpty(leastUsedKey))
-            {
-                _cacheMap.TryRemove(leastUsedKey, out _);
-                _usageOrder.TryRemove(leastUsedKey, out _);
-            }
+            _cacheMap.TryRemove(leastUsedKey, out _);
+            _usageOrder.TryRemove(leastUsedKey, out _);
         }
     }
 
     // helper-method to make sure that a permanent item can be updated but not overwritten by another (new/different) type.
     private bool ShouldNotUpdateValue(object existingValue, object newValue)
     {
+        if (existingValue.GetType() != newValue.GetType())
+        {
+            return true;
+        }
+
         if (existingValue is System.Collections.IEnumerable existingCollection && newValue is System.Collections.IEnumerable newCollection)
         {
             return CollectionsAreEqual(existingCollection, newCollection);
         }
-        else
-        {
-            return !Equals(existingValue, newValue);
-        }
+        return !Equals(existingValue, newValue);
     }
 
 
@@ -178,13 +178,11 @@ public class GlobalCache
 
     private class CacheItem
     {
-        public string Key { get; }
         public object Value { get; set; }
         public bool IsPermanent { get; }
 
-        public CacheItem(string key, object value, bool isPermanent)
+        public CacheItem(object value, bool isPermanent)
         {
-            Key = key;
             Value = value;
             IsPermanent = isPermanent;
 
