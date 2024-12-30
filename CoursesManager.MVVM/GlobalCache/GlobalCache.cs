@@ -14,7 +14,7 @@ public class GlobalCache
 {
     #region Attributes
     private readonly int _initialCapacity;
-    private readonly ConcurrentDictionary<string, CacheItem>_cacheMap;
+    private readonly ConcurrentDictionary<string, CacheItem> _cacheMap;
     private readonly ConcurrentDictionary<string, long> _usageOrder;
     private readonly object _lock = new object();
 
@@ -22,7 +22,7 @@ public class GlobalCache
     private static int _permanentItemCount;
     #endregion
 
-    private static readonly Lazy<GlobalCache> _instance = new (() => new GlobalCache(10));
+    private static readonly Lazy<GlobalCache> _instance = new(() => new GlobalCache(10));
 
     private GlobalCache(int capacity)
     {
@@ -59,7 +59,7 @@ public class GlobalCache
             {
                 throw new CantBeOverwrittenException($"The item with key '{key}' is not a permanent item.");
             }
-            Update(key, value);
+            Update(key, value, existingItem);
         }
         else
         {
@@ -95,29 +95,26 @@ public class GlobalCache
     #endregion
     #region helper methods and CacheItem class
 
-
-    private void Update(string key, object value)
+    // when an item already exists this method is there to prevent duplication and checks if overwriting is allowed.
+    private void Update(string key, object value, CacheItem existingItem)
     {
         lock (_lock)
         {
-            if (_cacheMap.TryGetValue(key, out var existingItem))
+            if (existingItem.IsPermanent && ShouldNotUpdateValue(existingItem.Value, value))
             {
-                if (existingItem.IsPermanent && ShouldNotUpdateValue(existingItem.Value, value))
-                {
-                    throw new CantBeOverwrittenException(
-                        $"The item with key '{key}' is of a different type and cannot be overwritten.");
-                }
-
-
-                existingItem.Value = value;
-                _usageOrder[key] = DateTime.Now.Ticks;
+                throw new CantBeOverwrittenException(
+                    $"The item with key '{key}' is of a different type and cannot be overwritten.");
             }
-            else
-            {
-                throw new NullReferenceException($"The item with key '{key}' does not exist in the cache.");
-            }
+
+            existingItem.Value = value;
+            _usageOrder[key] = DateTime.Now.Ticks;
         }
     }
+
+    // This method will grant the cache the ability to grow according to its contents.
+    // When the max capacity is reached and only permanent items are inside this will make it grow.
+    // When a permanent item is removed this method will shrink it.
+    // Reasoning here is that the initial capacity is set for non-permanent items.
     private void EnsureCapacity()
     {
         lock (_lock)
@@ -129,7 +126,7 @@ public class GlobalCache
             }
             else
             {
-                EvictNonPermanentItem();
+                EvictLruNonPermanentItem();
             }
         }
     }
@@ -144,7 +141,7 @@ public class GlobalCache
         if (_capacity > _initialCapacity) _capacity--;
     }
 
-    private void EvictNonPermanentItem()
+    private void EvictLruNonPermanentItem()
     {
         lock (_lock)
         {
@@ -226,7 +223,7 @@ public class GlobalCache
     public int GetCapacity()
     {
         return _capacity;
-        
+
     }
     #endregion
 
