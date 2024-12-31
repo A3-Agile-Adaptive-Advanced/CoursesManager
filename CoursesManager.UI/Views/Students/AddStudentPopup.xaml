@@ -10,7 +10,6 @@
         AllowsTransparency="True"
         WindowStyle="None"
         Background="Transparent"
-        Loaded="Window_Loaded"
         WindowStartupLocation="CenterScreen"
         Width="600" Height="600">
 
@@ -120,7 +119,7 @@
                         <!-- Telefoonnummer -->
                         <TextBlock Text="Telefoonnummer*" Grid.Row="5" Grid.Column="1" Margin="0,0,0,5" />
                         <TextBox Style="{DynamicResource TextBoxEditStudentStyle1}"
-                             Text="{Binding Student.PhoneNumber, UpdateSourceTrigger=PropertyChanged}"
+                             Text="{Binding Student.Phone, UpdateSourceTrigger=PropertyChanged}"
                              local:ValidationProperties.IsRequired="True"
                              local:ValidationProperties.IsPhoneNumber="True"
                              Tag="Telefoonnummer"

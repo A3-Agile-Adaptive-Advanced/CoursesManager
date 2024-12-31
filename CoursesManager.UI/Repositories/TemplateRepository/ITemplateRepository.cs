@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CoursesManager.UI.Models;
 
 namespace CoursesManager.UI.Repositories.TemplateRepository
 {
-    public interface ITemplateRepository
+    public interface ITemplateRepository : IRepository<Template>
     {
+        Template GetTemplateByName(string templateName);
     }
 }

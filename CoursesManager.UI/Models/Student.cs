@@ -89,7 +89,7 @@ namespace CoursesManager.UI.Models
         public DateTime DateOfBirth
         {
             get => _dateOfBirth;
-            set => SetProperty(ref _dateOfBirth, value);
+            set => SetProperty(ref _dateOfBirth, value.Date);
         }
 
         private string? _insertion;
@@ -136,6 +136,32 @@ namespace CoursesManager.UI.Models
                     HouseNumber = this.Address.HouseNumber
                 } : null
             };
+        }
+
+        public string ReplaceStudentPlaceholders(string template, Student student)
+        {
+            var fullName = $"{student.FirstName} {(string.IsNullOrWhiteSpace(student.Insertion) ? "" : student.Insertion + " ")}{student.LastName}".Trim();
+
+            var placeholders = new Dictionary<string, string>
+            {
+                { "[Cursist naam]", fullName },
+                { "[Cursist email]", student.Email },
+                { "[Cursist telefoonnummer]", student.Phone},
+                { "[Cursist geboortedatum]", student.DateOfBirth.ToString("dd-MM-yyyy") },
+                { "[Cursist adres land]", student.Address?.Country ?? ""},
+                { "[Cursist adres postcode]", student.Address?.ZipCode ?? ""},
+                { "[Cursist adres stad]", student.Address?.City ?? ""},
+                { "[Cursist adres straat]", student.Address?.Street ?? ""},
+                { "[Cursist adres huisnummer]", student.Address?.HouseNumber ?? ""},
+                { "[Cursist adres toevoeging]", student.Address?.HouseNumberExtension ?? ""}
+            };
+
+            foreach (var placeholder in placeholders)
+            {
+                template = template.Replace(placeholder.Key, placeholder.Value ?? string.Empty);
+            }
+
+            return template;
         }
     }
 }

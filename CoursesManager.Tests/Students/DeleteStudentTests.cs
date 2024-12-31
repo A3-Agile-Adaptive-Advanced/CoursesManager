@@ -1,15 +1,7 @@
-﻿using NUnit.Framework;
-using Moq;
-using CoursesManager.UI.ViewModels;
+﻿using Moq;
 using CoursesManager.UI.Models;
-using CoursesManager.UI.Services;
-using CoursesManager.UI.Dialogs.Enums;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using CoursesManager.MVVM.Dialogs;
 using CoursesManager.UI.Dialogs.ResultTypes;
-using System.Windows;
-using System.Linq;
 using CoursesManager.UI.Dialogs.ViewModels;
 using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
@@ -18,7 +10,7 @@ using CoursesManager.UI.Repositories.StudentRepository;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.ViewModels.Students;
 
-namespace CoursesManager.Tests
+namespace CoursesManager.Tests.Students
 {
     [TestFixture]
     [Apartment(System.Threading.ApartmentState.STA)]

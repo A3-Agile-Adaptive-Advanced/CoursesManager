@@ -7,15 +7,18 @@ using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Dialogs.ViewModels;
-using CoursesManager.UI.Messages;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Repositories.RegistrationRepository;
 using CoursesManager.UI.Repositories.StudentRepository;
-using CoursesManager.UI.ViewModels.Courses;
 
 namespace CoursesManager.UI.ViewModels.Students
 {
+    /// <summary>
+    /// ViewModel responsible for managing a list of students.
+    /// Supports operations such as searching, toggling between active and deleted students, and navigation.
+    /// required to manage the "StudentManagerView".
+    /// </summary>
     public class StudentManagerViewModel : ViewModelWithNavigation
     {
         private readonly IDialogService _dialogService;
@@ -25,6 +28,7 @@ namespace CoursesManager.UI.ViewModels.Students
         private readonly IRegistrationRepository _registrationRepository;
         public ObservableCollection<Student> Students { get; set; }
         public ObservableCollection<Student> FilteredStudentRecords { get; set; }
+        public ICommand EditStudentCommand { get; }
 
         private string _searchText;
 
@@ -48,11 +52,13 @@ namespace CoursesManager.UI.ViewModels.Students
         }
 
         private ObservableCollection<CourseStudentPayment> _coursePaymentList;
+
         public ObservableCollection<CourseStudentPayment> CoursePaymentList
         {
             get => _coursePaymentList;
             set => SetProperty(ref _coursePaymentList, value);
         }
+
         private bool _isToggled;
 
         public bool IsToggled
@@ -66,15 +72,15 @@ namespace CoursesManager.UI.ViewModels.Students
                 }
             }
         }
+
         #region Commands
 
         public ICommand AddStudentCommand { get; }
-        public ICommand EditStudentCommand { get; }
         public ICommand DeleteStudentCommand { get; }
         public ICommand SearchCommand { get; }
         public ICommand StudentDetailCommand { get; }
         public ICommand CheckboxChangedCommand { get; }
-        public ICommand ToggleIsDeletedCommand { get;  }
+        public ICommand ToggleIsDeletedCommand { get; }
 
 
         #endregion Commands
@@ -91,11 +97,10 @@ namespace CoursesManager.UI.ViewModels.Students
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _studentRepository = studentRepository ?? throw new ArgumentNullException(nameof(studentRepository));
             _courseRepository = courseRepository ?? throw new ArgumentNullException(nameof(courseRepository));
-            _registrationRepository = registrationRepository ?? throw new ArgumentNullException(nameof(registrationRepository));
+            _registrationRepository =
+                registrationRepository ?? throw new ArgumentNullException(nameof(registrationRepository));
             _navigationService = navigationService;
             CoursePaymentList = new ObservableCollection<CourseStudentPayment>();
-
-            _messageBroker.Subscribe<CoursePaymentUpdatedMessage, StudentManagerViewModel>(OnregistrationUpdated, this);
 
             // Initialize Students
             LoadStudents();
@@ -113,7 +118,8 @@ namespace CoursesManager.UI.ViewModels.Students
 
         public void LoadStudents()
         {
-            Students = new ObservableCollection<Student>(_studentRepository.GetNotDeletedStudents() ?? new List<Student>());
+            Students = new ObservableCollection<Student>(_studentRepository.GetNotDeletedStudents() ??
+                                                         new List<Student>());
             FilteredStudentRecords = new ObservableCollection<Student>(Students);
         }
 
@@ -141,6 +147,7 @@ namespace CoursesManager.UI.ViewModels.Students
                         filtered.Add(student);
                     }
                 }
+
                 FilteredStudentRecords = new ObservableCollection<Student>(filtered);
 
             }
@@ -152,42 +159,47 @@ namespace CoursesManager.UI.ViewModels.Students
         {
             if (payment == null || SelectedStudent == null) return;
 
-            var existingRegistration = _registrationRepository.GetAllRegistrationsByStudent(SelectedStudent).FirstOrDefault(r => r.CourseId == payment.Course?.Id);
+            var existingRegistration = _registrationRepository.GetAll()
+                .FirstOrDefault(r => r.CourseId == payment.Course?.Id && r.StudentId == SelectedStudent.Id);
 
             if (existingRegistration != null)
             {
-                try
+                existingRegistration.PaymentStatus = payment.IsPaid;
+                existingRegistration.IsAchieved = payment.IsAchieved;
+                _registrationRepository.Update(existingRegistration);
+            }
+            else if (payment.IsPaid || payment.IsAchieved)
+            {
+                _registrationRepository.Add(new Registration
                 {
-                    // Haal de true of false checkbox op voor paid, achieved en update de velden zodra deze gewijzigd worden.
-                    existingRegistration.PaymentStatus = payment.IsPaid;
-                    existingRegistration.IsAchieved = payment.IsAchieved;
-                    _registrationRepository.Update(existingRegistration);
-                }
-                catch
-                (Exception ex)
-                {
-                    throw new Exception("No registration found");
-                }
+                    StudentId = SelectedStudent.Id,
+                    CourseId = payment.Course?.Id ?? 0,
+                    PaymentStatus = payment.IsPaid,
+                    IsAchieved = payment.IsAchieved,
+                    RegistrationDate = DateTime.Now,
+                    IsActive = true
+                });
             }
             UpdateStudentCourses();
-            _messageBroker.Publish(new StudentPaymentUpdatedMessage());
         }
 
         private void UpdateStudentCourses()
         {
             if (SelectedStudent == null) return;
 
-            var registrations = _registrationRepository.GetAllRegistrationsByStudent(SelectedStudent);
+            var registrations = _registrationRepository.GetAll()?.Where(r => r.StudentId == SelectedStudent.Id) ??
+                                Enumerable.Empty<Registration>();
+            CoursePaymentList.Clear();
 
-            var payments = registrations
-                .Where(registration => registration.Course != null)
-                .Select(registration => new CourseStudentPayment(registration.Course, registration))
-                .ToList();
-
-            CoursePaymentList = new ObservableCollection<CourseStudentPayment>(payments);
+            foreach (var registration in registrations)
+            {
+                if (registration.Course != null)
+                {
+                    CoursePaymentList.Add(new CourseStudentPayment(registration.Course, registration));
+                }
+            }
             OnPropertyChanged(nameof(CoursePaymentList));
         }
-
 
         private async void OpenAddStudentPopup()
         {
@@ -269,11 +281,5 @@ namespace CoursesManager.UI.ViewModels.Students
 
             _navigationService.NavigateTo<StudentDetailViewModel>(SelectedStudent);
         }
-
-        public void OnregistrationUpdated(CoursePaymentUpdatedMessage obj)
-        {
-            UpdateStudentCourses();
-        }
-
     }
 }

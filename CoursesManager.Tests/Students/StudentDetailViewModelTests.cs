@@ -9,7 +9,7 @@ using CoursesManager.UI.Repositories.RegistrationRepository;
 using CoursesManager.UI.ViewModels.Students;
 using CoursesManager.UI.ViewModels;
 
-namespace CoursesManager.Tests.ViewModels
+namespace CoursesManager.Tests.Students
 {
     [TestFixture]
     public class StudentDetailViewModelTests

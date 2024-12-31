@@ -16,6 +16,11 @@ using CoursesManager.UI.Repositories.RegistrationRepository;
 
 namespace CoursesManager.UI.ViewModels.Students
 {
+    /// <summary>
+    /// ViewModel responsible for managing the details of a specific student.
+    /// Includes loading course details, navigating to edit dialogs, and updating UI-bound properties.
+    /// required to manage the "StudentDetailView" dialog.
+    /// </summary>
     public class StudentDetailViewModel : ViewModelWithNavigation
     {
         private readonly IRegistrationRepository _registrationRepository;
@@ -25,10 +30,9 @@ namespace CoursesManager.UI.ViewModels.Students
         private readonly IMessageBroker _messageBroker;
 
         public event PropertyChangedEventHandler PropertyChanged;
-
+        public ICommand EditStudent { get; }
         private Student _student;
         private ObservableCollection<CourseStudentPayment> _courseDetails = new ObservableCollection<CourseStudentPayment>();
-        public ICommand EditStudent { get; set; }
 
         public ObservableCollection<CourseStudentPayment> CourseDetails
         {
@@ -114,6 +118,7 @@ namespace CoursesManager.UI.ViewModels.Students
                 });
 
             if (student == null) return;
+
             await ExecuteWithOverlayAsync(_messageBroker, async () =>
             {
                 var dialogResult = await _dialogService.ShowDialogAsync<EditStudentViewModel, Student>(student);
@@ -125,6 +130,9 @@ namespace CoursesManager.UI.ViewModels.Students
             });
         }
 
+        /// Triggers the PropertyChanged event for a given property name.
+        /// </summary>
+        /// <param name="propertyName">The name of the property that changed.</param>
         protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

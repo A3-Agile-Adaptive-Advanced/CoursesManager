@@ -1,21 +1,21 @@
 ﻿using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Data;
 using CoursesManager.MVVM.Dialogs;
-using CoursesManager.MVVM.Mail.MailService;
+using CoursesManager.MVVM.Mail;
 using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Dialogs.ViewModels;
+using CoursesManager.UI.Enums;
 using CoursesManager.UI.Mailing;
-using CoursesManager.UI.Messages;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Repositories.RegistrationRepository;
 using CoursesManager.UI.Repositories.StudentRepository;
-using CoursesManager.UI.ViewModels.Students;
+using iText.Bouncycastle.Crypto;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Windows.Input;
+using CoursesManager.MVVM.Exceptions;
 
 namespace CoursesManager.UI.ViewModels.Courses
 {
@@ -75,7 +75,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             private set => SetProperty(ref _studentPayments, value);
         }
 
-        public CourseOverViewViewModel(IStudentRepository studentRepository, IRegistrationRepository registrationRepository, ICourseRepository courseRepository, IDialogService dialogService, IMessageBroker messageBroker, INavigationService navigationService) : base(navigationService)
+        public CourseOverViewViewModel(IStudentRepository studentRepository, IRegistrationRepository registrationRepository, ICourseRepository courseRepository, IDialogService dialogService, IMessageBroker messageBroker, INavigationService navigationService, IMailProvider mailProvider) : base(navigationService)
         {
             _studentRepository = studentRepository ?? throw new ArgumentNullException(nameof(studentRepository));
             _registrationRepository = registrationRepository ?? throw new ArgumentNullException(nameof(registrationRepository));
@@ -83,9 +83,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             _courseRepository = courseRepository;
             _dialogService = dialogService;
             _messageBroker = messageBroker;
-            _mailProvider = new MailProvider();
-
-            _messageBroker.Subscribe<StudentPaymentUpdatedMessage, CourseOverViewViewModel>(OnregistrationUpdated, this);
+            _mailProvider = mailProvider;
 
             ChangeCourseCommand = new RelayCommand(ChangeCourse);
             DeleteCourseCommand = new RelayCommand(DeleteCourse);
@@ -94,80 +92,91 @@ namespace CoursesManager.UI.ViewModels.Courses
             StartCourseMailCommand = new RelayCommand(SendStartCourseMail);
             CertificateMailCommand = new RelayCommand(SendCertificateMail);
 
-
             LoadCourseData();
 
         }
 
         private void LoadCourseData()
         {
-            CurrentCourse = (Course)GlobalCache.Instance.Get("Opened Course");
+            CurrentCourse = GlobalCache.Instance.Get("Opened Course") as Course;
 
-            if (CurrentCourse == null)
+            if (CurrentCourse != null)
             {
-                throw new InvalidOperationException("No course is currently opened. Ensure the course is loaded in the GlobalCache.");
-            }
+                SetupEmailButtons();
 
-            IsPaid = !CurrentCourse.IsPayed;
-            HasStarted = false;
-            IsFinished = false;
-            if ((CurrentCourse.StartDate - DateTime.Now).TotalDays <= 7 && CurrentCourse.StartDate > DateTime.Now)
-            {
-                HasStarted = true;
+                var registrations = _registrationRepository.GetAll()
+                    .Where(r => r.CourseId == CurrentCourse.Id)
+                    .ToList();
+
+                var payments = registrations.Select(registration =>
+                {
+                    var student = _studentRepository.GetById(registration.StudentId);
+                    if (student == null)
+                    {
+                        _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de beheerder", ToastType.Error));
+                        return null;
+                    }
+                    return new CourseStudentPayment(student, registration);
+                }).Where(payment => payment != null);
+
+                StudentPayments = new ObservableCollection<CourseStudentPayment>(payments);
             }
-            if (CurrentCourse.EndDate <= DateTime.Now)
+            else
             {
+                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de beheerder", ToastType.Error));
+            }
+        }
+
+        //Making sure the correct email buttons are shown to the user.
+        //HasStarted will display the 'send course start mail' button
+        //IsPaid will show the 'send payment mail' button
+        //IsFinished will display the 'send certificates' button
+        private void SetupEmailButtons()
+        {
+            if (CurrentCourse.Students != null)
+            {
+                IsPaid = !CurrentCourse.IsPayed;
                 HasStarted = false;
-                IsPaid = false;
-                IsFinished = true;
+                IsFinished = false;
+                if ((CurrentCourse.StartDate - DateTime.Now).TotalDays <= 7 && CurrentCourse.StartDate > DateTime.Now)
+                {
+                    HasStarted = true;
+                }
+                if (CurrentCourse.EndDate <= DateTime.Now)
+                {
+                    HasStarted = false;
+                    IsPaid = false;
+                    IsFinished = true;
+                }
             }
-
-            var registrations = _registrationRepository.GetAllRegistrationsByCourse(CurrentCourse);
-
-            var payments = registrations
-                .Where(registration => registration.Student != null)
-                .Select(registration => new CourseStudentPayment(registration.Student, registration))
-                .ToList();
-
-            StudentPayments = new ObservableCollection<CourseStudentPayment>(payments);
-            OnPropertyChanged(nameof(StudentPayments));
         }
 
         private void OnCheckboxChanged(CourseStudentPayment payment)
         {
             if (payment == null || CurrentCourse == null) return;
 
-            var currentRegistration = _registrationRepository.GetAllRegistrationsByCourse(CurrentCourse).FirstOrDefault(r => r.StudentId == payment.Student?.Id);
+            var existingRegistration = _registrationRepository.GetAll()
+                .FirstOrDefault(r => r.CourseId == CurrentCourse.Id && r.StudentId == payment.Student?.Id);
 
-            if (currentRegistration != null)
+            if (existingRegistration != null)
             {
-                try
+                existingRegistration.PaymentStatus = payment.IsPaid;
+                existingRegistration.IsAchieved = payment.IsAchieved;
+                _registrationRepository.Update(existingRegistration);
+            }
+            else if (payment.IsPaid || payment.IsAchieved)
+            {
+                _registrationRepository.Add(new Registration
                 {
-                    // Haal de true of false checkbox op voor paid, achieved en update de velden zodra deze gewijzigd worden.
-                    currentRegistration.PaymentStatus = payment.IsPaid;
-                    currentRegistration.IsAchieved = payment.IsAchieved;
-                    _registrationRepository.Update(currentRegistration);
-
-                    // Haal alle registrations van de CurrentCourse op en check of alle studenten betaald hebben zet dan CurrentCourse.IsPayed op true, zo niet dan false.
-                    var allCurrentRegistrations = _registrationRepository.GetAllRegistrationsByCourse(CurrentCourse);
-                    if (allCurrentRegistrations.All(r => r.PaymentStatus))
-                    {
-                        CurrentCourse.IsPayed = true;
-                        _courseRepository.Update(CurrentCourse);
-                    }
-                    else
-                    {
-                        CurrentCourse.IsPayed = false;
-                    }
-                }
-                catch
-                (Exception ex)
-                {
-                    throw new Exception("No registration found");
-                }
+                    StudentId = payment.Student?.Id ?? 0,
+                    CourseId = CurrentCourse.Id,
+                    PaymentStatus = payment.IsPaid,
+                    IsAchieved = payment.IsAchieved,
+                    RegistrationDate = DateTime.Now,
+                    IsActive = true
+                });
             }
             LoadCourseData();
-            _messageBroker.Publish(new CoursePaymentUpdatedMessage());
         }
 
         private async void DeleteCourse()
@@ -177,12 +186,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             {
                 if (_registrationRepository.GetAllRegistrationsByCourse(CurrentCourse).Any())
                 {
-                    var result = await _dialogService.ShowDialogAsync<ErrorDialogViewModel, DialogResultType>(
-                        new DialogResultType
-                        {
-                            DialogText = "Cursus heeft nog actieve registraties.",
-                            DialogTitle = "Error"
-                        });
+                    _messageBroker.Publish(new ToastNotificationMessage(true, "Cursus heeft nog actieve registraties.", ToastType.Error));
                 }
                 else
                 {
@@ -204,36 +208,54 @@ namespace CoursesManager.UI.ViewModels.Courses
                         catch (Exception ex)
                         {
                             LogUtil.Error(ex.Message);
-                            await _dialogService.ShowDialogAsync<ErrorDialogViewModel, DialogResultType>(
-                                new DialogResultType
-                                {
-                                    DialogText = "Er is iets fout gegaan.",
-                                    DialogTitle = "Error"
-                                });
+                            _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de beheerder", ToastType.Error));
                         }
                     }
                 }
             });
         }
 
-        public void OnregistrationUpdated(StudentPaymentUpdatedMessage obj)
+        private async void SendPaymentMail()
         {
-            LoadCourseData();
+            List<MailResult> mailResults = new ();
+            try
+            {
+                mailResults = await _mailProvider.SendPaymentNotifications(CurrentCourse);
+            }
+            catch (DataAccessException)
+            {
+                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error));
+            }
+
+            CheckMailOutcome(mailResults);
         }
 
-        public async void SendPaymentMail()
+        private async void SendStartCourseMail()
         {
-            await _mailProvider.SendPaymentNotifications(CurrentCourse);
+            List<MailResult> mailResults = new();
+            try
+            {
+                mailResults = await _mailProvider.SendCourseStartNotifications(CurrentCourse);
+            }
+            catch (DataAccessException)
+            {
+                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error));
+            }
+            CheckMailOutcome(mailResults);
         }
 
-        public async void SendStartCourseMail()
+        private async void SendCertificateMail()
         {
-           await _mailProvider.SendCourseStartNotifications(CurrentCourse);
-        }
-
-        public async void SendCertificateMail()
-        {
-            await _mailProvider.SendCertificates(CurrentCourse);
+            List<MailResult> mailResults = new();
+            try
+            {
+                mailResults = await _mailProvider.SendCertificates(CurrentCourse);
+            }
+            catch (DataAccessException)
+            {
+                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error));
+            }
+            CheckMailOutcome(mailResults);
         }
 
         private async void ChangeCourse()
@@ -241,7 +263,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             await ExecuteWithOverlayAsync(_messageBroker, async () =>
             {
                 var dialogResult = await _dialogService.ShowDialogAsync<CourseDialogViewModel, Course>(CurrentCourse);
-                
+
 
                 if (dialogResult.Outcome == DialogOutcome.Success)
                 {
@@ -250,6 +272,35 @@ namespace CoursesManager.UI.ViewModels.Courses
                 }
 
             });
+        }
+
+        private void CheckMailOutcome(List<MailResult> mailResults)
+        {
+            string failedEmails = string.Empty;
+            foreach (MailResult mailResult in mailResults)
+            {
+                if (!(mailResult.Outcome == MailOutcome.Success))
+                {
+                    if (mailResult.MailMessage != null)
+                    {
+                        failedEmails += mailResult.MailMessage.To.First().Address + "; ";
+                    }
+                    else
+                    {
+                        failedEmails += mailResult.StudentName + "; ";
+                    }
+
+                }
+            }
+
+            if (failedEmails.Length > 0)
+            {
+                _messageBroker.Publish(new ToastNotificationMessage(true, $"De volgende emails zijn niet verstuurd: {failedEmails}", ToastType.Error));
+            }
+            else
+            {
+                _messageBroker.Publish(new ToastNotificationMessage(true, "Email(s) zijn succesvol verstuurd", ToastType.Confirmation));
+            }
         }
     }
 }
