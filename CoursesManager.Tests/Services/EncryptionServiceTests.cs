@@ -72,7 +72,7 @@ namespace CoursesManager.Tests.Services
         public void EncryptDecrypt_ShouldHandleLongText()
         {
             // Arrange
-            string originalText = new string('A', 1000); // Zeer lange string van 1000 keer A
+            string originalText = new string('A', 1000); // String van 1000 keer A
 
             // Act
             string encryptedText = _encryptionService.Encrypt(originalText);
