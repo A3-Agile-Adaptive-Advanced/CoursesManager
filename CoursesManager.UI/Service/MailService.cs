@@ -4,10 +4,11 @@ using System.Net.Mail;
 using CoursesManager.MVVM.Env;
 using CoursesManager.UI.Models;
 using CoursesManager.MVVM.Mail;
+using CoursesManager.MVVM.Mail.MailService;
 
 namespace CoursesManager.UI.Service
 {
-    public class MailService
+    public class MailService : IMailService
     {
         public async Task<MailResult> SendMail(MailMessage mailMessage)
         {
