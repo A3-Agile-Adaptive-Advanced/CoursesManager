@@ -89,7 +89,7 @@ namespace CoursesManager.UI.Models
         public DateTime DateOfBirth
         {
             get => _dateOfBirth;
-            set => SetProperty(ref _dateOfBirth, value);
+            set => SetProperty(ref _dateOfBirth, value.Date);
         }
 
         private string? _insertion;
@@ -146,14 +146,14 @@ namespace CoursesManager.UI.Models
             {
                 { "[Cursist naam]", fullName },
                 { "[Cursist email]", student.Email },
-                { "[Cursist telefoonnummer]", student.Phone ?? "Geen telefoonnummer" },
+                { "[Cursist telefoonnummer]", student.Phone},
                 { "[Cursist geboortedatum]", student.DateOfBirth.ToString("dd-MM-yyyy") },
-                { "[Cursist adres land]", student.Address?.Country ?? "Geen land" },
-                { "[Cursist adres postcode]", student.Address?.ZipCode ?? "Geen postcode" },
-                { "[Cursist adres stad]", student.Address?.City ?? "Geen stad" },
-                { "[Cursist adres straat]", student.Address?.Street ?? "Geen straat" },
-                { "[Cursist adres huisnummer]", student.Address?.HouseNumber ?? "Geen huisnummer" },
-                { "[Cursist adres toevoeging]", student.Address?.HouseNumberExtension ?? "Geen toevoeging" }
+                { "[Cursist adres land]", student.Address?.Country ?? ""},
+                { "[Cursist adres postcode]", student.Address?.ZipCode ?? ""},
+                { "[Cursist adres stad]", student.Address?.City ?? ""},
+                { "[Cursist adres straat]", student.Address?.Street ?? ""},
+                { "[Cursist adres huisnummer]", student.Address?.HouseNumber ?? ""},
+                { "[Cursist adres toevoeging]", student.Address?.HouseNumberExtension ?? ""}
             };
 
             foreach (var placeholder in placeholders)

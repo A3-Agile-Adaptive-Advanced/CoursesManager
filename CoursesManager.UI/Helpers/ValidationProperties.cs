@@ -2,6 +2,10 @@ using System.Windows;
 
 namespace CoursesManager.UI.Helpers
 {
+    /// <summary>
+    /// Static helper class defining attached properties for validation.
+    /// These properties enable declarative validation rules to be associated with UI elements.
+    /// </summary>
     public static class ValidationProperties
     {
         public static readonly DependencyProperty IsRequiredProperty =
