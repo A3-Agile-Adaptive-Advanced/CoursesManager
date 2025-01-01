@@ -30,7 +30,10 @@
             studentRepoLazy = new Lazy<IStudentRepo>(() => studentRepo);
             courseRepoLazy = new Lazy<ICourseRepo>(() => courseRepo);
 
+
+            var registrations = registrationRepo.GetAllWithCourseAndStudent();
             var students = studentRepo.GetAll();
+            var courses = courseRepo.GetAll();
         }
     }
 
@@ -213,6 +216,8 @@
 
         public Student? GetStudentForRegistration(Registration registration)
         {
+            EnsureStudentsLoaded();
+
             return _students.FirstOrDefault(s => s.Id == registration.StudentId);
         }
     }
