@@ -7,9 +7,9 @@ using CoursesManager.MVVM.Exceptions;
 
 namespace CoursesManager.UI.DataAccess
 {
-    internal class TemplateDataAccess : BaseDataAccess<Template>
+    public class TemplateDataAccess : BaseDataAccess<Template>
     {
-        public Template GetByName(string name)
+        public Template? GetByName(string name)
         {
             string procedureName = StoredProcedures.GetTemplateByName;
             try
@@ -32,7 +32,6 @@ namespace CoursesManager.UI.DataAccess
 
         public void UpdateTemplate(Template template)
         {
-
             try
             {
                 ExecuteNonProcedure(StoredProcedures.UpdateTemplate, [

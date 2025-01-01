@@ -86,7 +86,6 @@ namespace CoursesManager.UI.DataAccess
                 student.AddressId = addressId; // Assign FK to the student
 
                 // Step 2: Add the student with the retrieved address ID
-                string procedureName = "spStudents_Add";
                 var parameters = new MySqlParameter[]
                 {
                     new MySqlParameter("@p_firstname", student.FirstName),
@@ -101,7 +100,7 @@ namespace CoursesManager.UI.DataAccess
                     new MySqlParameter("@p_insertion", student.Insertion ?? (object)DBNull.Value),
                     new MySqlParameter("@p_date_of_birth", student.DateOfBirth.Date)                 };
 
-                ExecuteNonProcedure(procedureName, parameters);
+                ExecuteNonProcedure(StoredProcedures.AddStudent, parameters);
 
                 LogUtil.Log($"Student added successfully with Address ID: {addressId}");
             }
@@ -139,7 +138,7 @@ namespace CoursesManager.UI.DataAccess
                 int? addressId = student.AddressId;
 
                 ExecuteNonProcedure(
-                    StoredProcedures.EditStudent,
+                    StoredProcedures.UpdateStudent,
                     new MySqlParameter("@p_id", student.Id),
                     new MySqlParameter("@p_first_name", student.FirstName),
                     new MySqlParameter("@p_last_name", student.LastName),

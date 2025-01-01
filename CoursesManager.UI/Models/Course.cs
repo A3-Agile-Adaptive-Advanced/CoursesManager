@@ -3,7 +3,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
-using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 
 namespace CoursesManager.UI.Models
@@ -21,7 +20,7 @@ namespace CoursesManager.UI.Models
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public int LocationId { get; set; }
-        public List<Registration> Registrations { get; set; }
+        public List<Registration>? Registrations { get; set; }
 
         private Location? _location;
 

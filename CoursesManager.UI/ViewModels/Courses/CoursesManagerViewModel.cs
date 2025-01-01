@@ -120,7 +120,7 @@ namespace CoursesManager.UI.ViewModels
                 FilteredCourses.Add(course);
         }
 
-        private void OpenCourseOptions(Course parameter)
+        private void OpenCourseOptions(Course? parameter)
         {
 
             GlobalCache.Instance.Put("Opened Course", parameter, false);
