@@ -34,6 +34,18 @@
             var registrations = registrationRepo.GetAllWithCourseAndStudent();
             var students = studentRepo.GetAll();
             var courses = courseRepo.GetAll();
+
+
+
+            var simpleStudentRepo = new SimpleStudentRepo(studentDataAccess);
+            var simpleCourseRepo = new SimpleCourseRepo(courseDataAccess);
+            var simpleRegistrationRepo = new SimpleRegistrationRepo(registrationDataAccess);
+
+            var service = new CourseStudentService(simpleCourseRepo, simpleStudentRepo, simpleRegistrationRepo);
+
+            var test1 = service.GetAllCoursesWithRegistrations();
+            var test2 = service.GetAllStudentsWithRegistrations();
+            var test3 = service.GetAllRegistrationsWithDetails();
         }
     }
 
@@ -330,6 +342,146 @@
             });
 
             return _registrations;
+        }
+    }
+
+
+    public class SimpleCourseRepo : ICourseRepo
+    {
+        private readonly IDataAccess<Course> _courseDataAccess;
+        private List<Course> _courses;
+
+        public SimpleCourseRepo(IDataAccess<Course> courseDataAccess)
+        {
+            _courseDataAccess = courseDataAccess;
+            _courses = new();
+            GetAll();
+        }
+
+        public List<Course> GetAll()
+        {
+            if (_courses.Count > 0) return _courses;
+
+            _courses = _courseDataAccess.GetAll();
+            return _courses;
+        }
+
+        public Course? GetCourseForRegistration(Registration registration)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class SimpleStudentRepo : IStudentRepo
+    {
+        private readonly IDataAccess<Student> _studentDataAccess;
+        private List<Student> _students;
+
+        public SimpleStudentRepo(IDataAccess<Student> studentDataAccess)
+        {
+            _studentDataAccess = studentDataAccess;
+            _students = new();
+            GetAll();
+        }
+
+        public List<Student> GetAll()
+        {
+            if (_students.Count > 0) return _students;
+
+            _students = _studentDataAccess.GetAll();
+            return _students;
+        }
+
+        public Student? GetStudentForRegistration(Registration registration)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class SimpleRegistrationRepo : IRegistrationRepo
+    {
+        private readonly IDataAccess<Registration> _registrationDataAccess;
+        private List<Registration> _registrations;
+
+        public SimpleRegistrationRepo(IDataAccess<Registration> registrationDataAccess)
+        {
+            _registrationDataAccess = registrationDataAccess;
+            _registrations = new();
+            GetAll();
+        }
+
+        public List<Registration> GetAll()
+        {
+            if (_registrations.Count > 0) return _registrations;
+
+            _registrations = _registrationDataAccess.GetAll();
+            return _registrations;
+        }
+
+        public List<Registration>? GetRegistrationsForCourseWithStudent(Course course)
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<Registration>? GetRegistrationsForStudentWithCourse(Student student)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class CourseStudentService
+    {
+        private readonly ICourseRepo _courseRepo;
+        private readonly IStudentRepo _studentRepo;
+        private readonly IRegistrationRepo _registrationRepo;
+
+        public CourseStudentService(
+            ICourseRepo courseRepo,
+            IStudentRepo studentRepo,
+            IRegistrationRepo registrationRepo)
+        {
+            _courseRepo = courseRepo;
+            _studentRepo = studentRepo;
+            _registrationRepo = registrationRepo;
+        }
+
+        public List<Registration> GetAllRegistrationsWithDetails()
+        {
+            var registrations = _registrationRepo.GetAll();
+            var students = _studentRepo.GetAll();
+            var courses = _courseRepo.GetAll();
+
+            foreach (var registration in registrations)
+            {
+                registration.Student = students.FirstOrDefault(s => s.Id == registration.StudentId);
+                registration.Course = courses.FirstOrDefault(c => c.Id == registration.CourseId);
+
+                if (registration.Student is not null)
+                {
+                    registration.Student.Registrations ??= [];
+                    registration.Student.Registrations.Add(registration);
+                }
+
+                if (registration.Course is not null)
+                {
+                    registration.Course.Registrations ??= [];
+                    registration.Course.Registrations.Add(registration);
+                }
+            }
+
+            return registrations;
+        }
+
+        public List<Course> GetAllCoursesWithRegistrations()
+        {
+            GetAllRegistrationsWithDetails();
+            return _courseRepo.GetAll();
+        }
+
+        public List<Student> GetAllStudentsWithRegistrations()
+        {
+            GetAllRegistrationsWithDetails();
+            return _studentRepo.GetAll();
         }
     }
 }
