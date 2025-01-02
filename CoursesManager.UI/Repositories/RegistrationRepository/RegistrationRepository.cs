@@ -3,12 +3,14 @@ using CoursesManager.UI.DataAccess;
 using CoursesManager.UI.Helpers;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.Base;
+using CoursesManager.UI.Service;
 
 namespace CoursesManager.UI.Repositories.RegistrationRepository;
 
 public class RegistrationRepository : BaseRepository<Registration>, IRegistrationRepository
 {
     private readonly RegistrationDataAccess _registrationDataAccess;
+    private readonly IStudentRegistrationCourseAggregator _studentRegistrationCourseAggregator;
 
     private readonly ObservableCollection<Registration> _registrations;
 
@@ -16,14 +18,15 @@ public class RegistrationRepository : BaseRepository<Registration>, IRegistratio
 
     private static readonly object SharedLock = new();
 
-    public RegistrationRepository(RegistrationDataAccess registrationDataAccess)
+    public RegistrationRepository(RegistrationDataAccess registrationDataAccess,
+        IStudentRegistrationCourseAggregator studentRegistrationCourseAggregator)
     {
         _registrationDataAccess = registrationDataAccess;
+        _studentRegistrationCourseAggregator = studentRegistrationCourseAggregator;
 
         try
         {
-            _registrations = GlobalCache.Instance.Get(Cachekey) as ObservableCollection<Registration> ??
-                             SetupCache(Cachekey);
+            _registrations = GlobalCache.Instance.Get(Cachekey) as ObservableCollection<Registration> ?? SetupCache(Cachekey);
         }
         catch
         {
@@ -42,6 +45,8 @@ public class RegistrationRepository : BaseRepository<Registration>, IRegistratio
             if (_registrations.Count == 0)
             {
                 _registrationDataAccess.GetAll().ForEach(_registrations.Add);
+
+                _studentRegistrationCourseAggregator.AggregateFromRegistratios(_registrations);
             }
 
             return _registrations;

@@ -12,7 +12,6 @@ using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Repositories.RegistrationRepository;
 using CoursesManager.UI.Repositories.StudentRepository;
-using iText.Bouncycastle.Crypto;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using CoursesManager.MVVM.Exceptions;
@@ -202,7 +201,7 @@ namespace CoursesManager.UI.ViewModels.Courses
                         {
                             _courseRepository.Delete(CurrentCourse);
 
-                            _messageBroker.Publish(new CoursesChangedMessage());
+                            //_messageBroker.Publish(new CoursesChangedMessage());
                             _navigationService.GoBackAndClearForward();
                         }
                         catch (Exception ex)

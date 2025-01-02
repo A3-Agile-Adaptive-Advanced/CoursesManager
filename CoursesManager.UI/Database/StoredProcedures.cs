@@ -4,7 +4,7 @@ public static class StoredProcedures
 {
     #region Courses
 
-    public const string DeleteCourse = "spCourseaas_DeleteById";
+    public const string DeleteCourse = "spCourses_DeleteById";
     public const string AddCourse = "spCourse_Add";
     public const string GetAllCourses = "spCourses_GetAll";
     public const string UpdateCourse = "spCourse_Edit";

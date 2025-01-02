@@ -34,6 +34,6 @@
     </UserControl.Resources>
 
     <Grid>
-        <ToggleButton Grid.Column="1" x:Name="SwitchToggle" IsChecked="{Binding IsToggled, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}" Command="{Binding ToggleCommand}"/>
+        <ToggleButton Grid.Column="1" x:Name="SwitchToggle" IsChecked="{Binding IsToggled, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=TwoWay}" />
     </Grid>
 </UserControl>

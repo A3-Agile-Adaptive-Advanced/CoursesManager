@@ -4,6 +4,7 @@ using CoursesManager.UI.DataAccess;
 using CoursesManager.UI.Helpers;
 using CoursesManager.UI.Repositories.AddressRepository;
 using CoursesManager.UI.Repositories.Base;
+using CoursesManager.UI.Service;
 
 namespace CoursesManager.UI.Repositories.StudentRepository;
 
@@ -11,6 +12,7 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
 {
     private readonly StudentDataAccess _studentDataAccess;
     private readonly IAddressRepository _addressRepository;
+    private readonly IStudentRegistrationCourseAggregator _studentRegistrationCourseAggregator;
 
     private readonly ObservableCollection<Student> _students;
 
@@ -18,10 +20,12 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
 
     private static readonly object SharedLock = new();
 
-    public StudentRepository(StudentDataAccess studentDataAccess, IAddressRepository addressRepository)
+    public StudentRepository(StudentDataAccess studentDataAccess, IAddressRepository addressRepository,
+        IStudentRegistrationCourseAggregator studentRegistrationCourseAggregator)
     {
         _studentDataAccess = studentDataAccess;
         _addressRepository = addressRepository;
+        _studentRegistrationCourseAggregator = studentRegistrationCourseAggregator;
 
         try
         {
@@ -48,6 +52,8 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
                     _students.Add(s);
                     s.Address = _addressRepository.GetById(s.AddressId);
                 });
+
+                _studentRegistrationCourseAggregator.AggregateFromStudents(_students);
             }
 
             return _students;

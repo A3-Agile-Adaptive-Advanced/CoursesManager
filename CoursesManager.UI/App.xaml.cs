@@ -53,6 +53,7 @@ public partial class App : Application
             ConfigurationService,
             MailProvider);
 
+
         // Register ViewModel
 
         RegisterViewModels(viewModelFactory);
@@ -65,8 +66,6 @@ public partial class App : Application
 
         var startupManager = new StartupManager(ConfigurationService, NavigationService, MessageBroker);
         startupManager.CheckConfigurationOnStartup();
-
-        RepositoryFactory.StudentRegistrationCourseAggregator.Load();
 
         mw.Show();
     }
@@ -102,11 +101,21 @@ public partial class App : Application
 
     private void RegisterViewModels(ViewModelFactory viewModelFactory)
     {
-        INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<StudentManagerViewModel>(nav));
+        StudentManagerViewModel? smvm = null;
+
+        INavigationService.RegisterViewModelFactory((nav) =>
+        {
+            return smvm ??= viewModelFactory.CreateViewModel<StudentManagerViewModel>(nav);
+        });
 
         INavigationService.RegisterViewModelFactoryWithParameters((param, nav) => viewModelFactory.CreateViewModel<StudentDetailViewModel>(nav, param));
 
-        INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<CoursesManagerViewModel>(nav));
+        CoursesManagerViewModel? cmvm = null;
+
+        INavigationService.RegisterViewModelFactory((nav) =>
+        {
+            return cmvm ??= viewModelFactory.CreateViewModel<CoursesManagerViewModel>(nav);
+        });
 
         INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<CourseOverViewViewModel>(nav));
 

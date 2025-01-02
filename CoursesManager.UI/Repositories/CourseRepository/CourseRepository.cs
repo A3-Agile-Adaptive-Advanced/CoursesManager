@@ -3,6 +3,7 @@ using CoursesManager.UI.DataAccess;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.Base;
 using CoursesManager.UI.Repositories.LocationRepository;
+using CoursesManager.UI.Service;
 
 namespace CoursesManager.UI.Repositories.CourseRepository
 {
@@ -10,6 +11,7 @@ namespace CoursesManager.UI.Repositories.CourseRepository
     {
         private readonly CourseDataAccess _courseDataAccess;
         private readonly ILocationRepository _locationRepository;
+        private readonly IStudentRegistrationCourseAggregator _studentRegistrationCourseAggregator;
 
         private readonly ObservableCollection<Course> _courses;
 
@@ -17,8 +19,10 @@ namespace CoursesManager.UI.Repositories.CourseRepository
 
         private static readonly object SharedLock = new();
 
-        public CourseRepository(CourseDataAccess courseDataAccess, ILocationRepository locationRepository)
+        public CourseRepository(CourseDataAccess courseDataAccess, ILocationRepository locationRepository,
+            IStudentRegistrationCourseAggregator studentRegistrationCourseAggregator)
         {
+            _studentRegistrationCourseAggregator = studentRegistrationCourseAggregator;
             _courseDataAccess = courseDataAccess;
             _locationRepository = locationRepository;
 
@@ -47,6 +51,8 @@ namespace CoursesManager.UI.Repositories.CourseRepository
                         _courses.Add(c);
                         c.Location = _locationRepository.GetById(c.LocationId);
                     });
+
+                    _studentRegistrationCourseAggregator.AggregateFromCourses(_courses);
                 }
 
                 return _courses;

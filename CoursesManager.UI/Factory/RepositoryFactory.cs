@@ -6,60 +6,31 @@ using CoursesManager.UI.Repositories.LocationRepository;
 using CoursesManager.UI.Repositories.RegistrationRepository;
 using CoursesManager.UI.Repositories.StudentRepository;
 using CoursesManager.UI.Repositories.TemplateRepository;
+using CoursesManager.UI.Service;
 
 namespace CoursesManager.UI.Factory;
 
 public class RepositoryFactory
 {
-    public AddressRepository AddressRepository => new AddressRepository(new AddressDataAccess());
+    public IAddressRepository AddressRepository => new AddressRepository(new AddressDataAccess());
 
-    public LocationRepository LocationRepository => new LocationRepository(new LocationDataAccess(), AddressRepository);
+    public ILocationRepository LocationRepository => new LocationRepository(new LocationDataAccess(), AddressRepository);
 
-    public CourseRepository CourseRepository => new CourseRepository(new CourseDataAccess(), LocationRepository);
+    public ICourseRepository CourseRepository => new CourseRepository(new CourseDataAccess(), LocationRepository, StudentRegistrationCourseAggregator);
 
-    public StudentRepository StudentRepository => new StudentRepository(new StudentDataAccess(), AddressRepository);
+    public IStudentRepository StudentRepository => new StudentRepository(new StudentDataAccess(), AddressRepository, StudentRegistrationCourseAggregator);
 
-    public RegistrationRepository RegistrationRepository => new RegistrationRepository(new RegistrationDataAccess());
+    public IRegistrationRepository RegistrationRepository => new RegistrationRepository(new RegistrationDataAccess(), StudentRegistrationCourseAggregator);
 
-    public TemplateRepository TemplateRepository => new TemplateRepository(new TemplateDataAccess());
+    public ITemplateRepository TemplateRepository => new TemplateRepository(new TemplateDataAccess());
 
-    public CertificateRepository CertificateRepository = new CertificateRepository(new CertificateDataAccess());
+    public ICertificateRepository CertificateRepository = new CertificateRepository(new CertificateDataAccess());
 
-    public StudentRegistrationCourseAggregator StudentRegistrationCourseAggregator => new StudentRegistrationCourseAggregator(RegistrationRepository, CourseRepository, StudentRepository);
-}
+    public IStudentRegistrationCourseAggregator StudentRegistrationCourseAggregator;
 
-public class StudentRegistrationCourseAggregator(IRegistrationRepository registrationRepository, ICourseRepository courseRepository, IStudentRepository studentRepository)
-{
-    public void Load()
+    public RepositoryFactory()
     {
-        var registrations = registrationRepository.GetAll();
-        var courses = courseRepository.GetAll();
-        var students = studentRepository.GetAll();
-
-        foreach (var registration in registrations)
-        {
-            registration.Student = students.FirstOrDefault(s => s.Id == registration.StudentId);
-            registration.Course = courses.FirstOrDefault(c => c.Id == registration.CourseId);
-
-            if (registration.Student is not null)
-            {
-                registration.Student.Registrations ??= [];
-
-                if (!registration.Student.Registrations.Contains(registration))
-                {
-                    registration.Student.Registrations.Add(registration);
-                }
-            }
-
-            if (registration.Course is not null)
-            {
-                registration.Course.Registrations ??= [];
-
-                if (!registration.Course.Registrations.Contains(registration))
-                {
-                    registration.Course.Registrations.Add(registration);
-                }
-            }
-        }
+        StudentRegistrationCourseAggregator = new StudentRegistrationCourseAggregator(this);
     }
 }
+
