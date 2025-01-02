@@ -7,7 +7,8 @@
         None,
         Warning,
         Error,
-        Confirmation
+        Confirmation,
+        Info
     }
 
 }

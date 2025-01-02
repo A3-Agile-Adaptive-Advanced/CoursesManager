@@ -67,7 +67,7 @@ namespace CoursesManager.Tests.Courses
         }
 
         [Test]
-        public void LoadCourseData_WhenCourseIsSet_ShouldPopulateStudentsAndPayments()
+        public void Test_LoadCourseData_When_Course_Is_Set_Should_Populate_Students_And_Payments()
         {
             // Arrange
             GlobalCache.Instance.Put("Opened Course", new Course { Id = 1, Name = "Test Course" }, false);
@@ -104,7 +104,7 @@ namespace CoursesManager.Tests.Courses
 
 
         [Test]
-        public void DeleteCourseCommand_WhenCourseHasRegistrations_ShouldShowErrorDialog()
+        public void Test_DeleteCourseCommand_When_Course_Has_Registrations_Should_Show_ErrorDialog()
         {
             // Arrange
             _registrationRepositoryMock.Setup(repo => repo.GetAllRegistrationsByCourse(It.IsAny<Course>()))
@@ -122,7 +122,7 @@ namespace CoursesManager.Tests.Courses
         }
 
         [Test]
-        public void DeleteCourseCommand_WhenNoRegistrations_ShouldDeleteCourseAndPublishMessage()
+        public void Test_DeleteCourseCommand_With_No_Registrations()
         {
             // Arrange
             List<Registration> emptyList = new();
@@ -151,7 +151,7 @@ namespace CoursesManager.Tests.Courses
         }
 
         [Test]
-        public void CheckboxChangedCommand_WhenCalled_ShouldUpdateRegistration()
+        public void Test_CheckboxChangedCommand()
         {
             // Arrange
             var registration = new Registration { Id = 1, CourseId = 1, StudentId = 1, PaymentStatus = false, IsAchieved = false };
