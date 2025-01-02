@@ -155,7 +155,6 @@ namespace CoursesManager.UI.ViewModels.Courses
         }
 
 
-
         public async void OnCancel()
         {
             var dialogResult = DialogResult<Course>.Builder()
