@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.DataAccess;
+using CoursesManager.UI.Repositories.AddressRepository;
 using CoursesManager.UI.Repositories.Base;
 
 namespace CoursesManager.UI.Repositories.StudentRepository;
@@ -8,6 +9,7 @@ namespace CoursesManager.UI.Repositories.StudentRepository;
 public class StudentRepository : BaseRepository<Student>, IStudentRepository
 {
     private readonly StudentDataAccess _studentDataAccess;
+    private readonly IAddressRepository _addressRepository;
 
     private readonly ObservableCollection<Student> _students;
 
@@ -15,9 +17,10 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
 
     private static readonly object SharedLock = new();
 
-    public StudentRepository(StudentDataAccess studentDataAccess)
+    public StudentRepository(StudentDataAccess studentDataAccess, IAddressRepository addressRepository)
     {
         _studentDataAccess = studentDataAccess;
+        _addressRepository = addressRepository;
 
         try
         {
@@ -39,7 +42,11 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
         {
             if (_students.Count == 0)
             {
-                _studentDataAccess.GetAll().ForEach(_students.Add);
+                _studentDataAccess.GetAll().ForEach(s =>
+                {
+                    _students.Add(s);
+                    s.Address = _addressRepository.GetById(s.AddressId);
+                });
             }
 
             return _students;

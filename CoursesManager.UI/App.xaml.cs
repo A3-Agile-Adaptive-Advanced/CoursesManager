@@ -12,6 +12,7 @@ using CoursesManager.UI.Dialogs.Windows;
 using CoursesManager.UI.Messages;
 using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Factory;
+using CoursesManager.UI.Helpers;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.LocationRepository;
 using CoursesManager.UI.Repositories.RegistrationRepository;
@@ -94,22 +95,21 @@ public partial class App : Application
         // Subscribe to Application Close Messages
         MessageBroker.Subscribe<ApplicationCloseRequestedMessage, App>(ApplicationCloseRequestedHandler, this);
 
-
-        var startupmanager = new StartupManager(ConfigurationService, NavigationService);
-        startupmanager.CheckConfigurationOnStartup();
-
+        var startupManager = new StartupManager(ConfigurationService, NavigationService);
+        startupManager.CheckConfigurationOnStartup();
 
         mw.Show();
     }
 
     private void InitializeRepositories()
     {
-        CourseRepository = new CourseRepository();
-        StudentRepository = new StudentRepository();
-        RegistrationRepository = new RegistrationRepository();
-        AddressRepository = new AddressRepository();
-        TemplateRepository = new TemplateRepository();
-        LocationRepository = new LocationRepository();
+        AddressRepository = new AddressRepository(new AddressDataAccess());
+        LocationRepository = new LocationRepository(new LocationDataAccess(), AddressRepository);
+        CourseRepository = new CourseRepository(new CourseDataAccess(), LocationRepository);
+        StudentRepository = new StudentRepository(new StudentDataAccess(), AddressRepository);
+        RegistrationRepository = new RegistrationRepository(new RegistrationDataAccess());
+        TemplateRepository = new TemplateRepository(new TemplateDataAccess());
+        StudentRegistrationCourseAggregator.Aggregate(CourseRepository, StudentRepository, RegistrationRepository);
     }
 
     private void RegisterDialogs()
@@ -127,7 +127,6 @@ public partial class App : Application
                 DialogService,
                 student));
 
-
         DialogService.RegisterDialog<AddStudentViewModel, AddStudentPopup, Student>(
             (student) => new AddStudentViewModel(
                 student,
@@ -137,7 +136,7 @@ public partial class App : Application
                 DialogService
             ));
 
-        DialogService.RegisterDialog<TemplatePreviewDialogViewModel, TemplatePreviewDialogWindow, DialogResultType>((initial) => new  TemplatePreviewDialogViewModel(initial, MessageBroker));
+        DialogService.RegisterDialog<TemplatePreviewDialogViewModel, TemplatePreviewDialogWindow, DialogResultType>((initial) => new TemplatePreviewDialogViewModel(initial, MessageBroker));
 
         DialogService.RegisterDialog<CourseDialogViewModel, CourseDialogWindow, Course>((initial) => new CourseDialogViewModel(CourseRepository, DialogService, LocationRepository, initial));
     }
@@ -155,7 +154,6 @@ public partial class App : Application
         INavigationService.RegisterViewModelFactory(() => viewModelFactory.CreateViewModel<ConfigurationViewModel>());
 
         INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<EditMailTemplatesViewModel>(nav));
-
     }
 
     /// <summary>

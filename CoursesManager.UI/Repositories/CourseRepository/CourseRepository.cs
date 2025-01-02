@@ -1,13 +1,16 @@
 using System.Collections.ObjectModel;
 using CoursesManager.UI.DataAccess;
+using CoursesManager.UI.Helpers;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.Base;
+using CoursesManager.UI.Repositories.LocationRepository;
 
 namespace CoursesManager.UI.Repositories.CourseRepository
 {
     public class CourseRepository : BaseRepository<Course>, ICourseRepository
     {
         private readonly CourseDataAccess _courseDataAccess;
+        private readonly ILocationRepository _locationRepository;
 
         private readonly ObservableCollection<Course> _courses;
 
@@ -15,9 +18,10 @@ namespace CoursesManager.UI.Repositories.CourseRepository
 
         private static readonly object SharedLock = new();
 
-        public CourseRepository(CourseDataAccess courseDataAccess)
+        public CourseRepository(CourseDataAccess courseDataAccess, ILocationRepository locationRepository)
         {
             _courseDataAccess = courseDataAccess;
+            _locationRepository = locationRepository;
 
             try
             {
@@ -39,7 +43,11 @@ namespace CoursesManager.UI.Repositories.CourseRepository
             {
                 if (_courses.Count == 0)
                 {
-                    _courseDataAccess.GetAll().ForEach(_courses.Add);
+                    _courseDataAccess.GetAll().ForEach(c =>
+                    {
+                        _courses.Add(c);
+                        c.Location = _locationRepository.GetById(c.LocationId);
+                    });
                 }
 
                 return _courses;
@@ -71,7 +79,6 @@ namespace CoursesManager.UI.Repositories.CourseRepository
                 _courses.Add(course);
             }
         }
-
 
         public void Update(Course course)
         {

@@ -1,9 +1,5 @@
 ﻿using CoursesManager.UI.Models;
 using MySql.Data.MySqlClient;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Data;
-using System.Linq;
 using CoursesManager.UI.Database;
 
 namespace CoursesManager.UI.DataAccess
@@ -11,12 +7,10 @@ namespace CoursesManager.UI.DataAccess
     public class StudentDataAccess : BaseDataAccess<Student>
     {
         private readonly AddressDataAccess _addressDataAccess;
-        private readonly RegistrationDataAccess _registrationDataAccess;
 
         public StudentDataAccess()
         {
             _addressDataAccess = new AddressDataAccess();
-            _registrationDataAccess = new RegistrationDataAccess();
         }
 
         public List<Student> GetAll()
@@ -26,10 +20,7 @@ namespace CoursesManager.UI.DataAccess
                 string procedureName = StoredProcedures.GetAllStudents;
                 var results = ExecuteProcedure(procedureName);
 
-                var addresses = _addressDataAccess.GetAll();
-                var registrations = _registrationDataAccess.GetAll();
-
-                return results.Select(row => FillDataModel(row, addresses, registrations)).ToList();
+                return results.Select(FillDataModel).ToList();
             }
             catch (MySqlException ex)
             {
@@ -44,10 +35,7 @@ namespace CoursesManager.UI.DataAccess
                 string procedureName = StoredProcedures.GetNotDeletedStudents;
                 var results = ExecuteProcedure(procedureName);
 
-                var addresses = _addressDataAccess.GetAll();
-                var registrations = _registrationDataAccess.GetAll();
-
-                return results.Select(row => FillDataModel(row, addresses, registrations)).ToList();
+                return results.Select(FillDataModel).ToList();
             }
             catch (MySqlException ex)
             {
@@ -62,10 +50,7 @@ namespace CoursesManager.UI.DataAccess
                 string procedureName = StoredProcedures.GetDeletedStudents;
                 var results = ExecuteProcedure(procedureName);
 
-                var addresses = _addressDataAccess.GetAll();
-                var registrations = _registrationDataAccess.GetAll();
-
-                return results.Select(row => FillDataModel(row, addresses, registrations)).ToList();
+                return results.Select(FillDataModel).ToList();
             }
             catch (MySqlException ex)
             {
@@ -78,7 +63,7 @@ namespace CoursesManager.UI.DataAccess
             try
             {
                 // Step 1: Add the address and get its ID
-                int addressId = _addressDataAccess.Add(student.Address);
+                int addressId = _addressDataAccess.Add(student.Address ?? throw new InvalidOperationException("Address can not be null."));
                 if (addressId <= 0)
                 {
                     throw new InvalidOperationException("Failed to create address.");
@@ -118,9 +103,8 @@ namespace CoursesManager.UI.DataAccess
                 string procedureName = StoredProcedures.GetStudentById;
                 var parameters = new MySqlParameter[] { new MySqlParameter("@p_id", id) };
                 var results = ExecuteProcedure(procedureName, parameters);
-                var addresses = _addressDataAccess.GetAll();
-                var registrations = _registrationDataAccess.GetAll();
-                return results.Select(row => FillDataModel(row, addresses, registrations)).FirstOrDefault();
+
+                return results.Select(FillDataModel).FirstOrDefault();
             }
             catch (MySqlException ex)
             {
@@ -133,7 +117,7 @@ namespace CoursesManager.UI.DataAccess
             try
             {
                 // Update the address first
-                _addressDataAccess.Update(student.Address);
+                _addressDataAccess.Update(student.Address ?? throw new InvalidOperationException("Address can not be null"));
 
                 int? addressId = student.AddressId;
 
@@ -185,8 +169,7 @@ namespace CoursesManager.UI.DataAccess
             }
         }
 
-        protected Student FillDataModel(Dictionary<string, object> row, List<Address> addresses,
-            List<Registration> registrations)
+        protected Student FillDataModel(Dictionary<string, object?> row)
         {
             LogUtil.Info($"Processing row: {string.Join(", ", row.Select(kvp => $"{kvp.Key}={kvp.Value}"))}");
 
@@ -214,7 +197,7 @@ namespace CoursesManager.UI.DataAccess
                     : DateTime.MinValue,
                 AddressId = row.ContainsKey("address_id") && row["address_id"] != null
                     ? Convert.ToInt32(row["address_id"])
-                    : (int?)null,
+                    : -1,
                 DateOfBirth = row.ContainsKey("date_of_birth") && row["date_of_birth"] != null
                     ? Convert.ToDateTime(row["date_of_birth"])
                     : DateTime.MinValue,
@@ -222,14 +205,6 @@ namespace CoursesManager.UI.DataAccess
                     ? row["insertion"].ToString()
                     : null
             };
-
-            if (student.AddressId.HasValue)
-            {
-                student.Address = addresses.FirstOrDefault(a => a.Id == student.AddressId.Value);
-            }
-
-            student.Registrations =
-                new ObservableCollection<Registration>(registrations.Where(r => r.StudentId == student.Id));
 
             return student;
         }

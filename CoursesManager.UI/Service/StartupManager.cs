@@ -1,5 +1,4 @@
-﻿
-using CoursesManager.MVVM.Navigation;
+﻿using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.ViewModels;
 
 namespace CoursesManager.UI.Service
@@ -14,7 +13,6 @@ namespace CoursesManager.UI.Service
         {
             _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-
         }
 
         public void CheckConfigurationOnStartup()
@@ -47,4 +45,3 @@ namespace CoursesManager.UI.Service
         }
     }
 }
-

@@ -39,11 +39,11 @@ namespace CoursesManager.UI.ViewModels.Students
         /// This property ensures that the parent window is always determined, even if not explicitly set:
         /// - If _parentWindow is not set, it attempts to find the currently active window.
         /// - As a fallback, it uses the application's main window.
-        /// 
+        ///
         /// This approach ensures that modal dialogs or UI-related actions always have a valid parent window,
         /// aligning with the MVVM pattern by abstracting away direct dependencies on specific window instances.
         /// </summary>
-        /// 
+        ///
         public Window ParentWindow
         {
             get => _parentWindow ?? Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive) ?? Application.Current.MainWindow;
@@ -77,13 +77,13 @@ namespace CoursesManager.UI.ViewModels.Students
 
         protected ObservableCollection<SelectableCourse> InitializeSelectableCourses()
         {
-            var registrations = _registrationRepository.GetAll() ?? new List<Registration>();
+            var registrations = _registrationRepository.GetAll().ToList() ?? new List<Registration>();
             var registeredCourseIds = registrations
                 .Where(r => r.StudentId == Student.Id)
                 .Select(r => r.CourseId)
                 .ToHashSet();
 
-            var courses = _courseRepository.GetAll() ?? new List<Course>();
+            var courses = _courseRepository.GetAll().ToList() ?? new List<Course>();
             var selectableCourses = courses
                 .Where(course => course.IsActive)
                 .Select(course => new SelectableCourse
