@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -59,9 +60,9 @@ namespace GlobalCacheExample
             cache.Clear();
 
             // Act
-            cache.Put("key1", "value1",  true);
+            cache.Put("key1", "value1", true);
             cache.Put("key2", "value2", true);
-            cache.Put("key3", "value3",  true);
+            cache.Put("key3", "value3", true);
             int increasedCapacity = cache.GetCapacity();
             cache.RemovePermanentItem("key3");
             int newCapacity = cache.GetCapacity();
@@ -108,7 +109,7 @@ namespace GlobalCacheExample
             Assert.Throws<KeyNotFoundException>(() => cache.Get("key1"));
             Assert.That(cache.Get("key2"), Is.EqualTo("value2"));
             Assert.That(cache.Get("key3"), Is.EqualTo("value3"));
-            
+
         }
 
         [Test]
@@ -163,11 +164,107 @@ namespace GlobalCacheExample
 
             // Act.
             cache.Put("key1", "value1", false);
-            cache.Put("key1", "value2",  false); // Overwrite.
+            cache.Put("key1", "value2", false); // Overwrite.
 
             // Assert.
             var result = cache.Get("key1") as string;
             Assert.That(result, Is.EqualTo("value2"));
+        }
+        [Test]
+        public void Test_Concurrent_Access_100_Threads()
+        {
+            // Arrange
+            GlobalCache.SetTestCapacity(100);
+            var globalCache = GlobalCache.CreateForTesting();
+            globalCache.Clear();
+
+            int threadCount = 100;
+            var tasks = new List<Task>();
+
+            // Act & Assert
+            for (int i = 0; i < threadCount; i++)
+            {
+                int threadIndex = i;
+                tasks.Add(Task.Run(() =>
+                {
+                    string key = $"Key{threadIndex}";
+                    globalCache.Put(key, $"Value{threadIndex}", false);
+                    var value = globalCache.Get(key);
+                    Assert.That($"Value{threadIndex}", Is.EqualTo(value));
+                }));
+            }
+
+            Task.WaitAll(tasks.ToArray());
+        }
+        [Test]
+        public void Test_Concurrent_Access_Should_Maintain_Correct_Cache_State()
+        {
+            // Arrange
+            GlobalCache.SetTestCapacity(100);
+            var globalCache = GlobalCache.CreateForTesting();
+            globalCache.Clear();
+
+            int threadCount = 100;
+            var tasks = new List<Task>();
+            var keys = new List<string>();
+
+            // Act
+            for (int i = 0; i < threadCount; i++)
+            {
+                int threadIndex = i;
+                string key = $"Key{threadIndex}";
+                keys.Add(key);
+
+                tasks.Add(Task.Run(() =>
+                {
+                    globalCache.Put(key, $"Value{threadIndex}", false);
+                }));
+            }
+
+            Task.WaitAll(tasks.ToArray());
+
+            //Assert
+            foreach (var key in keys)
+            {
+                var value = globalCache.Get(key);
+                Assert.That($"Value{key.Replace("Key", "")}", Is.EqualTo(value));
+            }
+        }
+        [Test]
+        public void Test_Concurrent_Update_Same_Permanent_Value()
+        {
+            // Arrange
+            GlobalCache.SetTestCapacity(1);
+            var globalCache = GlobalCache.CreateForTesting();
+            globalCache.Clear();
+
+            string key = "SharedKey";
+            string initialValue = "Value0";
+            
+            int threadCount = 100;
+            var tasks = new List<Task>();
+            var writtenValues = new ConcurrentBag<string>();
+
+            // Act
+            globalCache.Put(key, initialValue, true);
+
+            for (int i = 0; i < threadCount; i++)
+            {
+                int currentValue = i;
+                tasks.Add(Task.Run(() =>
+                {
+                    string value = $"Value{currentValue}";
+                    globalCache.Put(key, value, true);
+                    writtenValues.Add(value);
+                }));
+            }
+
+            Task.WaitAll(tasks.ToArray());
+            
+            //Assert
+            string finalValue = (string)globalCache.Get(key);
+            Assert.That(writtenValues.Contains(finalValue), $"The final value '{finalValue}' should match one of the written values.");
+            Assert.That(writtenValues.Count, Is.EqualTo(threadCount), $"Expected {threadCount} updates, but found {writtenValues.Count}.");
         }
         #endregion
 
@@ -218,7 +315,7 @@ namespace GlobalCacheExample
 
             // Act.
             cache.Put("key1", "value1", true);
-            
+
             // Assert.
             Assert.Throws<CantBeOverwrittenException>(() => cache.Put("key1", 1, true));
         }

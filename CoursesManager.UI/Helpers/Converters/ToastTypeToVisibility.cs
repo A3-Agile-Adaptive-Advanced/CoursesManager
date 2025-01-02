@@ -22,6 +22,8 @@ public class ToastTypeToVisibility : IValueConverter
                     return toastType == ToastType.Error ? Visibility.Visible : Visibility.Collapsed;
                 case "Confirmation":
                     return toastType == ToastType.Confirmation ? Visibility.Visible : Visibility.Collapsed;
+                case "Info":
+                    return toastType == ToastType.Info ? Visibility.Visible : Visibility.Collapsed;
                 default:
                     return Visibility.Collapsed;
             }
