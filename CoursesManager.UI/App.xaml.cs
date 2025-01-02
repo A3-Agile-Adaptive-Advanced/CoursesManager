@@ -45,8 +45,8 @@ public partial class App : Application
     public static IStudentRepository StudentRepository { get; private set; }
     public static IAddressRepository AddressRepository { get; private set; }
 
-    public static ITemplateRepository TemplateRepository { get; private set; }
-    public static ICertificateRepository CertificateRepository { get; private set; }
+    public static ITemplateRepository TemplateRepository { get; set; } = new TemplateRepository();
+    public static ICertificateRepository CertificateRepository { get; set; } = new CertificateRepository();
 
     public static INavigationService NavigationService { get; set; } = new NavigationService();
     public static IMessageBroker MessageBroker { get; set; } = new MessageBroker();
