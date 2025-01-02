@@ -10,7 +10,7 @@ public class LocationDataAccess : BaseDataAccess<Location>
     {
         try
         {
-            ExecuteNonProcedure(StoredProcedures.LocationsInsert, [
+            ExecuteNonProcedure(StoredProcedures.AddLocation, [
                 new MySqlParameter("@p_name", location.Name),
                 new MySqlParameter("@p_address_id", location.Address.Id)
             ]);
@@ -22,24 +22,11 @@ public class LocationDataAccess : BaseDataAccess<Location>
         }
     }
 
-    public List<Location> GetAllWithAddresses()
+    public List<Location> GetAll()
     {
         try
         {
-            return ExecuteProcedure(StoredProcedures.LocationsWithAddressesGetAll).Select(row => new Location
-            {
-                Address = new Address
-                {
-                    Id = Convert.ToInt32(row["adress_id"]),
-                    City = row["city"]?.ToString() ?? string.Empty,
-                    Country = row["country"]?.ToString() ?? string.Empty,
-                    HouseNumber = row["house_number"]?.ToString() ?? string.Empty,
-                    Street = row["street"]?.ToString() ?? string.Empty,
-                    ZipCode = row["zipcode"]?.ToString() ?? string.Empty
-                },
-                Name = row["name"]?.ToString() ?? string.Empty,
-                Id = Convert.ToInt32(row["location_id"])
-            }).ToList();
+            return ExecuteProcedure(StoredProcedures.GetAllLocationsWithAddresses).Select(MapToLocation).ToList();
 
         }
         catch (MySqlException ex)
@@ -48,11 +35,20 @@ public class LocationDataAccess : BaseDataAccess<Location>
         }
     }
 
+    private static Location MapToLocation(Dictionary<string, object?> row)
+    {
+        return new Location
+        {
+            Name = row["name"]?.ToString() ?? string.Empty,
+            Id = Convert.ToInt32(row["location_id"])
+        };
+    }
+
     public void Update(Location data)
     {
         try
         {
-            ExecuteNonProcedure(StoredProcedures.LocationsUpdate, [
+            ExecuteNonProcedure(StoredProcedures.UpdateLocation, [
                 new MySqlParameter("@p_location_id", data.Id),
                 new MySqlParameter("@p_new_name", data.Name),
                 new MySqlParameter("@p_new_address_id", data.Address.Id)
@@ -68,9 +64,25 @@ public class LocationDataAccess : BaseDataAccess<Location>
     {
         try
         {
-            ExecuteNonProcedure(StoredProcedures.LocationsDeleteById, [
+            ExecuteNonProcedure(StoredProcedures.DeleteLocation, [
                 new MySqlParameter("@p_id", id)
             ]);
+        }
+        catch (MySqlException ex)
+        {
+            throw new InvalidOperationException(ex.Message, ex);
+        }
+    }
+
+    public Location? GetById(int id)
+    {
+        try
+        {
+            var res = ExecuteProcedure(StoredProcedures.GetLocationWithAddressesById, [
+                new MySqlParameter("@p_id", id)
+            ]);
+
+            return !res.Any() ? null : MapToLocation(res.First());
         }
         catch (MySqlException ex)
         {

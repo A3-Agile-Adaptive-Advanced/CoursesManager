@@ -1,6 +1,7 @@
 ﻿using CoursesManager.MVVM.Data;
-using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 
 namespace CoursesManager.UI.Models
 {
@@ -9,6 +10,7 @@ namespace CoursesManager.UI.Models
         public int Id { get; set; }
 
         private string _firstName;
+
         public string FirstName
         {
             get => _firstName;
@@ -16,6 +18,7 @@ namespace CoursesManager.UI.Models
         }
 
         private string _lastName;
+
         public string LastName
         {
             get => _lastName;
@@ -23,6 +26,7 @@ namespace CoursesManager.UI.Models
         }
 
         private string _email;
+
         public string Email
         {
             get => _email;
@@ -30,6 +34,7 @@ namespace CoursesManager.UI.Models
         }
 
         private string _phone;
+
         public string Phone
         {
             get => _phone;
@@ -37,6 +42,7 @@ namespace CoursesManager.UI.Models
         }
 
         private bool _isDeleted;
+
         public bool IsDeleted
         {
             get => _isDeleted;
@@ -44,6 +50,7 @@ namespace CoursesManager.UI.Models
         }
 
         private DateTime? _deletedAt;
+
         public DateTime? DeletedAt
         {
             get => _deletedAt;
@@ -51,6 +58,7 @@ namespace CoursesManager.UI.Models
         }
 
         private DateTime _createdAt;
+
         public DateTime CreatedAt
         {
             get => _createdAt;
@@ -58,34 +66,102 @@ namespace CoursesManager.UI.Models
         }
 
         private DateTime _updatedAt;
+
         public DateTime UpdatedAt
         {
             get => _updatedAt;
             set => SetProperty(ref _updatedAt, value);
         }
 
-        private int? _addressId;
-        public int? AddressId
+        private int _addressId;
+
+        public int AddressId
         {
             get => _addressId;
             set => SetProperty(ref _addressId, value);
         }
 
-        private ObservableCollection<Course>? _courses;
-        public ObservableCollection<Course>? Courses
-        {
-            get => _courses;
-            set => SetProperty(ref _courses, value);
-        }
-
         private ObservableCollection<Registration>? _registrations;
+
         public ObservableCollection<Registration>? Registrations
         {
             get => _registrations;
-            set => SetProperty(ref _registrations, value);
+            set
+            {
+                if (_registrations != null)
+                {
+                    _registrations.CollectionChanged -= RegistrationsChanged;
+                    foreach (var registration in _registrations)
+                    {
+                        registration.PropertyChanged -= RegistrationPropertyChanged;
+                    }
+                }
+
+                if (value != null)
+                {
+                    value.CollectionChanged += RegistrationsChanged;
+                    foreach (var registration in value)
+                    {
+                        registration.PropertyChanged += RegistrationPropertyChanged;
+                    }
+                }
+
+                SetProperty(ref _registrations, value);
+                OnPropertyChanged(nameof(Courses));
+            }
+        }
+
+        public ObservableCollection<Course>? Courses
+        {
+            get
+            {
+                if (Registrations is null) return null;
+
+                var res = new ObservableCollection<Course>();
+
+                foreach (var registration in Registrations)
+                {
+                    if (registration.Course is not null)
+                    {
+                        res.Add(registration.Course);
+                    }
+                }
+
+                return res;
+            }
+        }
+
+        private void RegistrationsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null)
+            {
+                foreach (Registration registration in e.NewItems)
+                {
+                    registration.PropertyChanged += RegistrationPropertyChanged;
+                }
+            }
+
+            if (e.OldItems != null)
+            {
+                foreach (Registration registration in e.OldItems)
+                {
+                    registration.PropertyChanged -= RegistrationPropertyChanged;
+                }
+            }
+
+            OnPropertyChanged(nameof(Courses));
+        }
+
+        private void RegistrationPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Registration.Course))
+            {
+                OnPropertyChanged(nameof(Courses));
+            }
         }
 
         private DateTime _dateOfBirth;
+
         public DateTime DateOfBirth
         {
             get => _dateOfBirth;
@@ -93,6 +169,7 @@ namespace CoursesManager.UI.Models
         }
 
         private string? _insertion;
+
         public string? Insertion
         {
             get => _insertion;
@@ -105,6 +182,7 @@ namespace CoursesManager.UI.Models
         }
 
         private Address? _address;
+
         public Address? Address
         {
             get => _address;
@@ -123,7 +201,6 @@ namespace CoursesManager.UI.Models
                 Phone = this.Phone,
                 IsDeleted = this.IsDeleted,
                 AddressId = this.AddressId,
-                Courses = this.Courses,
                 Registrations = this.Registrations,
                 DateOfBirth = this.DateOfBirth,
                 Address = this.Address != null ? new Address

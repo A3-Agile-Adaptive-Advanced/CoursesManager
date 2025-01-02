@@ -12,20 +12,24 @@ using CoursesManager.MVVM.Exceptions;
 using CoursesManager.MVVM.Mail.MailService;
 using System.Text.RegularExpressions;
 
-
 namespace CoursesManager.UI.Mailing
 {
     public class MailProvider : IMailProvider
     {
         #region Services
+
         private readonly IMailService _mailService;
         private readonly ITemplateRepository _templateRepository;
         private readonly ICertificateRepository _certificateRepository;
-        #endregion
+
+        #endregion Services
+
         #region Attributes
-        List<MailResult> allMailResults = new();
-        List<MailMessage> messages = new();
-        #endregion
+
+        private List<MailResult> allMailResults = new();
+        private List<MailMessage> messages = new();
+
+        #endregion Attributes
 
         public MailProvider(IMailService mailService, ITemplateRepository templateRepository,
             ICertificateRepository certificateRepository)
@@ -37,7 +41,6 @@ namespace CoursesManager.UI.Mailing
 
         public async Task<List<MailResult>> SendCertificates(Course course)
         {
-
             List<MailMessage> messages = new();
             Template originalTemplate = GetTemplateByName("CertificateMail");
 
@@ -96,9 +99,8 @@ namespace CoursesManager.UI.Mailing
 
         public async Task<List<MailResult>> SendPaymentNotifications(Course course)
         {
-
             List<MailMessage> messages = new List<MailMessage>();
-            List<Registration> courseRegistrations = course.Registrations;
+            List<Registration> courseRegistrations = course.Registrations?.ToList() ?? new();
             Template originalTemplate = GetTemplateByName("PaymentMail");
 
             if (course.Students == null)
@@ -120,11 +122,9 @@ namespace CoursesManager.UI.Mailing
             }
             if (messages.Any())
             {
-
                 allMailResults.AddRange(await _mailService.SendMail(messages));
             }
             return allMailResults;
-
         }
 
         #region Helper methods
@@ -138,9 +138,9 @@ namespace CoursesManager.UI.Mailing
             }
             return false;
         }
+
         private byte[] GeneratePdf(Course course, Student student)
         {
-
             Template template = GetTemplateByName("Certificate");
             template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
             using (var memoryStream = new MemoryStream())
@@ -161,7 +161,6 @@ namespace CoursesManager.UI.Mailing
 
         private string FillTemplate(string template, Student student, Course course, string? URL)
         {
-
             template = course.ReplaceCoursePlaceholders(template, course);
             template = student.ReplaceStudentPlaceholders(template, student);
 
@@ -197,8 +196,8 @@ namespace CoursesManager.UI.Mailing
             certificate.CourseCode = course.Code;
 
             _certificateRepository.Add(certificate);
-
         }
-        #endregion
+
+        #endregion Helper methods
     }
 }

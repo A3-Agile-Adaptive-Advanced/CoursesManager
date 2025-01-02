@@ -1,69 +1,20 @@
 ﻿using CoursesManager.UI.Models;
 using MySql.Data.MySqlClient;
 using CoursesManager.UI.Database;
-using System.IO;
-using System.Windows.Media.Imaging;
 
 namespace CoursesManager.UI.DataAccess;
 
 public class CourseDataAccess : BaseDataAccess<Course>
 {
-    private readonly StudentDataAccess _studentDataAccess = new();
-    private readonly Registration _registrationDataAccess = new();
-
     public List<Course> GetAll()
     {
         try
         {
             // Voer de stored procedure uit
-            var results = ExecuteProcedure("spCourses_GetAll");
-
-            var students = _studentDataAccess.GetAll();
+            var results = ExecuteProcedure(StoredProcedures.GetAllCourses);
 
             // Converteer de resultaten naar een lijst van Course-objecten
-            var models = results.Select(row => new Course
-            {
-                Id = Convert.ToInt32(row["course_id"]),
-                Name = row["course_name"]?.ToString() ?? string.Empty,
-                Code = row["course_code"]?.ToString() ?? string.Empty,
-                Description = row["course_description"]?.ToString() ?? string.Empty,
-                LocationId = Convert.ToInt32(row["course_location_id"]),
-                Location = new Location
-                {
-                    Id = Convert.ToInt32(row["course_location_id"]),
-                    Name = row["location_name"]?.ToString() ?? string.Empty
-                },
-                IsActive = Convert.ToBoolean(row["is_active"]),
-                StartDate = Convert.ToDateTime(row["start_date"]),
-                EndDate = Convert.ToDateTime(row["end_date"]),
-                DateCreated = Convert.ToDateTime(row["created_at"]),
-                Image = row.ContainsKey("tile_image") && row["tile_image"] != DBNull.Value
-                    ? (byte[])row["tile_image"]
-                    : null
-            }).ToList();
-
-
-            models.ForEach(m =>
-            {
-                m.Students = new(students.Where(s => s.Registrations.Any(r => r.CourseId == m.Id)));
-                m.Participants = m.Students.Count;
-                m.IsPayed = true;
-                m.Registrations = new();
-
-                foreach (var student in m.Students)
-                {
-                    var registration = student.Registrations?.FirstOrDefault(r => r.CourseId == m.Id);
-                    m.Registrations.Add(registration);
-
-                    if (registration is not null)
-                    {
-                        if (m.IsPayed)
-                        {
-                            m.IsPayed = registration.PaymentStatus;
-                        }
-                    }
-                }
-            });
+            var models = results.Select(MapToCourse).ToList();
 
             return models;
         }
@@ -74,12 +25,31 @@ public class CourseDataAccess : BaseDataAccess<Course>
         }
     }
 
+    private static Course MapToCourse(Dictionary<string, object?> row)
+    {
+        return new Course
+        {
+            Id = Convert.ToInt32(row["course_id"]),
+            Name = row["course_name"]?.ToString() ?? string.Empty,
+            Code = row["course_code"]?.ToString() ?? string.Empty,
+            Description = row["course_description"]?.ToString() ?? string.Empty,
+            LocationId = Convert.ToInt32(row["course_location_id"]),
+            IsActive = Convert.ToBoolean(row["is_active"]),
+            StartDate = Convert.ToDateTime(row["start_date"]),
+            EndDate = Convert.ToDateTime(row["end_date"]),
+            DateCreated = Convert.ToDateTime(row["created_at"]),
+            Image = row.ContainsKey("tile_image") && row["tile_image"] != DBNull.Value
+                ? (byte[])row["tile_image"]
+                : null
+        };
+    }
+
     public void Add(Course course)
     {
         try
         {
             ExecuteNonProcedure(
-                StoredProcedures.CourseAdd,
+                StoredProcedures.AddCourse,
                 new MySqlParameter("@p_coursename", course.Name),
                 new MySqlParameter("@p_coursecode", course.Code),
                 new MySqlParameter("@p_location_id", course.Location.Id),
@@ -104,8 +74,6 @@ public class CourseDataAccess : BaseDataAccess<Course>
         }
     }
 
-
-
     public void Update(Course course)
     {
         ArgumentNullException.ThrowIfNull(course);
@@ -113,7 +81,7 @@ public class CourseDataAccess : BaseDataAccess<Course>
         try
         {
             ExecuteNonProcedure(
-                StoredProcedures.CourseEdit,
+                StoredProcedures.UpdateCourse,
                 new MySqlParameter("@p_id", course.Id),
                 new MySqlParameter("@p_coursename", course.Name),
                 new MySqlParameter("@p_coursecode", course.Code),
@@ -144,8 +112,24 @@ public class CourseDataAccess : BaseDataAccess<Course>
     {
         try
         {
-            ExecuteNonProcedure(StoredProcedures.CoursesDeleteById, new MySqlParameter("@p_id", id));
+            ExecuteNonProcedure(StoredProcedures.DeleteCourse, new MySqlParameter("@p_id", id));
             LogUtil.Log("Course deleted successfully.");
+        }
+        catch (MySqlException ex)
+        {
+            throw new InvalidOperationException(ex.Message, ex);
+        }
+    }
+
+    public Course? GetById(int id)
+    {
+        try
+        {
+            var res = ExecuteProcedure(StoredProcedures.GetCourseById, [
+                new MySqlParameter("@p_id", id)
+            ]);
+
+            return !res.Any() ? null : MapToCourse(res.First());
         }
         catch (MySqlException ex)
         {

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CoursesManager.MVVM.Data;
+﻿using CoursesManager.MVVM.Data;
 
 namespace CoursesManager.UI.Models
 {
@@ -11,7 +6,8 @@ namespace CoursesManager.UI.Models
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public Address Address { get; set; }
+        public Address? Address { get; set; }
+        public int AddressId { get; set; }
         public Location Copy()
         {
             return new Location
