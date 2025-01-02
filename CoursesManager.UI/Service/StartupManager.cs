@@ -34,7 +34,6 @@ namespace CoursesManager.UI.Service
                 else
                 {
                     Console.WriteLine("Configuratie is geldig. Applicatie kan doorgaan.");
-                    _navigationService.NavigateTo<CoursesManagerViewModel>();
                     NavigateToStartPage();
                 }
             }
@@ -58,7 +57,7 @@ namespace CoursesManager.UI.Service
                 "Navigeren naar de startpagina...",
                 ToastType.Confirmation));
 
-            _navigationService.NavigateTo<CourseDialogViewModel>();
+            _navigationService.NavigateTo<CoursesManagerViewModel>();
         }
 
     }

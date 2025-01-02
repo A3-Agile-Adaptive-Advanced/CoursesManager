@@ -92,8 +92,6 @@ namespace CoursesManager.UI.ViewModels.Courses
                 Course.Location is not null &&
                 !string.IsNullOrWhiteSpace(Course.Description);
 
-
-
         protected override void InvokeResponseCallback(DialogResult<Course> dialogResult)
         {
             ResponseCallback.Invoke(dialogResult);

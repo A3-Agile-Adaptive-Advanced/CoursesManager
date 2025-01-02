@@ -1,15 +1,11 @@
-﻿
-using System.Windows;
-using System.Windows.Input;
-using System.Windows.Navigation;
-using CoursesManager.MVVM.Commands;
+﻿using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Data;
 using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Enums;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Service;
-using CoursesManager.UI.ViewModels.Courses;
+using System.Windows.Input;
 
 namespace CoursesManager.UI.ViewModels
 {
@@ -84,8 +80,6 @@ namespace CoursesManager.UI.ViewModels
             get => _mailPassword;
             set => SetProperty(ref _mailPassword, value);
         }
-
-        
 
         private EnvModel _appConfig;
         public EnvModel AppConfig
