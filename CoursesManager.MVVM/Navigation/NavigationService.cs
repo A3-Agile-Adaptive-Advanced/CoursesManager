@@ -1,51 +1,7 @@
 ﻿using CoursesManager.MVVM.Data;
+using CoursesManager.MVVM.Navigation.FactoryWrappers;
 
 namespace CoursesManager.MVVM.Navigation;
-
-internal interface IViewModelFactoryWrapper
-{
-    ViewModel Create();
-}
-
-internal class ViewModelWithNavigationFactoryWithParamsWrapper(
-    Func<object?, NavigationService, ViewModelWithNavigation> viewModelFactory,
-    object? parameter,
-    NavigationService navigationService) : IViewModelFactoryWrapper
-{
-    public ViewModel Create()
-    {
-        return viewModelFactory(parameter, navigationService);
-    }
-}
-
-public class ViewModelWithNavigationFactoryWrapper(
-    Func<INavigationService, ViewModelWithNavigation> viewModelFactory,
-    NavigationService navigationService) : IViewModelFactoryWrapper
-{
-    public ViewModel Create()
-    {
-        return viewModelFactory(navigationService);
-    }
-}
-
-public class SimpleViewModelFactory(
-    Func<ViewModel> viewModelFactory) : IViewModelFactoryWrapper
-{
-    public ViewModel Create()
-    {
-        return viewModelFactory();
-    }
-}
-
-public class SimpleViewModelFactoryWithParams(
-    Func<object?, ViewModel> viewModelFactory,
-    object? parameter) : IViewModelFactoryWrapper
-{
-    public ViewModel Create()
-    {
-        return viewModelFactory(parameter);
-    }
-}
 
 public class NavigationService : INavigationService
 {
@@ -133,7 +89,7 @@ public class NavigationService : INavigationService
         _forwardFactories.Clear();
     }
 
-    public bool CanGoBack() => _backwardFactories.Any();
+    public bool CanGoBack() => _backwardFactories.Count != 0;
 
     public void GoForward()
     {
@@ -146,5 +102,5 @@ public class NavigationService : INavigationService
         NavigationStore.CurrentViewModel = _currentViewModelFactoryWrapper.Create();
     }
 
-    public bool CanGoForward() => _forwardFactories.Any();
+    public bool CanGoForward() => _forwardFactories.Count != 0;
 }

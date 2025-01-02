@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Windows.Input;
 using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Data;
@@ -26,7 +27,22 @@ namespace CoursesManager.UI.ViewModels.Students
         private readonly IStudentRepository _studentRepository;
         private readonly ICourseRepository _courseRepository;
         private readonly IRegistrationRepository _registrationRepository;
-        public ObservableCollection<Student> Students { get; set; }
+
+        private ObservableCollection<Student> _students;
+
+        public ObservableCollection<Student> Students
+        {
+            get => _students;
+            set
+            {
+                if (_students is not null) _students.CollectionChanged -= StudentsChanged;
+
+                SetProperty(ref _students, value);
+
+                if (_students is not null) _students.CollectionChanged += StudentsChanged;
+            }
+        }
+
         public ObservableCollection<Student> FilteredStudentRecords { get; set; }
         public ICommand EditStudentCommand { get; }
 
@@ -93,6 +109,8 @@ namespace CoursesManager.UI.ViewModels.Students
             IMessageBroker messageBroker,
             INavigationService navigationService) : base(navigationService)
         {
+            ViewTitle = "Cursisten beheer";
+
             _messageBroker = messageBroker;
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _studentRepository = studentRepository ?? throw new ArgumentNullException(nameof(studentRepository));
@@ -113,14 +131,17 @@ namespace CoursesManager.UI.ViewModels.Students
             StudentDetailCommand = new RelayCommand(OpenStudentDetailViewModel);
             CheckboxChangedCommand = new RelayCommand<CourseStudentPayment>(OnCheckboxChanged);
             ToggleIsDeletedCommand = new RelayCommand(() => FilterStudentRecords());
-            ViewTitle = "Cursisten beheer";
         }
 
         public void LoadStudents()
         {
-            Students = new ObservableCollection<Student>(_studentRepository.GetNotDeletedStudents() ??
-                                                         new List<Student>());
+            Students = new ObservableCollection<Student>(_studentRepository.GetNotDeletedStudents());
             FilteredStudentRecords = new ObservableCollection<Student>(Students);
+        }
+
+        private void StudentsChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            FilterStudentRecords();
         }
 
         private void FilterStudentRecords()
