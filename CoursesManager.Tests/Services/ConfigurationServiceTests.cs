@@ -43,7 +43,7 @@ namespace CoursesManager.Tests.Services
         public void SaveEnvSettings_ShouldEncryptAndSaveSettings()
         {
             // Arrange
-            // Connection settings instellen
+            // Connectie instellingen instellen
             var dbParams = new Dictionary<string, string>
             {
                 { "Server", "localhost" },
@@ -109,7 +109,7 @@ namespace CoursesManager.Tests.Services
         public void ValidateSettings_ShouldReturnFalse_WhenNoSettingsPresent()
         {
             // Arrange
-            // Zet connection settings op null
+            // Zet Connectie instellingen op null
             SetMockEnv("ConnectionString", null);
             SetMockEnv("MailConnectionString", null);
 

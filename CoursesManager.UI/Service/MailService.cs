@@ -16,7 +16,7 @@ namespace CoursesManager.UI.Service
 
             try
             {
-                // Haal SMTP connection string op
+                // Haal SMTP connectie string op
                 var mailConnectionString = EnvManager<EnvModel>.Values.MailConnectionString;
 
                 if (string.IsNullOrWhiteSpace(mailConnectionString))
