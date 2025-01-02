@@ -4,13 +4,13 @@ public static class StoredProcedures
 {
     #region Courses
 
-    public const string DeleteCourse = "spCourses_DeleteById";
+    public const string DeleteCourse = "spCourseaas_DeleteById";
     public const string AddCourse = "spCourse_Add";
-    public const string GetAllCourses = "spCourse_GetAll";
+    public const string GetAllCourses = "spCourses_GetAll";
     public const string UpdateCourse = "spCourse_Edit";
     public const string GetCourseById = "spCourses_GetById";
 
-    #endregion
+    #endregion Courses
 
     #region Locations
 
@@ -20,7 +20,7 @@ public static class StoredProcedures
     public const string UpdateLocation = "spLocations_Update";
     public const string GetLocationWithAddressesById = "spLocationsWithAddresses_GetById";
 
-    #endregion
+    #endregion Locations
 
     #region Registrations
 
@@ -32,7 +32,7 @@ public static class StoredProcedures
     public const string GetAllRegistrations = "spRegistrations_GetAll";
     public const string DeleteRegistration = "spRegistrations_Delete";
 
-    #endregion
+    #endregion Registrations
 
     #region Addresses
 
@@ -42,7 +42,7 @@ public static class StoredProcedures
     public const string UpdateAddress = "spAddresses_Update";
     public const string DeleteAddress = "spAddresses_Delete";
 
-    #endregion
+    #endregion Addresses
 
     #region Students
 
@@ -54,20 +54,21 @@ public static class StoredProcedures
     public const string GetNotDeletedStudents = "spStudents_GetNotDeleted";
     public const string GetDeletedStudents = "spStudents_GetDeleted";
 
-    #endregion
+    #endregion Students
 
     #region Templates
+
     public const string GetAllTemplates = "spTemplates_GetAll";
     public const string GetTemplateByName = "spTemplates_GetByName";
     public const string UpdateTemplate = "spTemplates_Update";
 
-
-    #endregion
+    #endregion Templates
 
     #region Certificates
+
     public const string AddCertificate = "spCertificates_Add";
     public const string GetAllCertificates = "spCertificates_GetAll";
     public const string GetCertificateById = "spCertificates_GetById";
 
-    #endregion
+    #endregion Certificates
 }

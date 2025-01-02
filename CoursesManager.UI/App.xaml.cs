@@ -49,6 +49,8 @@ public partial class App : Application
     public static ITemplateRepository TemplateRepository { get; private set; }
     public static ICertificateRepository CertificateRepository { get; private set; }
 
+    public StudentRegistrationCourseAggregator StudentRegistrationCourseAggregator { get; set; }
+
     public static INavigationService NavigationService { get; set; } = new NavigationService();
     public static IMessageBroker MessageBroker { get; set; } = new MessageBroker();
     public static IDialogService DialogService { get; set; } = new DialogService();
@@ -63,7 +65,7 @@ public partial class App : Application
 
         // Initialize Dummy Data
         //SetupDummyDataTemporary();
-        InitializeRepositories();
+        //InitializeRepositories();
 
         // Set MainWindow's DataContext
         MainWindow mw = new()
@@ -72,14 +74,11 @@ public partial class App : Application
         };
         GlobalCache.Instance.Put("MainViewModel", mw.DataContext, true);
 
+        var repositoryFactory = new RepositoryFactory();
+
         // Create the ViewModelFactory
         var viewModelFactory = new ViewModelFactory(
-            CourseRepository,
-            LocationRepository,
-            RegistrationRepository,
-            StudentRepository,
-            AddressRepository,
-            TemplateRepository,
+            repositoryFactory,
             MessageBroker,
             DialogService,
             ConfigurationService,
@@ -95,23 +94,21 @@ public partial class App : Application
         // Subscribe to Application Close Messages
         MessageBroker.Subscribe<ApplicationCloseRequestedMessage, App>(ApplicationCloseRequestedHandler, this);
 
-
-        var startupmanager = new StartupManager(ConfigurationService, NavigationService, MessageBroker);
-        startupmanager.CheckConfigurationOnStartup();
-
+        var startupManager = new StartupManager(ConfigurationService, NavigationService, MessageBroker, repositoryFactory);
+        startupManager.CheckConfigurationOnStartup();
 
         mw.Show();
     }
 
     private void InitializeRepositories()
     {
-        AddressRepository = new AddressRepository(new AddressDataAccess());
-        LocationRepository = new LocationRepository(new LocationDataAccess(), AddressRepository);
-        CourseRepository = new CourseRepository(new CourseDataAccess(), LocationRepository);
-        StudentRepository = new StudentRepository(new StudentDataAccess(), AddressRepository);
-        RegistrationRepository = new RegistrationRepository(new RegistrationDataAccess());
-        TemplateRepository = new TemplateRepository(new TemplateDataAccess());
-        StudentRegistrationCourseAggregator.Aggregate(CourseRepository, StudentRepository, RegistrationRepository);
+        //AddressRepository = new AddressRepository(new AddressDataAccess());
+        //LocationRepository = new LocationRepository(new LocationDataAccess(), AddressRepository);
+        //CourseRepository = new CourseRepository(new CourseDataAccess(), LocationRepository);
+        //StudentRepository = new StudentRepository(new StudentDataAccess(), AddressRepository);
+        //RegistrationRepository = new RegistrationRepository(new RegistrationDataAccess());
+        //TemplateRepository = new TemplateRepository(new TemplateDataAccess());
+        //StudentRegistrationCourseAggregator = new StudentRegistrationCourseAggregator(CourseRepository, StudentRepository, RegistrationRepository);
     }
 
     private void RegisterDialogs()
