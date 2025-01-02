@@ -176,6 +176,7 @@ public class GlobalCache
 
     }
 
+    // Private class to handle all possible objects inside the cache in a universal matter.
     private class CacheItem
     {
         public object Value { get; set; }
