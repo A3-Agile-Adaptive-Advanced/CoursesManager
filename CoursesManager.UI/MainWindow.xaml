@@ -115,6 +115,9 @@
                             <Border Grid.Column="0" Background="#5bb450" Visibility="{Binding ToastType, Converter={StaticResource ToastTypeToVisibilityConverter}, ConverterParameter=Confirmation}">
                                 <materialDesign:PackIcon Kind="CheckCircleOutline" Height="55" Width="55" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
                             </Border>
+                            <Border Grid.Column="0" Background="Blue" Visibility="{Binding ToastType, Converter={StaticResource ToastTypeToVisibilityConverter}, ConverterParameter=Info}">
+                                <materialDesign:PackIcon Kind="InfoCircleOutline" Height="55" Width="55" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White"/>
+                            </Border>
                             <TextBlock Margin="25 0 25 0" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding ToastText}" FontSize="18" Foreground="#02008C"/>
                         </Grid>
                     </Border>
