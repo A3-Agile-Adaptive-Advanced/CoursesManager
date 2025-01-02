@@ -6,13 +6,15 @@ using CoursesManager.UI.Enums;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Service;
 using System.Windows.Input;
+using System.Windows.Navigation;
 
 namespace CoursesManager.UI.ViewModels
 {
-    public class ConfigurationViewModel : ViewModel
+    public class ConfigurationViewModel : ViewModelWithNavigation
     {
         private readonly IConfigurationService _configurationService;
         private readonly IMessageBroker _messageBroker;
+        private readonly INavigationService _navigationService;
 
 
         private string _dbServer;
@@ -90,10 +92,12 @@ namespace CoursesManager.UI.ViewModels
 
         public ICommand SaveCommand { get; }
 
-        public ConfigurationViewModel(IConfigurationService configurationService, IMessageBroker messageBroker)
+        public ConfigurationViewModel(IConfigurationService configurationService, IMessageBroker messageBroker, INavigationService navigationService) : base(navigationService)
         {
+
             _configurationService = configurationService;
             _messageBroker = messageBroker;
+            _navigationService = navigationService;
             
             
             InitializeSettings();
@@ -162,6 +166,8 @@ namespace CoursesManager.UI.ViewModels
 
                 _messageBroker.Publish(new ToastNotificationMessage(true,
                     "Instellingen succesvol opgeslagen!", ToastType.Confirmation));
+
+                _navigationService.NavigateTo<CoursesManagerViewModel>();
             }
             catch (Exception ex)
             {
