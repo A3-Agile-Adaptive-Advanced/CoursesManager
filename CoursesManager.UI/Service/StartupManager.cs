@@ -17,12 +17,11 @@ namespace CoursesManager.UI.Service
         private readonly RepositoryFactory _repositoryFactory;
 
         public StartupManager(IConfigurationService configurationService, INavigationService navigationService,
-            IMessageBroker messageBroker, RepositoryFactory repositoryFactory)
+            IMessageBroker messageBroker)
         {
             _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
             _messageBroker = messageBroker;
-            _repositoryFactory = repositoryFactory;
         }
 
         public void CheckConfigurationOnStartup()
@@ -56,8 +55,6 @@ namespace CoursesManager.UI.Service
 
         private void NavigateToStartPage()
         {
-            _repositoryFactory.StudentRegistrationCourseAggregator.Load();
-
             _messageBroker.Publish(new ToastNotificationMessage(
                 true,
                 "Navigeren naar de startpagina...",

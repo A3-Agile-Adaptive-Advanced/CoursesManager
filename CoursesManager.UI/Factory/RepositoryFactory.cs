@@ -1,5 +1,6 @@
 ﻿using CoursesManager.UI.DataAccess;
 using CoursesManager.UI.Repositories.AddressRepository;
+using CoursesManager.UI.Repositories.CertificateRepository;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Repositories.LocationRepository;
 using CoursesManager.UI.Repositories.RegistrationRepository;
@@ -21,6 +22,8 @@ public class RepositoryFactory
     public RegistrationRepository RegistrationRepository => new RegistrationRepository(new RegistrationDataAccess());
 
     public TemplateRepository TemplateRepository => new TemplateRepository(new TemplateDataAccess());
+
+    public CertificateRepository CertificateRepository = new CertificateRepository(new CertificateDataAccess());
 
     public StudentRegistrationCourseAggregator StudentRegistrationCourseAggregator => new StudentRegistrationCourseAggregator(RegistrationRepository, CourseRepository, StudentRepository);
 }

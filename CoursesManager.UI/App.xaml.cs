@@ -1,61 +1,32 @@
-﻿using System.Collections.ObjectModel;
-using System.Windows;
+﻿using System.Windows;
 using CoursesManager.MVVM.Dialogs;
-using CoursesManager.MVVM.Env;
 using CoursesManager.MVVM.Mail.MailService;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.ViewModels;
 using CoursesManager.MVVM.Messages;
-using CoursesManager.UI.DataAccess;
 using CoursesManager.UI.Dialogs.ViewModels;
 using CoursesManager.UI.Dialogs.Windows;
 using CoursesManager.UI.Messages;
 using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Factory;
-using CoursesManager.UI.Helpers;
 using CoursesManager.UI.Models;
-using CoursesManager.UI.Repositories.LocationRepository;
-using CoursesManager.UI.Repositories.RegistrationRepository;
-using CoursesManager.UI.Repositories.StudentRepository;
 using CoursesManager.UI.Views.Students;
 using CoursesManager.UI.ViewModels.Students;
-using CoursesManager.UI.Repositories.AddressRepository;
-using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Service;
 using CoursesManager.UI.ViewModels.Courses;
 using CoursesManager.UI.ViewModels.Mailing;
-using CoursesManager.UI.Repositories.TemplateRepository;
 using CoursesManager.UI.Mailing;
-using CoursesManager.UI.Repositories.CertificateRepository;
 
 namespace CoursesManager.UI;
 
 public partial class App : Application
 {
-    //This is a temporary static class that will hold all the data that is used in the application.
-    //This is a temporary solution until we have a database.
-    public static ObservableCollection<Student> Students { get; private set; }
-
-    public static ObservableCollection<Course> Courses { get; private set; }
-    public static ObservableCollection<Location> Locations { get; private set; }
-    public static ObservableCollection<Registration> Registrations { get; private set; }
-
-    public static ICourseRepository CourseRepository { get; private set; }
-    public static ILocationRepository LocationRepository { get; private set; }
-    public static IRegistrationRepository RegistrationRepository { get; private set; }
-    public static IStudentRepository StudentRepository { get; private set; }
-    public static IAddressRepository AddressRepository { get; private set; }
-
-    public static ITemplateRepository TemplateRepository { get; private set; }
-    public static ICertificateRepository CertificateRepository { get; private set; }
-
-    public StudentRegistrationCourseAggregator StudentRegistrationCourseAggregator { get; set; }
-
+    public static RepositoryFactory RepositoryFactory = new RepositoryFactory();
     public static INavigationService NavigationService { get; set; } = new NavigationService();
     public static IMessageBroker MessageBroker { get; set; } = new MessageBroker();
     public static IDialogService DialogService { get; set; } = new DialogService();
     public static IMailService MailService { get; set; } = new MailService();
-    public static IMailProvider MailProvider { get; set; } = new MailProvider(MailService, TemplateRepository, CertificateRepository);
+    public static IMailProvider MailProvider { get; set; } = new MailProvider(MailService, RepositoryFactory.TemplateRepository, RepositoryFactory.CertificateRepository);
 
     public static IConfigurationService ConfigurationService { get; set; } = new ConfigurationService(new EncryptionService("SmpjQzNZMWdCdW11bTlER2owdFRzOHIzQUpWWmhYQ0U="));
 
@@ -74,11 +45,9 @@ public partial class App : Application
         };
         GlobalCache.Instance.Put("MainViewModel", mw.DataContext, true);
 
-        var repositoryFactory = new RepositoryFactory();
-
         // Create the ViewModelFactory
         var viewModelFactory = new ViewModelFactory(
-            repositoryFactory,
+            RepositoryFactory,
             MessageBroker,
             DialogService,
             ConfigurationService,
@@ -94,21 +63,12 @@ public partial class App : Application
         // Subscribe to Application Close Messages
         MessageBroker.Subscribe<ApplicationCloseRequestedMessage, App>(ApplicationCloseRequestedHandler, this);
 
-        var startupManager = new StartupManager(ConfigurationService, NavigationService, MessageBroker, repositoryFactory);
+        var startupManager = new StartupManager(ConfigurationService, NavigationService, MessageBroker);
         startupManager.CheckConfigurationOnStartup();
 
-        mw.Show();
-    }
+        RepositoryFactory.StudentRegistrationCourseAggregator.Load();
 
-    private void InitializeRepositories()
-    {
-        //AddressRepository = new AddressRepository(new AddressDataAccess());
-        //LocationRepository = new LocationRepository(new LocationDataAccess(), AddressRepository);
-        //CourseRepository = new CourseRepository(new CourseDataAccess(), LocationRepository);
-        //StudentRepository = new StudentRepository(new StudentDataAccess(), AddressRepository);
-        //RegistrationRepository = new RegistrationRepository(new RegistrationDataAccess());
-        //TemplateRepository = new TemplateRepository(new TemplateDataAccess());
-        //StudentRegistrationCourseAggregator = new StudentRegistrationCourseAggregator(CourseRepository, StudentRepository, RegistrationRepository);
+        mw.Show();
     }
 
     private void RegisterDialogs()
@@ -120,24 +80,24 @@ public partial class App : Application
         // Register Dialogs using the factory
         DialogService.RegisterDialog<EditStudentViewModel, EditStudentPopup, Student>(
             student => new EditStudentViewModel(
-                StudentRepository,
-                CourseRepository,
-                RegistrationRepository,
+                RepositoryFactory.StudentRepository,
+                RepositoryFactory.CourseRepository,
+                RepositoryFactory.RegistrationRepository,
                 DialogService,
                 student));
 
         DialogService.RegisterDialog<AddStudentViewModel, AddStudentPopup, Student>(
             (student) => new AddStudentViewModel(
                 student,
-                StudentRepository,
-                CourseRepository,
-                RegistrationRepository,
+                RepositoryFactory.StudentRepository,
+                RepositoryFactory.CourseRepository,
+                RepositoryFactory.RegistrationRepository,
                 DialogService
             ));
 
         DialogService.RegisterDialog<TemplatePreviewDialogViewModel, TemplatePreviewDialogWindow, DialogResultType>((initial) => new TemplatePreviewDialogViewModel(initial, MessageBroker));
 
-        DialogService.RegisterDialog<CourseDialogViewModel, CourseDialogWindow, Course>((initial) => new CourseDialogViewModel(CourseRepository, DialogService, LocationRepository, initial));
+        DialogService.RegisterDialog<CourseDialogViewModel, CourseDialogWindow, Course>((initial) => new CourseDialogViewModel(RepositoryFactory.CourseRepository, DialogService, RepositoryFactory.LocationRepository, initial));
     }
 
     private void RegisterViewModels(ViewModelFactory viewModelFactory)
