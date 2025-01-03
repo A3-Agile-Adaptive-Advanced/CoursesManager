@@ -57,7 +57,7 @@ namespace CoursesManager.UI.Mailing
                     byte[] certificate = GeneratePdf(course, student);
                     Template template = originalTemplate.Copy();
                     template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
-                    messages.Add(CreateMessage(student.Email, template.SubjectString, template.HtmlString, certificate));
+                    messages.Add(CreateMessage("jarnogerrets@gmail.com", template.SubjectString, template.HtmlString, certificate));
                 }
             }
             if (messages.Any())

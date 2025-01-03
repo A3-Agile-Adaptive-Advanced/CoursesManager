@@ -216,9 +216,23 @@ public class MainWindowViewModel : ViewModelWithNavigation
         {
             await SetToastMessageDetails(message.NotificationText, message.SetVisibillity, message.ToastType);
 
+
             if (message.IsPersistent)
             {
-                await Task.Delay(Timeout.Infinite, token);
+                int counter = 0;
+                const int maxDots = 3;
+
+                while (!token.IsCancellationRequested)
+                {
+                    int dotsCount = counter % (maxDots + 1);
+                    string dots = new string('.', dotsCount);
+                    string spaces = new string(' ', maxDots - dotsCount);
+
+                    ToastText = $"{message.NotificationText}{dots}{spaces}";
+                    counter++;
+
+                    await Task.Delay(200, token);
+                }
             }
             else
             {

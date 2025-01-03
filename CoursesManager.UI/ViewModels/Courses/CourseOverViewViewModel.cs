@@ -14,6 +14,7 @@ using CoursesManager.UI.Repositories.RegistrationRepository;
 using CoursesManager.UI.Repositories.StudentRepository;
 using iText.Bouncycastle.Crypto;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Windows.Input;
 using CoursesManager.MVVM.Exceptions;
 
@@ -100,8 +101,8 @@ namespace CoursesManager.UI.ViewModels.Courses
 
         private void LoadCourseData()
         {
-            CurrentCourse = GlobalCache.Instance.Get("Opened Course") as Course;
-
+            Course transferedCourse = GlobalCache.Instance.Get("Opened Course") as Course;
+            CurrentCourse = _courseRepository.GetById(transferedCourse.Id);
             if (CurrentCourse != null)
             {
                 SetupEmailButtons();
@@ -155,14 +156,14 @@ namespace CoursesManager.UI.ViewModels.Courses
         {
             if (payment == null || CurrentCourse == null) return;
 
-            var existingRegistration = _registrationRepository.GetAll()
-                .FirstOrDefault(r => r.CourseId == CurrentCourse.Id && r.StudentId == payment.Student?.Id);
+            var existingRegistration = CurrentCourse.Registrations
+                .FirstOrDefault(r => r.StudentId == payment.Student.Id);
 
             if (existingRegistration != null)
             {
                 if (!payment.IsPaid)
                 {
-                    CurrentCourse.IsPayed = false;
+                    CurrentCourse.IsPayed = payment.IsPaid;
                     _courseRepository.Update(CurrentCourse);
                 }
                 existingRegistration.PaymentStatus = payment.IsPaid;
@@ -222,15 +223,15 @@ namespace CoursesManager.UI.ViewModels.Courses
 
         private async void SendPaymentMail()
         {
-            _messageBroker.Publish(new ToastNotificationMessage(true, "Emails versturen...", ToastType.Info,true));
-            List<MailResult> mailResults = new ();
+            _messageBroker.Publish(new ToastNotificationMessage(true, "Emails versturen", ToastType.Info, true));
+            List<MailResult> mailResults = new();
             try
             {
                 mailResults = await _mailProvider.SendPaymentNotifications(CurrentCourse);
             }
             catch (DataAccessException)
             {
-                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error,false));
+                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error, false));
             }
 
             CheckMailOutcome(mailResults);
@@ -238,6 +239,7 @@ namespace CoursesManager.UI.ViewModels.Courses
 
         private async void SendStartCourseMail()
         {
+            _messageBroker.Publish(new ToastNotificationMessage(true, "Emails versturen", ToastType.Info, true));
             List<MailResult> mailResults = new();
             try
             {
@@ -252,6 +254,7 @@ namespace CoursesManager.UI.ViewModels.Courses
 
         private async void SendCertificateMail()
         {
+            _messageBroker.Publish(new ToastNotificationMessage(true, "Emails versturen", ToastType.Info, true));
             List<MailResult> mailResults = new();
             try
             {
