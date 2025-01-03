@@ -85,6 +85,8 @@ namespace CoursesManager.UI.ViewModels.Courses
             _messageBroker = messageBroker;
             _mailProvider = mailProvider;
 
+            ViewTitle = "Cursus details";
+
             ChangeCourseCommand = new RelayCommand(ChangeCourse);
             DeleteCourseCommand = new RelayCommand(DeleteCourse);
             CheckboxChangedCommand = new RelayCommand<CourseStudentPayment>(OnCheckboxChanged);
