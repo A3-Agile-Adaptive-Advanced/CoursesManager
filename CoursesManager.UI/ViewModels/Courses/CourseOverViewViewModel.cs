@@ -104,9 +104,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             {
                 SetupEmailButtons();
 
-                var registrations = _registrationRepository.GetAll()
-                    .Where(r => r.CourseId == CurrentCourse.Id)
-                    .ToList();
+                var registrations = CurrentCourse.Registrations;
 
                 var payments = registrations.Select(registration =>
                 {
