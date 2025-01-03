@@ -73,7 +73,7 @@ public class GlobalCache
     // Method is not used but implemented nonetheless for future possibilities.
     // Whenever an item needs to 'survive' longer than the expected lifecycle but
     // still should be cleaned up at some point this method is there to do so.
-    // Turned off by default, but in current scenario turned on to run unittests.
+    // Should be turned off by default, but in current scenario turned on to run unittests.
     public void RemovePermanentItem(string key)
     {
         lock (_lock)
