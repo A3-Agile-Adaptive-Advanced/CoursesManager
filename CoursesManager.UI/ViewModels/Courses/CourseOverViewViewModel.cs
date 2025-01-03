@@ -220,7 +220,7 @@ namespace CoursesManager.UI.ViewModels.Courses
                 }
             });
         }
-
+        #region MailMethods
         private async void SendPaymentMail()
         {
             _messageBroker.Publish(new ToastNotificationMessage(true, "Emails versturen", ToastType.Info, true));
@@ -267,22 +267,6 @@ namespace CoursesManager.UI.ViewModels.Courses
             CheckMailOutcome(mailResults);
         }
 
-        private async void ChangeCourse()
-        {
-            await ExecuteWithOverlayAsync(_messageBroker, async () =>
-            {
-                var dialogResult = await _dialogService.ShowDialogAsync<CourseDialogViewModel, Course>(CurrentCourse);
-
-
-                if (dialogResult.Outcome == DialogOutcome.Success)
-                {
-                    _messageBroker.Publish(new CoursesChangedMessage());
-                    CurrentCourse = dialogResult.Data;
-                }
-
-            });
-        }
-
         private void CheckMailOutcome(List<MailResult> mailResults)
         {
             string failedEmails = string.Empty;
@@ -312,4 +296,22 @@ namespace CoursesManager.UI.ViewModels.Courses
             }
         }
     }
+
+    #endregion
+    private async void ChangeCourse()
+        {
+            await ExecuteWithOverlayAsync(_messageBroker, async () =>
+            {
+                var dialogResult = await _dialogService.ShowDialogAsync<CourseDialogViewModel, Course>(CurrentCourse);
+
+
+                if (dialogResult.Outcome == DialogOutcome.Success)
+                {
+                    _messageBroker.Publish(new CoursesChangedMessage());
+                    CurrentCourse = dialogResult.Data;
+                }
+
+            });
+        }
+
 }
