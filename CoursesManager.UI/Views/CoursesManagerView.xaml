@@ -190,7 +190,7 @@
                                 </StackPanel>
 
                                 <!-- Bottom Section (More Options) -->
-                                <Button Grid.Row="3" CommandParameter="{Binding}" Command="{Binding DataContext.CourseOptionCommand, 
+                                <Button ToolTip="Cursus details" Grid.Row="3" CommandParameter="{Binding}" Command="{Binding DataContext.CourseOptionCommand, 
                           RelativeSource={RelativeSource AncestorType=ItemsControl}}" HorizontalAlignment="Right" Width="24" Height="24" Margin="10,0,10,0" Background="Transparent" BorderThickness="0">
                                     <Button.Style>
                                         <Style TargetType="Button">

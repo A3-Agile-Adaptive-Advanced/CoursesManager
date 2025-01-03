@@ -14,7 +14,7 @@ public class RegistrationDataAccess : BaseDataAccess<Registration>
         {
             return ExecuteProcedure(StoredProcedures.RegistrationsGetByCourseId, new MySqlParameter("@p_courseId", courseId)).Select(row => new Registration
             {
-                Id = Convert.ToInt32(row["id"]),
+                Id = Convert.ToInt32(row["registration_id"]),
                 CourseId = Convert.ToInt32(row["course_id"]),
                 StudentId = Convert.ToInt32(row["student_id"]),
                 RegistrationDate = Convert.ToDateTime(row["registration_date"]),

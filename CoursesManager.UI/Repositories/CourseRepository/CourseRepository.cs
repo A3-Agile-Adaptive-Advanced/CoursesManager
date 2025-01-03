@@ -18,7 +18,7 @@ namespace CoursesManager.UI.Repositories.CourseRepository
             return _courseDataAccess.GetAll();
         }
 
-        public Course? GetById(int id) => _courseDataAccess.FetchOneById(id);
+        public Course? GetById(int id) => _courseDataAccess.GetById(id);
 
         public void Add(Course course)
         {
