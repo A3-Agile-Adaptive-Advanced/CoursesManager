@@ -42,7 +42,7 @@ namespace CoursesManager.UI.ViewModels.Courses
         public Course CurrentCourse
         {
             get => _currentCourse;
-            private set => SetProperty(ref _currentCourse, value);
+            set => SetProperty(ref _currentCourse, value);
         }
 
         private bool _isPaid;
@@ -73,7 +73,7 @@ namespace CoursesManager.UI.ViewModels.Courses
         public ObservableCollection<CourseStudentPayment> StudentPayments
         {
             get => _studentPayments;
-            private set => SetProperty(ref _studentPayments, value);
+            set => SetProperty(ref _studentPayments, value);
         }
 
         public CourseOverViewViewModel(IStudentRepository studentRepository, IRegistrationRepository registrationRepository, ICourseRepository courseRepository, IDialogService dialogService, IMessageBroker messageBroker, INavigationService navigationService, IMailProvider mailProvider) : base(navigationService)
@@ -87,6 +87,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             _mailProvider = mailProvider;
 
             ViewTitle = "Cursus details";
+            CurrentCourse = GlobalCache.Instance.Get("Opened Course") as Course;
 
             ChangeCourseCommand = new RelayCommand(ChangeCourse);
             DeleteCourseCommand = new RelayCommand(DeleteCourse);
@@ -101,8 +102,8 @@ namespace CoursesManager.UI.ViewModels.Courses
 
         private void LoadCourseData()
         {
-            Course transferedCourse = GlobalCache.Instance.Get("Opened Course") as Course;
-            CurrentCourse = _courseRepository.GetById(transferedCourse.Id);
+            CurrentCourse = _courseRepository.GetById(CurrentCourse.Id);
+            
             if (CurrentCourse != null)
             {
                 SetupEmailButtons();
@@ -164,7 +165,6 @@ namespace CoursesManager.UI.ViewModels.Courses
                 if (!payment.IsPaid)
                 {
                     CurrentCourse.IsPayed = payment.IsPaid;
-                    _courseRepository.Update(CurrentCourse);
                 }
                 existingRegistration.PaymentStatus = payment.IsPaid;
                 existingRegistration.IsAchieved = payment.IsAchieved;
