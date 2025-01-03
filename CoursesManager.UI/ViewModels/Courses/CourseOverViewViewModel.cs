@@ -113,7 +113,7 @@ namespace CoursesManager.UI.ViewModels.Courses
                     var student = _studentRepository.GetById(registration.StudentId);
                     if (student == null)
                     {
-                        _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de beheerder", ToastType.Error));
+                        _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de beheerder", ToastType.Error, false));
                         return null;
                     }
                     return new CourseStudentPayment(student, registration);
@@ -123,7 +123,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             }
             else
             {
-                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de beheerder", ToastType.Error));
+                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de beheerder", ToastType.Error, false));
             }
         }
 
@@ -160,6 +160,11 @@ namespace CoursesManager.UI.ViewModels.Courses
 
             if (existingRegistration != null)
             {
+                if (!payment.IsPaid)
+                {
+                    CurrentCourse.IsPayed = false;
+                    _courseRepository.Update(CurrentCourse);
+                }
                 existingRegistration.PaymentStatus = payment.IsPaid;
                 existingRegistration.IsAchieved = payment.IsAchieved;
                 _registrationRepository.Update(existingRegistration);
@@ -186,7 +191,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             {
                 if (_registrationRepository.GetAllRegistrationsByCourse(CurrentCourse).Any())
                 {
-                    _messageBroker.Publish(new ToastNotificationMessage(true, "Cursus heeft nog actieve registraties.", ToastType.Error));
+                    _messageBroker.Publish(new ToastNotificationMessage(true, "Cursus heeft nog actieve registraties.", ToastType.Error, false));
                 }
                 else
                 {
@@ -208,7 +213,7 @@ namespace CoursesManager.UI.ViewModels.Courses
                         catch (Exception ex)
                         {
                             LogUtil.Error(ex.Message);
-                            _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de beheerder", ToastType.Error));
+                            _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de beheerder", ToastType.Error, false));
                         }
                     }
                 }
@@ -217,6 +222,7 @@ namespace CoursesManager.UI.ViewModels.Courses
 
         private async void SendPaymentMail()
         {
+            _messageBroker.Publish(new ToastNotificationMessage(true, "Emails versturen...", ToastType.Info,true));
             List<MailResult> mailResults = new ();
             try
             {
@@ -224,7 +230,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             }
             catch (DataAccessException)
             {
-                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error));
+                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error,false));
             }
 
             CheckMailOutcome(mailResults);
@@ -239,7 +245,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             }
             catch (DataAccessException)
             {
-                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error));
+                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error, false));
             }
             CheckMailOutcome(mailResults);
         }
@@ -253,7 +259,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             }
             catch (DataAccessException)
             {
-                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error));
+                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error, false));
             }
             CheckMailOutcome(mailResults);
         }
@@ -295,11 +301,11 @@ namespace CoursesManager.UI.ViewModels.Courses
 
             if (failedEmails.Length > 0)
             {
-                _messageBroker.Publish(new ToastNotificationMessage(true, $"De volgende emails zijn niet verstuurd: {failedEmails}", ToastType.Error));
+                _messageBroker.Publish(new ToastNotificationMessage(true, $"De volgende emails zijn niet verstuurd: {failedEmails}", ToastType.Error, false));
             }
             else
             {
-                _messageBroker.Publish(new ToastNotificationMessage(true, "Email(s) zijn succesvol verstuurd", ToastType.Confirmation));
+                _messageBroker.Publish(new ToastNotificationMessage(true, "Email(s) zijn succesvol verstuurd", ToastType.Confirmation, false));
             }
         }
     }
