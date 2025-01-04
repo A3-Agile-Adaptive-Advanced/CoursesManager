@@ -38,14 +38,14 @@ namespace CoursesManager.Tests.Students
             _dialogServiceMock = new Mock<IDialogService>();
 
             _courseRepositoryMock.Setup(repo => repo.GetAll())
-                .Returns(new List<Course>
+                .Returns(new ObservableCollection<Course>
                 {
                     new Course { Id = 1, Name = "Math", IsActive = true },
                     new Course { Id = 2, Name = "Science", IsActive = true }
                 });
 
             _registrationRepositoryMock.Setup(repo => repo.GetAll())
-                .Returns(new List<Registration>
+                .Returns(new ObservableCollection<Registration>
                 {
                     new Registration { StudentId = 1, CourseId = 1 }
                 });

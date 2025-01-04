@@ -1,4 +1,5 @@
-﻿using CoursesManager.MVVM.Dialogs;
+﻿using System.Collections.ObjectModel;
+using CoursesManager.MVVM.Dialogs;
 using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Models;
@@ -162,7 +163,7 @@ namespace CoursesManager.Tests.Students
         {
             // Arrange
             var student = new Student { Id = 1, FirstName = "John" };
-            _registrationRepositoryMock.Setup(repo => repo.GetAll()).Returns(new List<Registration>());
+            _registrationRepositoryMock.Setup(repo => repo.GetAll()).Returns(new ObservableCollection<Registration>());
             _viewModel.SelectedStudent = student;
 
             // Act
@@ -178,13 +179,13 @@ namespace CoursesManager.Tests.Students
         public void ToggleIsDeletedCommand_ShouldFilterOnlyDeletedStudents()
         {
             // Arrange
-            var students = new List<Student>
+            var students = new ObservableCollection<Student>
             {
                 new Student { Id = 1, FirstName = "DeletedStudent", IsDeleted = true },
                 new Student { Id = 2, FirstName = "ActiveStudent", IsDeleted = false }
             };
 
-            _studentRepositoryMock.Setup(repo => repo.GetDeletedStudents()).Returns(students);
+            _studentRepositoryMock.Setup(repo => repo.GetDeletedStudents()).Returns(students.ToList());
             _studentRepositoryMock.Setup(repo => repo.GetAll()).Returns(students);
             _viewModel.IsToggled = false;
 
@@ -205,7 +206,7 @@ namespace CoursesManager.Tests.Students
         {
             // Arrange
             var registration = new Registration { Id = 1, StudentId = 1, CourseId = 1, PaymentStatus = false, IsAchieved = false };
-            _registrationRepositoryMock.Setup(repo => repo.GetAll()).Returns(new List<Registration> { registration });
+            _registrationRepositoryMock.Setup(repo => repo.GetAll()).Returns(new ObservableCollection<Registration> { registration });
 
             var course = new Course { Id = 1, Name = "Math" };
             var payment = new CourseStudentPayment(course, registration) { IsPaid = true, IsAchieved = true };

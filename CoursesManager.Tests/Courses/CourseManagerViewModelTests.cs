@@ -1,4 +1,5 @@
-﻿using CoursesManager.MVVM.Dialogs;
+﻿using System.Collections.ObjectModel;
+using CoursesManager.MVVM.Dialogs;
 using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Models;
@@ -18,7 +19,7 @@ namespace CoursesManager.Tests.Courses
         private Mock<IMessageBroker> _mockedMessageBroker;
         private Mock<INavigationService> _mockedNavigationService;
         private CoursesManagerViewModel _viewModel;
-        List<Course> _courses;
+        ObservableCollection<Course> _courses;
 
         [SetUp]
         public void Setup()
@@ -37,9 +38,7 @@ namespace CoursesManager.Tests.Courses
                     Code = "WIS101",
                     Category = "Wetenschap",
                     Description = "Inleidende cursus over fundamentele wiskundige concepten.",
-                    Participants = 25,
                     IsActive = true,
-                    IsPayed = false,
                     StartDate = new DateTime(2024, 1, 10),
                     EndDate = new DateTime(2024, 1, 15),
                     DateCreated = DateTime.Now,
@@ -51,9 +50,7 @@ namespace CoursesManager.Tests.Courses
                     Code = "KUN201",
                     Category = "Kunst & Cultuur",
                     Description = "Een breed overzicht van kunststromingen door de eeuwen heen.",
-                    Participants = 15,
                     IsActive = false,
-                    IsPayed = true,
                     StartDate = new DateTime(2024, 2, 1),
                     EndDate = new DateTime(2024, 2, 10),
                     DateCreated = DateTime.Now.AddDays(-10),
@@ -65,9 +62,7 @@ namespace CoursesManager.Tests.Courses
                     Code = "IT301",
                     Category = "Informatica",
                     Description = "Verdiepende cursus over softwareontwerp en patroongebruik.",
-                    Participants = 30,
                     IsActive = true,
-                    IsPayed = true,
                     StartDate = new DateTime(2024, 3, 5),
                     EndDate = new DateTime(2024, 3, 20),
                     DateCreated = DateTime.Now.AddDays(-30),
@@ -79,9 +74,7 @@ namespace CoursesManager.Tests.Courses
                     Code = "TAL101",
                     Category = "Talen",
                     Description = "Eerste stappen in de Spaanse taal, gericht op conversatie.",
-                    Participants = 20,
                     IsActive = true,
-                    IsPayed = false,
                     StartDate = new DateTime(2024, 4, 12),
                     EndDate = new DateTime(2024, 4, 25),
                     DateCreated = DateTime.Now.AddDays(-5),
@@ -93,9 +86,7 @@ namespace CoursesManager.Tests.Courses
                     Code = "VOE401",
                     Category = "Gezondheid",
                     Description = "Inzicht in voedingsprincipes en hoe een gezonde leefstijl vol te houden.",
-                    Participants = 10,
                     IsActive = false,
-                    IsPayed = false,
                     StartDate = new DateTime(2024, 5, 3),
                     EndDate = new DateTime(2024, 5, 15),
                     DateCreated = DateTime.Now.AddDays(-20),
@@ -206,9 +197,7 @@ namespace CoursesManager.Tests.Courses
                 Code = "PSY202",
                 Category = "Mens & Gedrag",
                 Description = "Een basiscursus over de belangrijkste theorieën en stromingen binnen de psychologie.",
-                Participants = 18,
                 IsActive = true,
-                IsPayed = true,
                 StartDate = new DateTime(2024, 6, 1),
                 EndDate = new DateTime(2024, 6, 10),
                 DateCreated = DateTime.Now.AddDays(-7),

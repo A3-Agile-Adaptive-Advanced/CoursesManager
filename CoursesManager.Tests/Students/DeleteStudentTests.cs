@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using System.Collections.ObjectModel;
+using Moq;
 using CoursesManager.UI.Models;
 using CoursesManager.MVVM.Dialogs;
 using CoursesManager.UI.Dialogs.ResultTypes;
@@ -44,7 +45,7 @@ namespace CoursesManager.Tests.Students
                 IsDeleted = false
             };
 
-            _mockStudentRepository.Setup(repo => repo.GetAll()).Returns(new List<Student> { _testStudent });
+            _mockStudentRepository.Setup(repo => repo.GetAll()).Returns(new ObservableCollection<Student> { _testStudent });
 
             _viewModel = new StudentManagerViewModel(
                 _mockDialogService.Object,

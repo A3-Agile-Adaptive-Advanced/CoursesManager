@@ -221,8 +221,6 @@ namespace CoursesManager.UI.ViewModels.Courses
                         try
                         {
                             _courseRepository.Delete(CurrentCourse);
-
-                            //_messageBroker.Publish(new CoursesChangedMessage());
                             _navigationService.GoBackAndClearForward();
                         }
                         catch (Exception ex)
