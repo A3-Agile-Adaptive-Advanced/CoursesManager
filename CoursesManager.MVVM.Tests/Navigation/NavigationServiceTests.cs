@@ -9,6 +9,8 @@ internal class ViewModelWithNavigationForTest : ViewModelWithNavigation
 {
     public INavigationService NavigationService { get; set; }
 
+    public object? PassedObject;
+
     public ViewModelWithNavigationForTest(INavigationService navigationService) : base(navigationService)
     {
         NavigationService = navigationService;
@@ -17,11 +19,14 @@ internal class ViewModelWithNavigationForTest : ViewModelWithNavigation
     public ViewModelWithNavigationForTest(object? param, INavigationService? navigationService) : base(navigationService)
     {
         NavigationService = navigationService;
+        PassedObject = param;
     }
 }
 
 internal class ViewModelWithoutNavigate : ViewModel
 {
+    public object? PassedObject;
+
     public ViewModelWithoutNavigate()
     {
 
@@ -29,7 +34,7 @@ internal class ViewModelWithoutNavigate : ViewModel
 
     public ViewModelWithoutNavigate(object? param)
     {
-
+        PassedObject = param;
     }
 }
 
@@ -377,6 +382,50 @@ public class NavigationServiceTests
         if (_navigationService.NavigationStore.CurrentViewModel is ViewModelWithNavigationForTest currentVm)
         {
             Assert.That(currentVm.NavigationService, Is.EqualTo(_navigationService));
+        }
+        else
+        {
+            throw new Exception("Something really bizarre has happened");
+        }
+    }
+
+    [Test]
+    public void NavigateTo_WhenPassingNavigationServiceAndObject_PassesOnObject()
+    {
+        INavigationService.ViewModelFactories.Clear();
+        INavigationService.RegisterViewModelFactoryWithParameters((param) => new ViewModelWithoutNavigate(param));
+        INavigationService.RegisterViewModelFactoryWithParameters((param, nav) => new ViewModelWithNavigationForTest(param, nav));
+
+        var testObject = new object();
+
+        _navigationService.NavigateTo<ViewModelWithNavigationForTest>(testObject);
+
+        if (_navigationService.NavigationStore.CurrentViewModel is ViewModelWithNavigationForTest currentVm)
+        {
+            Assert.That(currentVm.PassedObject, Is.Not.Null);
+            Assert.That(testObject, Is.SameAs(currentVm.PassedObject));
+        }
+        else
+        {
+            throw new Exception("Something really bizarre has happened");
+        }
+    }
+
+    [Test]
+    public void NavigateTo_WhenPassingObject_PassesOnObject()
+    {
+        INavigationService.ViewModelFactories.Clear();
+        INavigationService.RegisterViewModelFactoryWithParameters((param) => new ViewModelWithoutNavigate(param));
+        INavigationService.RegisterViewModelFactoryWithParameters((param, nav) => new ViewModelWithNavigationForTest(param, nav));
+
+        var testObject = new object();
+
+        _navigationService.NavigateTo<ViewModelWithoutNavigate>(testObject);
+
+        if (_navigationService.NavigationStore.CurrentViewModel is ViewModelWithoutNavigate currentVm)
+        {
+            Assert.That(currentVm.PassedObject, Is.Not.Null);
+            Assert.That(testObject, Is.SameAs(currentVm.PassedObject));
         }
         else
         {
