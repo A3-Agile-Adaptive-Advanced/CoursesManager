@@ -9,6 +9,7 @@ using CoursesManager.UI.Repositories.TemplateRepository;
 using CoursesManager.UI.ViewModels.Mailing;
 using Moq;
 using System.Windows.Documents;
+using CoursesManager.UI.Messages;
 
 namespace CoursesManager.Tests.Mailing
 {

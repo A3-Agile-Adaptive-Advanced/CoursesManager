@@ -13,6 +13,7 @@ using CoursesManager.UI.Repositories.StudentRepository;
 using CoursesManager.UI.ViewModels.Courses;
 using Moq;
 using System.Diagnostics;
+using CoursesManager.UI.Messages;
 
 namespace CoursesManager.Tests.Courses
 {

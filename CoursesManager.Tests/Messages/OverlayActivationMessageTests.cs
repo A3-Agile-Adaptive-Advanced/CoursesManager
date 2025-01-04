@@ -1,6 +1,6 @@
 ﻿using CoursesManager.MVVM.Messages.DefaultMessages;
 
-namespace CoursesManager.MVVM.Tests.Messages.DefaultMessages;
+namespace CoursesManager.Tests.Messages;
 
 public class OverlayActivationMessageTests
 {

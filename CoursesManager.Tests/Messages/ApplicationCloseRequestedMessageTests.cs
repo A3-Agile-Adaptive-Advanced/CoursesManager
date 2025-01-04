@@ -1,6 +1,6 @@
-﻿using CoursesManager.MVVM.Messages.DefaultMessages;
+﻿using CoursesManager.UI.Messages;
 
-namespace CoursesManager.MVVM.Tests.Messages.DefaultMessages;
+namespace CoursesManager.Tests.Messages;
 
 public class ApplicationCloseRequestedMessageTests
 {
