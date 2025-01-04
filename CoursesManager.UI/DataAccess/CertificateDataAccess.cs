@@ -2,7 +2,9 @@
 using CoursesManager.UI.Database;
 using CoursesManager.UI.Models;
 using MySql.Data.MySqlClient;
+using MySqlX.XDevAPI.Common;
 using System.Data;
+using System.Diagnostics;
 
 namespace CoursesManager.UI.DataAccess
 {
@@ -13,6 +15,19 @@ namespace CoursesManager.UI.DataAccess
         {
             try
             {
+                string checkProcedureName = StoredProcedures.CheckIfCertificateExists;
+
+                var exists = ExecuteProcedure(checkProcedureName, new[]
+                {
+                    new MySqlParameter("@p_student_code", certificate.StudentCode),
+                    new MySqlParameter("@p_course_code", certificate.CourseCode)
+                });
+                if (exists != null && exists.Any())
+                {
+                    throw new InvalidOperationException(
+                        "A certificate already exists for this student and course combination.");
+                }
+
                 string procedureName = StoredProcedures.AddCertificate;
 
                 var rows = ExecuteProcedure(procedureName, [

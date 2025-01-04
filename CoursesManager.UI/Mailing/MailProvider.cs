@@ -37,7 +37,8 @@ namespace CoursesManager.UI.Mailing
 
         public async Task<List<MailResult>> SendCertificates(Course course)
         {
-
+            allMailResults.Clear();
+            int emailCounter = 0;
             List<MailMessage> messages = new();
             Template originalTemplate = GetTemplateByName("CertificateMail");
 
@@ -54,14 +55,24 @@ namespace CoursesManager.UI.Mailing
                 if (registration == null) throw new NullReferenceException("There are no registrations attached to this student");
                 if (registration.IsAchieved)
                 {
-                    byte[] certificate = GeneratePdf(course, student);
-                    Template template = originalTemplate.Copy();
-                    template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
-                    messages.Add(CreateMessage("jarnogerrets@gmail.com", template.SubjectString, template.HtmlString, certificate));
+                    byte[]? certificate = GeneratePdf(course, student);
+                    if (certificate != null)
+                    {
+                        Template template = originalTemplate.Copy();
+                        template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
+                        messages.Add(CreateMessage("jarnogerrets@gmail.com", template.SubjectString,
+                            template.HtmlString, certificate));
+                        emailCounter++;
+                    }
                 }
+            }
+            if (emailCounter == 0)
+            {
+                return allMailResults;
             }
             if (messages.Any())
             {
+                Debug.WriteLine("i ran 2");
                 allMailResults = await _mailService.SendMail(messages);
             }
             return allMailResults;
@@ -69,6 +80,7 @@ namespace CoursesManager.UI.Mailing
 
         public async Task<List<MailResult>> SendCourseStartNotifications(Course course)
         {
+            allMailResults.Clear();
             if (course.Students == null)
                 throw new NullReferenceException("There are no students attached to this course");
 
@@ -96,7 +108,7 @@ namespace CoursesManager.UI.Mailing
 
         public async Task<List<MailResult>> SendPaymentNotifications(Course course)
         {
-
+            allMailResults.Clear();
             List<MailMessage> messages = new List<MailMessage>();
             List<Registration> courseRegistrations = course.Registrations;
             Template originalTemplate = GetTemplateByName("PaymentMail");
@@ -138,9 +150,9 @@ namespace CoursesManager.UI.Mailing
             }
             return false;
         }
-        private byte[] GeneratePdf(Course course, Student student)
+        private byte[]? GeneratePdf(Course course, Student student)
         {
-
+            Debug.WriteLine("");
             Template template = GetTemplateByName("Certificate");
             template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
             using (var memoryStream = new MemoryStream())
@@ -148,8 +160,16 @@ namespace CoursesManager.UI.Mailing
                 // Since the way a Certificate is saved is using a html string we can seperate the actual pdf from the template.
                 // First we are converting the html to pdf, in the event of failure the html is also not saved to the db, preventing the storage of a faulty html string.
                 HtmlConverter.ConvertToPdf(template.HtmlString, memoryStream);
-                SaveCertificate(template, course, student);
-                return memoryStream.ToArray();
+                try
+                {
+                    SaveCertificate(template, course, student);
+                    return memoryStream.ToArray();
+                }
+                catch (Exception ex)
+                {
+                    return null;
+                }
+                
             }
         }
 

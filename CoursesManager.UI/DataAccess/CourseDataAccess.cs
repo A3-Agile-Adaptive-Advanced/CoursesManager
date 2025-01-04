@@ -78,7 +78,8 @@ public class CourseDataAccess : BaseDataAccess<Course>
     {
         try
         {
-            var results = ExecuteProcedure("spCourses_GetById", new MySqlParameter("@p_id", id));
+            string procedureName = StoredProcedures.CourseGetById;
+            var results = ExecuteProcedure(procedureName, new MySqlParameter("@p_id", id));
             
             var row = results.First();
 

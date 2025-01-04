@@ -292,6 +292,12 @@ namespace CoursesManager.UI.ViewModels.Courses
         private void CheckMailOutcome(List<MailResult> mailResults)
         {
             string failedEmails = string.Empty;
+            if (!mailResults.Any())
+            {
+                _messageBroker.Publish(new ToastNotificationMessage(true,
+                    "De huidige studenten met afgeronde status \n hebben al een mail ontvangen", ToastType.Warning, false));
+                return;
+            }
             foreach (MailResult mailResult in mailResults)
             {
                 if (!(mailResult.Outcome == MailOutcome.Success))
