@@ -1,17 +1,10 @@
-﻿using CoursesManager.MVVM.Messages;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CoursesManager.UI.Messages
+﻿namespace CoursesManager.MVVM.Messages.DefaultMessages
 {
     public class OverlayActivationMessage : BaseMessage<OverlayActivationMessage>
     {
         public bool IsVisible { get; set; }
 
-        public OverlayActivationMessage(bool isVisible) 
+        public OverlayActivationMessage(bool isVisible)
         {
             IsVisible = isVisible;
         }

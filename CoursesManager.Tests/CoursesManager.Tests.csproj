@@ -38,4 +38,9 @@
 		<Using Include="NUnit.Framework" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Messages\" />
+	  <Folder Include="Repositories\" />
+	</ItemGroup>
+
 </Project>

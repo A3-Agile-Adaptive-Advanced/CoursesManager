@@ -7,6 +7,7 @@ using CoursesManager.MVVM.Data;
 using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Enums;
+using CoursesManager.UI.Messages;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Service;
 using CoursesManager.UI.ViewModels.Courses;

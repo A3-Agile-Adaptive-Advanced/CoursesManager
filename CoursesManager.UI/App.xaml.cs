@@ -16,6 +16,7 @@ using CoursesManager.UI.Service;
 using CoursesManager.UI.ViewModels.Courses;
 using CoursesManager.UI.ViewModels.Mailing;
 using CoursesManager.UI.Mailing;
+using CoursesManager.MVVM.Messages.DefaultMessages;
 
 namespace CoursesManager.UI;
 

@@ -19,6 +19,7 @@ using CoursesManager.MVVM.Mail.MailService;
 using CoursesManager.UI.Enums;
 using MySql.Data.MySqlClient;
 using CoursesManager.MVVM.Exceptions;
+using CoursesManager.UI.Messages;
 
 namespace CoursesManager.UI.ViewModels.Mailing
 {

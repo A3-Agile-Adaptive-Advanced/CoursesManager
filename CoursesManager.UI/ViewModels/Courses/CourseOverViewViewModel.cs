@@ -18,6 +18,7 @@ using System.Windows.Input;
 using CoursesManager.MVVM.Exceptions;
 using System.Linq;
 using System.Text;
+using CoursesManager.UI.Messages;
 
 namespace CoursesManager.UI.ViewModels.Courses
 {

@@ -1,6 +1,7 @@
-﻿using CoursesManager.UI.Enums;
+﻿using CoursesManager.MVVM.Messages;
+using CoursesManager.UI.Enums;
 
-namespace CoursesManager.MVVM.Messages
+namespace CoursesManager.UI.Messages
 {
     public class ToastNotificationMessage : BaseMessage<ToastNotificationMessage>
     {

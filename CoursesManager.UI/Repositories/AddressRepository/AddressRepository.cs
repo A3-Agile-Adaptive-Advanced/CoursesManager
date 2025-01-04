@@ -42,7 +42,7 @@ public class AddressRepository : BaseRepository<Address>, IAddressRepository
                 _addressDataAccess.GetAll().ForEach(_addresses.Add);
             }
 
-            return new ObservableCollection<Address>(_addresses); // Return a copy to avoid external modification
+            return new ObservableCollection<Address>(_addresses);
         }
     }
 

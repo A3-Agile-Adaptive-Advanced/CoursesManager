@@ -1,13 +1,14 @@
 ﻿using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Data;
 using CoursesManager.MVVM.Messages;
+using CoursesManager.MVVM.Messages.DefaultMessages;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Enums;
-using CoursesManager.UI.Messages;
 using CoursesManager.UI.ViewModels.Mailing;
 using CoursesManager.UI.ViewModels.Students;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using CoursesManager.UI.Messages;
 
 namespace CoursesManager.UI.ViewModels;
 

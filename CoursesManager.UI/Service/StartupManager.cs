@@ -2,6 +2,7 @@
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Enums;
 using CoursesManager.UI.Factory;
+using CoursesManager.UI.Messages;
 using CoursesManager.UI.ViewModels;
 using CoursesManager.UI.ViewModels.Courses;
 
