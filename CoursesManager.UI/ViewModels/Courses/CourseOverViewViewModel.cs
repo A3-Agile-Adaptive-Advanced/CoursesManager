@@ -101,9 +101,9 @@ namespace CoursesManager.UI.ViewModels.Courses
             ChangeCourseCommand = new RelayCommand(ChangeCourse);
             DeleteCourseCommand = new RelayCommand(DeleteCourse);
             CheckboxChangedCommand = new RelayCommand<CourseStudentPayment>(OnCheckboxChanged);
-            PaymentMailCommand = new RelayCommand(SendPaymentMail);
-            StartCourseMailCommand = new RelayCommand(SendStartCourseMail);
-            CertificateMailCommand = new RelayCommand(SendCertificateMail);
+            PaymentMailCommand = new AsyncRelayCommand(SendPaymentMail);
+            StartCourseMailCommand = new AsyncRelayCommand(SendStartCourseMail);
+            CertificateMailCommand = new AsyncRelayCommand(SendCertificateMail);
 
             LoadCourseData();
 
@@ -124,8 +124,7 @@ namespace CoursesManager.UI.ViewModels.Courses
                     var student = _studentRepository.GetById(registration.StudentId);
                     if (student == null)
                     {
-                        _messageBroker.Publish(new ToastNotificationMessage(true,
-                            "Er is een fout opgetreden, neem contact op met de beheerder", ToastType.Error, false));
+                        SendGeneralErrorNotification();
                         return null;
                     }
 
@@ -136,8 +135,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             }
             else
             {
-                _messageBroker.Publish(new ToastNotificationMessage(true,
-                    "Er is een fout opgetreden, neem contact op met de beheerder", ToastType.Error, false));
+                SendGeneralErrorNotification();
             }
         }
 
@@ -209,7 +207,7 @@ namespace CoursesManager.UI.ViewModels.Courses
                 if (_registrationRepository.GetAllRegistrationsByCourse(CurrentCourse).Any())
                 {
                     _messageBroker.Publish(new ToastNotificationMessage(true, "Cursus heeft nog actieve registraties.",
-                        ToastType.Error, false));
+                        ToastType.Error));
                 }
                 else
                 {
@@ -231,8 +229,7 @@ namespace CoursesManager.UI.ViewModels.Courses
                         catch (Exception ex)
                         {
                             LogUtil.Error(ex.Message);
-                            _messageBroker.Publish(new ToastNotificationMessage(true,
-                                "Er is een fout opgetreden, neem contact op met de beheerder", ToastType.Error, false));
+                            SendGeneralErrorNotification();
                         }
                     }
                 }
@@ -241,32 +238,36 @@ namespace CoursesManager.UI.ViewModels.Courses
 
         #region MailMethods
 
-        private async void SendPaymentMail()
+        private async Task SendPaymentMail()
         {
             await SendEmailAsync(
                 () => _mailProvider.SendPaymentNotifications(CurrentCourse)
             );
         }
 
-        private async void SendStartCourseMail()
+        private async Task SendStartCourseMail()
         {
             await SendEmailAsync(
                 () => _mailProvider.SendCourseStartNotifications(CurrentCourse)
             );
         }
 
-        private async void SendCertificateMail()
+        private async Task SendCertificateMail()
         {
             await SendEmailAsync(
                 () => _mailProvider.SendCertificates(CurrentCourse)
             );
         }
 
-        // Due to the nature of similarity between the send mail commands this task is created to reduce duplication.
-        // For user feedback a permanent message is sent to show that sending is still being done.
-        // This is important because with larger address lists the task can take a while to complete.
+        /// <summary>
+        /// Handles sending email notifications and processes results.
+        /// </summary>
+        /// <param name="sendEmailTask">The task that performs the email sending logic.</param>
         private async Task SendEmailAsync(Func<Task<List<MailResult>>> sendEmailTask)
         {
+            // Due to the nature of similarity between the send mail commands this task is created to reduce duplication.
+            // For user feedback a permanent message is sent to show that sending is still being done.
+            // This is important because with larger address lists the task can take a while to complete.
             _messageBroker.Publish(new ToastNotificationMessage(true, "E-mails versturen", ToastType.Info, true));
             List<MailResult> mailResults = new();
 
@@ -276,24 +277,27 @@ namespace CoursesManager.UI.ViewModels.Courses
             }
             catch (DataAccessException)
             {
-                _messageBroker.Publish(new ToastNotificationMessage(true,
-                    "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error, false));
+                SendGeneralErrorNotification();
             }
             catch (InvalidOperationException)
             {
                 _messageBroker.Publish(new ToastNotificationMessage(true,
-                    "Er zijn geen studenten aangemeld bij deze cursus", ToastType.Error, false));
+                    "Er zijn geen studenten aangemeld bij deze cursus", ToastType.Error));
             }
 
             CheckMailOutcome(mailResults);
         }
 
+        /// <summary>
+        /// Processes the outcome of email-sending operations.
+        /// </summary>
+        /// <param name="mailResults">The list of mail results.</param>
         private void CheckMailOutcome(List<MailResult> mailResults)
         {
             if (!mailResults.Any())
             {
                 _messageBroker.Publish(new ToastNotificationMessage(true,
-                    "De huidige studenten met afgeronde status \n hebben al een mail ontvangen", ToastType.Warning, false));
+                    "De huidige studenten met afgeronde status \n hebben al een mail ontvangen", ToastType.Warning));
                 return;
             }
             var failedEmails = new StringBuilder();
@@ -306,16 +310,20 @@ namespace CoursesManager.UI.ViewModels.Courses
             if (failedEmails.Length > 0)
             {
                 _messageBroker.Publish(new ToastNotificationMessage(true,
-                    $"De volgende emails zijn niet verstuurd: {failedEmails}", ToastType.Error, false));
+                    $"De volgende emails zijn niet verstuurd: {failedEmails}", ToastType.Error));
                 return;
             }
 
             _messageBroker.Publish(new ToastNotificationMessage(true, "Email(s) zijn succesvol verstuurd",
                 ToastType.Confirmation, false));
         }
-
-
         #endregion
+
+        private void SendGeneralErrorNotification()
+        {
+            _messageBroker.Publish(new ToastNotificationMessage(true,
+                "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error));
+        }
 
         private async void ChangeCourse()
         {
