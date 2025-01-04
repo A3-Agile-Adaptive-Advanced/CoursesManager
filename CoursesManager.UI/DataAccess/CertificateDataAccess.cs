@@ -10,13 +10,13 @@ namespace CoursesManager.UI.DataAccess
 {
     public class CertificateDataAccess : BaseDataAccess<Certificate>
     {
-
+        // First we have to check if a certificate exists in the db before we enter a new one.
+        // This ensures unique certificates for each student and makes the retrieval process logical.
         public void SaveCertificate(Certificate certificate)
         {
             try
             {
                 string checkProcedureName = StoredProcedures.CheckIfCertificateExists;
-
                 var exists = ExecuteProcedure(checkProcedureName, new[]
                 {
                     new MySqlParameter("@p_student_code", certificate.StudentCode),
@@ -27,6 +27,7 @@ namespace CoursesManager.UI.DataAccess
                     throw new InvalidOperationException(
                         "A certificate already exists for this student and course combination.");
                 }
+
 
                 string procedureName = StoredProcedures.AddCertificate;
 

@@ -43,7 +43,7 @@ namespace CoursesManager.UI.Mailing
             Template originalTemplate = GetTemplateByName("CertificateMail");
 
             if (course.Students == null)
-                throw new NullReferenceException("There are no students attached to this course");
+                throw new InvalidOperationException("There are no students attached to this course");
 
             foreach (Student student in course.Students)
             {
@@ -52,7 +52,6 @@ namespace CoursesManager.UI.Mailing
                     continue;
                 }
                 Registration? registration = student.Registrations.FirstOrDefault(r => r.CourseId == course.Id);
-                if (registration == null) throw new NullReferenceException("There are no registrations attached to this student");
                 if (registration.IsAchieved)
                 {
                     byte[]? certificate = GeneratePdf(course, student);
@@ -82,7 +81,7 @@ namespace CoursesManager.UI.Mailing
         {
             allMailResults.Clear();
             if (course.Students == null)
-                throw new NullReferenceException("There are no students attached to this course");
+                throw new InvalidOperationException("There are no students attached to this course");
 
             List<MailMessage> messages = new();
             Template originalTemplate = GetTemplateByName("CourseStartMail");
@@ -114,7 +113,7 @@ namespace CoursesManager.UI.Mailing
             Template originalTemplate = GetTemplateByName("PaymentMail");
 
             if (course.Students == null)
-                throw new NullReferenceException("There are no students attached to this course");
+                throw new InvalidOperationException("There are no students attached to this course");
             foreach (Registration registration in courseRegistrations)
             {
                 if (!registration.PaymentStatus)
@@ -176,7 +175,7 @@ namespace CoursesManager.UI.Mailing
         private Template GetTemplateByName(string name)
         {
             return _templateRepository.GetTemplateByName(name) ??
-                   throw new NullReferenceException("Template 'Certificate' not found.");
+                   throw new InvalidOperationException($"Template '{name}' not found.");
         }
 
         private string FillTemplate(string template, Student student, Course course, string? URL)

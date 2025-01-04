@@ -6,7 +6,7 @@ using CoursesManager.UI.Enums;
 namespace CoursesManager.UI.Helpers.Converters;
 
 // This method is needed to be able to use the Toasttype to control the visibility.
-// This makes it possible to use 1 variable to control the visibility in the viewmodel to display 3 (or more) different message types.
+// This makes it possible to use 1 variable to control the visibility in the viewmodel to display 4 (or more) different message types.
 public class ToastTypeToVisibility : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
