@@ -73,7 +73,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
             {
                 ReUploadTextWithErrorFormatting(convertedText, invalidPlaceholders);
                 _messageBroker.Publish(new ToastNotificationMessage(true,
-                    "1 of meerdere placeholders zijn incorrect. Druk op toets '[' om alle geldige opties in te zien.", ToastType.Warning));
+                    "1 of meerdere placeholders zijn incorrect. Druk op toets '[' om alle geldige opties in te zien.", ToastType.Warning, false));
                 return;
             }
 
@@ -98,7 +98,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
         {
             _messageBroker.Publish(new ToastNotificationMessage(true,
                 errorMessage,
-                type));
+                type, false));
         }
 
         #region Helper methods
@@ -110,13 +110,13 @@ namespace CoursesManager.UI.ViewModels.Mailing
                 _templateRepository.Update(template);
                 VisibleText = new FlowDocument(new Paragraph(new Run(GetTemplateText(null, CurrentTemplate))));
                 _messageBroker.Publish(new ToastNotificationMessage(true,
-                    "Template opgeslagen", ToastType.Confirmation));
+                    "Template opgeslagen", ToastType.Confirmation, false));
             }
             catch (DataAccessException)
             {
                 _messageBroker.Publish(new ToastNotificationMessage(true,
                     "Er is een fout opgetreden, template niet opgeslagen in de database",
-                    ToastType.Error));
+                    ToastType.Error, false));
             }
         }
         private string GetTemplateText(string? templateName, Template? template)
@@ -132,7 +132,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
                 {
                     _messageBroker.Publish(new ToastNotificationMessage(true,
                         "Er is een fout opgetreden, template kon niet worden opgehaald uit de database",
-                        ToastType.Error));
+                        ToastType.Error, false));
                 }
                 Match match = Regex.Match(CurrentTemplate.HtmlString, @"<body>(.*?)</body>", RegexOptions.Singleline);
                 string bodyContent = match.Groups[1].Value;
@@ -166,7 +166,7 @@ namespace CoursesManager.UI.ViewModels.Mailing
             {
                 _messageBroker.Publish(new ToastNotificationMessage(true,
                     "Er is een onverwachte fout opgetreden, neem contact op met de systeembeheerder",
-                    ToastType.Error));
+                    ToastType.Error, false));
                 return string.Empty;
             }
 

@@ -51,7 +51,7 @@
                     <Border.Effect>
                         <DropShadowEffect Color="Black" Opacity="0.3" BlurRadius="10" ShadowDepth="5"/>
                     </Border.Effect>
-                    <TextBlock Text="Course name" FontWeight="Bold" FontSize="20" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding CurrentCourse.Name}" FontWeight="Bold" FontSize="20" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     <Border.Style>
                         <Style TargetType="Border">
                             <Setter Property="Background" Value="{StaticResource PrimaryGradient}" />

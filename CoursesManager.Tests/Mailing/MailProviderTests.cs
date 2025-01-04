@@ -162,7 +162,7 @@ public class MailProviderTests
             .ReturnsAsync(new List<MailResult> { new MailResult { Outcome = MailOutcome.Success } });
 
         // Act & Assert
-        var exception = Assert.ThrowsAsync<NullReferenceException>(async () => await _mailProvider.SendCertificates(course));
+        var exception = Assert.ThrowsAsync<InvalidOperationException>(async () => await _mailProvider.SendCertificates(course));
         Assert.That(exception.Message, Is.EqualTo("Template 'Certificate' not found."));
     }
 
@@ -185,8 +185,8 @@ public class MailProviderTests
             .ReturnsAsync(new List<MailResult> { new MailResult { Outcome = MailOutcome.Success } });
 
         // Act & Assert
-        var exception = Assert.ThrowsAsync<NullReferenceException>(async () => await _mailProvider.SendPaymentNotifications(course));
-        Assert.That(exception.Message, Is.EqualTo("Template 'Certificate' not found."));
+        var exception = Assert.ThrowsAsync<InvalidOperationException>(async () => await _mailProvider.SendPaymentNotifications(course));
+        Assert.That(exception.Message, Is.EqualTo("Template 'PaymentMail' not found."));
     }
 
     [Test]
@@ -206,7 +206,7 @@ public class MailProviderTests
             .ReturnsAsync(new List<MailResult> { new MailResult { Outcome = MailOutcome.Success } });
 
         // Act & Assert
-        var exception = Assert.ThrowsAsync<NullReferenceException>(async () => await _mailProvider.SendPaymentNotifications(course));
+        var exception = Assert.ThrowsAsync<InvalidOperationException>(async () => await _mailProvider.SendPaymentNotifications(course));
         Assert.That(exception.Message, Is.EqualTo("There are no students attached to this course"));
     }
 

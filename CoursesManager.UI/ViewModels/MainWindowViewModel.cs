@@ -194,6 +194,9 @@ public class MainWindowViewModel : ViewModelWithNavigation
         IsDialogOpen = message.IsVisible;
     }
 
+    // This method gives the ability to show messages any time you need to. if a message is displayed a token is generated and stored for the next message.
+    // When a message is displayed while a new one is called, this method will gracefully retract the ongoing message to display the new message.
+    // This ensures smooth transitions between messages instead of abrupt changing the content of the message while the stack pane is displayed.
     private async void ShowToastNotification(ToastNotificationMessage message)
     {
 
@@ -213,7 +216,28 @@ public class MainWindowViewModel : ViewModelWithNavigation
         {
             await SetToastMessageDetails(message.NotificationText, message.SetVisibillity, message.ToastType);
 
-            await Task.Delay(5000, token);
+
+            if (message.IsPersistent)
+            {
+                int counter = 0;
+                const int maxDots = 3;
+
+                while (!token.IsCancellationRequested)
+                {
+                    int dotsCount = counter % (maxDots + 1);
+                    string dots = new string('.', dotsCount);
+                    string spaces = new string(' ', maxDots - dotsCount);
+
+                    ToastText = $"{message.NotificationText}{dots}{spaces}";
+                    counter++;
+
+                    await Task.Delay(200, token);
+                }
+            }
+            else
+            {
+                await Task.Delay(5000, token);
+            }
         }
         catch (TaskCanceledException)
         {
