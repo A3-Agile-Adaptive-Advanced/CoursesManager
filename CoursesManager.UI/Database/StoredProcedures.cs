@@ -69,6 +69,8 @@ public static class StoredProcedures
     public const string AddCertificate = "spCertificates_Add";
     public const string GetAllCertificates = "spCertificates_GetAll";
     public const string GetCertificateById = "spCertificates_GetById";
+    public static string CheckIfCertificateExists = "spCertificates_GetByStudentAndCourseCode";
 
     #endregion Certificates
+
 }

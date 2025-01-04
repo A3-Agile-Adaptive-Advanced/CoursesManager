@@ -118,20 +118,23 @@ namespace CoursesManager.UI.ViewModels.Courses
 
                 var registrations = CurrentCourse.Registrations;
 
-                var payments = registrations.Select(registration =>
+                if (registrations is not null)
                 {
-                    var student = _studentRepository.GetById(registration.StudentId);
-                    if (student == null)
+                    var payments = registrations.Select(registration =>
                     {
-                        _messageBroker.Publish(new ToastNotificationMessage(true,
-                            "Er is een fout opgetreden, neem contact op met de beheerder", ToastType.Error, false));
-                        return null;
-                    }
+                        var student = _studentRepository.GetById(registration.StudentId);
+                        if (student == null)
+                        {
+                            _messageBroker.Publish(new ToastNotificationMessage(true,
+                                "Er is een fout opgetreden, neem contact op met de beheerder", ToastType.Error, false));
+                            return null;
+                        }
 
-                    return new CourseStudentPayment(student, registration);
-                }).Where(payment => payment != null);
+                        return new CourseStudentPayment(student, registration);
+                    }).Where(payment => payment != null);
 
-                StudentPayments = new ObservableCollection<CourseStudentPayment>(payments);
+                    StudentPayments = new ObservableCollection<CourseStudentPayment>(payments);
+                }
             }
             else
             {
@@ -175,11 +178,6 @@ namespace CoursesManager.UI.ViewModels.Courses
 
             if (existingRegistration != null)
             {
-                if (!payment.IsPaid)
-                {
-                    CurrentCourse.IsPayed = payment.IsPaid;
-                }
-
                 existingRegistration.PaymentStatus = payment.IsPaid;
                 existingRegistration.IsAchieved = payment.IsAchieved;
                 _registrationRepository.Update(existingRegistration);

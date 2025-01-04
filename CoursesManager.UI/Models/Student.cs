@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Text;
 
 namespace CoursesManager.UI.Models
 {
@@ -176,11 +177,6 @@ namespace CoursesManager.UI.Models
             set => SetProperty(ref _insertion, value);
         }
 
-        public string TableFilter()
-        {
-            return $"{FirstName}{LastName}{Email}".Replace(" ", "");
-        }
-
         private Address? _address;
 
         public Address? Address
@@ -239,6 +235,18 @@ namespace CoursesManager.UI.Models
             }
 
             return template;
+        }
+
+        public string GenerateFilterString()
+        {
+            var sb = new StringBuilder();
+
+            sb.Append(FirstName);
+            sb.Append(Insertion ?? "");
+            sb.Append(LastName);
+            sb.Append(Email);
+
+            return sb.ToString().Replace(" ", "");
         }
     }
 }

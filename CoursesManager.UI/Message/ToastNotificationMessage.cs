@@ -1,11 +1,4 @@
 ﻿using CoursesManager.UI.Enums;
-using CoursesManager.UI.Messages;
-using Google.Protobuf.WellKnownTypes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CoursesManager.MVVM.Messages
 {
@@ -16,12 +9,11 @@ namespace CoursesManager.MVVM.Messages
         public ToastType ToastType { get; set; }
         public bool IsPersistent { get; set; }
 
-        public ToastNotificationMessage(bool setVisibillity, string notificationText, ToastType toastType, bool isPersistent)
+        public ToastNotificationMessage(bool setVisibillity, string notificationText, ToastType toastType, bool isPersistent = false)
         {
             SetVisibillity = setVisibillity;
             NotificationText = notificationText;
             ToastType = toastType;
-            IsPersistent = isPersistent;
             IsPersistent = isPersistent;
         }
 
