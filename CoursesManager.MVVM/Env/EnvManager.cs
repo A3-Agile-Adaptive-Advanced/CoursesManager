@@ -61,6 +61,8 @@ public class EnvManager<T>
 
     public static void Save()
     {
+        Directory.CreateDirectory(EnvFolderPath);
+
         Dictionary<string, string> envData = new();
 
         var envFields = Values!.GetType().GetFields().Where(f => f.IsPublic);
