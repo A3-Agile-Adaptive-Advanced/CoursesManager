@@ -170,8 +170,7 @@ namespace CoursesManager.UI.Mailing
         }
         private byte[]? GeneratePdf(Course course, Student student)
         {
-            Debug.WriteLine("");
-            Template template = GetTemplateByName("Certificate") ?? throw new InvalidOperationException("Template 'Certificate' not found.");
+            Template template = GetTemplateByName("Certificate");
             template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
             using (var memoryStream = new MemoryStream())
             {
@@ -193,8 +192,15 @@ namespace CoursesManager.UI.Mailing
 
         private Template GetTemplateByName(string name)
         {
-            return _templateRepository.GetTemplateByName(name) ??
-                   throw new InvalidOperationException($"Template '{name}' not found.");
+            try
+            {
+                return _templateRepository.GetTemplateByName(name) ??
+                       throw new InvalidOperationException($"Template '{name}' not found.");
+            }
+            catch (DataAccessException)
+            {
+                throw new InvalidOperationException($"Template '{name}' not found.");
+            }
         }
 
         private string FillTemplate(string template, Student student, Course course, string? URL)
@@ -226,7 +232,7 @@ namespace CoursesManager.UI.Mailing
             return message;
         }
 
-        private void SaveCertificate(Template template, Course course, Student student)
+        private async Task SaveCertificate(Template template, Course course, Student student)
         {
             Certificate certificate = new();
             certificate.PdfString = template.HtmlString;
