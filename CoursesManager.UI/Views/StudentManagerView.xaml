@@ -64,7 +64,7 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="50" />
                 </Grid.ColumnDefinitions>
-                <Grid Grid.Column="1">
+                <Grid Grid.Column="1" Grid.IsSharedSizeScope="True">
                     <Border Grid.Column="1" CornerRadius="15 15 15 15" Background="White" Height="Auto">
                         <Border.Effect>
                             <DropShadowEffect Color="Black" Opacity="0.3" BlurRadius="10" ShadowDepth="5" />
@@ -81,22 +81,25 @@
                                 <Border.Effect>
                                     <DropShadowEffect Color="Black" Opacity="0.3" BlurRadius="10" ShadowDepth="5" />
                                 </Border.Effect>
-                                <Grid Grid.IsSharedSizeScope="True">
+                                <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="15" />
                                         <ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="Column1" />
+                                        <ColumnDefinition Width="15" />
+                                        <ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="Column2" />
                                         <ColumnDefinition Width="20" />
-                                        <ColumnDefinition Width="Auto" MinWidth="50" SharedSizeGroup="Column2" />
+                                        <ColumnDefinition Width="Auto" MinWidth="50" SharedSizeGroup="Column3" />
                                         <ColumnDefinition Width="15" />
-                                        <ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="Column3" />
+                                        <ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="Column4" />
                                         <ColumnDefinition Width="15" />
-                                        <ColumnDefinition Width="*" SharedSizeGroup="Column4" />
+                                        <ColumnDefinition Width="*" SharedSizeGroup="Column5" />
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBlock Text="Voornaam" Grid.Column="1" FontWeight="Bold" FontSize="20" Foreground="White" HorizontalAlignment="left" VerticalAlignment="Center" />
-                                    <TextBlock Text="Tussenvoegsel" Grid.Column="3" FontWeight="Bold" FontSize="20" Foreground="White" HorizontalAlignment="left" VerticalAlignment="Center" />
-                                    <TextBlock Text="Achternaam" Grid.Column="5" FontWeight="Bold" FontSize="20" Foreground="White" HorizontalAlignment="left" VerticalAlignment="Center" />
-                                    <TextBlock Text="Email" Grid.Column="7" FontWeight="Bold" FontSize="20" Foreground="White" HorizontalAlignment="left" VerticalAlignment="Center" />
+                                    <TextBlock Text="Code" Grid.Column="1" FontWeight="Bold" FontSize="20" Foreground="White" HorizontalAlignment="left" VerticalAlignment="Center" />
+                                    <TextBlock Text="Voornaam" Grid.Column="3" FontWeight="Bold" FontSize="20" Foreground="White" HorizontalAlignment="left" VerticalAlignment="Center" />
+                                    <TextBlock Text="Tussenvoegsel" Grid.Column="5" FontWeight="Bold" FontSize="20" Foreground="White" HorizontalAlignment="left" VerticalAlignment="Center" />
+                                    <TextBlock Text="Achternaam" Grid.Column="7" FontWeight="Bold" FontSize="20" Foreground="White" HorizontalAlignment="left" VerticalAlignment="Center" />
+                                    <TextBlock Text="Email" Grid.Column="9" FontWeight="Bold" FontSize="20" Foreground="White" HorizontalAlignment="left" VerticalAlignment="Center" />
                                 </Grid>
                                 <Border.Style>
                                     <Style TargetType="Border">
@@ -116,20 +119,23 @@
                                                 <ColumnDefinition Width="15" />
                                                 <ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="Column1" />
                                                 <ColumnDefinition Width="15" />
-                                                <ColumnDefinition Width="Auto" MinWidth="135" SharedSizeGroup="Column2" />
+                                                <ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="Column2" />
                                                 <ColumnDefinition Width="15" />
-                                                <ColumnDefinition Width="Auto" MinWidth="115" SharedSizeGroup="Column3" />
+                                                <ColumnDefinition Width="Auto" MinWidth="135" SharedSizeGroup="Column3" />
                                                 <ColumnDefinition Width="15" />
-                                                <ColumnDefinition Width="*" SharedSizeGroup="Column4" />
-                                                <ColumnDefinition Width="50" />
+                                                <ColumnDefinition Width="Auto" MinWidth="115" SharedSizeGroup="Column4" />
+                                                <ColumnDefinition Width="15" />
                                                 <ColumnDefinition Width="*" SharedSizeGroup="Column5" />
+                                                <ColumnDefinition Width="50" />
+                                                <ColumnDefinition Width="*" SharedSizeGroup="Column6" />
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock HorizontalAlignment="Left" Grid.Column="1"  Text="{Binding FirstName}" FontWeight="Bold" FontSize="18" Foreground="#02008C" />
-                                            <TextBlock HorizontalAlignment="Left" Grid.Column="3"  Text="{Binding Insertion}" FontWeight="Bold" FontSize="18" Foreground="#02008C" />
-                                            <TextBlock HorizontalAlignment="Left" Grid.Column="5"  Text="{Binding LastName}" FontWeight="Bold" FontSize="18" Foreground="#02008C" />
-                                            <TextBlock  HorizontalAlignment="Left" Grid.Column="7"  Text="{Binding Email}" FontWeight="Bold" FontSize="18" Foreground="#02008C" />
+                                            <TextBlock HorizontalAlignment="Left" Grid.Column="1"  Text="{Binding Id}" FontWeight="Bold" FontSize="18" Foreground="#02008C" />
+                                            <TextBlock HorizontalAlignment="Left" Grid.Column="3"  Text="{Binding FirstName}" FontWeight="Bold" FontSize="18" Foreground="#02008C" />
+                                            <TextBlock HorizontalAlignment="Left" Grid.Column="5"  Text="{Binding Insertion}" FontWeight="Bold" FontSize="18" Foreground="#02008C" />
+                                            <TextBlock HorizontalAlignment="Left" Grid.Column="7"  Text="{Binding LastName}" FontWeight="Bold" FontSize="18" Foreground="#02008C" />
+                                            <TextBlock  HorizontalAlignment="Left" Grid.Column="9"  Text="{Binding Email}" FontWeight="Bold" FontSize="18" Foreground="#02008C" />
 
-                                            <StackPanel Orientation="Horizontal" MaxWidth="200" Grid.Column="9" HorizontalAlignment="Right">
+                                            <StackPanel Orientation="Horizontal" MaxWidth="200" Grid.Column="11" HorizontalAlignment="Right">
 
                                                 <Button Command="{Binding DataContext.EditStudentCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                             CommandParameter="{Binding}" ToolTip="Edit" Style="{StaticResource GridSmallIconButtonWithShadowStyle}">
