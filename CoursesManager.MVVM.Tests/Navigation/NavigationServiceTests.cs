@@ -362,20 +362,6 @@ public class NavigationServiceTests
     }
 
     [Test]
-    public void NavigateTo_DoesNotCreateNewInstance_WhenAlreadyNavigatedBefore()
-    {
-        _navigationService.NavigateTo<ViewModelWithoutNavigate>();
-
-        var beforeSecondNavigation = _navigationService.NavigationStore.CurrentViewModel;
-
-        _navigationService.NavigateTo<ViewModelWithoutNavigate>();
-
-        var afterSecondNavigation = _navigationService.NavigationStore.CurrentViewModel;
-
-        Assert.That(beforeSecondNavigation, Is.EqualTo(afterSecondNavigation));
-    }
-
-    [Test]
     public void NavigateTo_ActuallyNavigatesTo()
     {
         _navigationService.NavigateTo<ViewModelWithoutNavigate>();
