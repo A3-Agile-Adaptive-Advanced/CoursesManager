@@ -30,7 +30,7 @@ namespace CoursesManager.UI.Service
                 else
                 {
                     Console.WriteLine("Configuratie is geldig. Applicatie kan doorgaan.");
-                    _navigationService.NavigateTo<CoursesManagerViewModel>();
+                    _navigationService.NavigateTo<CalendarViewModel>();
                 }
             }
             catch (Exception ex)

@@ -27,6 +27,7 @@ public class MainWindowViewModel : ViewModelWithNavigation
     public ICommand MouseEnterBorderCommand { get; private set; }
     public ICommand MouseLeaveButtonCommand { get; private set; }
     public ICommand MouseLeaveBorderCommand { get; private set; }
+    public ICommand GoToCalendarView { get; private set; }
     public ICommand GoToStudentManagementView { get; private set; }
     public ICommand GoToCourseManagementView { get; private set; }
     public ICommand GoToConfigurationView { get; private set; }
@@ -150,6 +151,12 @@ public class MainWindowViewModel : ViewModelWithNavigation
             IsMouseOverButton = false;
             UpdateSidebarVisibility();
         });
+
+        GoToCalendarView = new RelayCommand(() =>
+        {
+            NavigationService.NavigateTo<CalendarViewModel>();
+            IsSidebarHidden = false;
+        }, () => INavigationService.CanNavigate);
 
         GoToStudentManagementView = new RelayCommand(() =>
         {

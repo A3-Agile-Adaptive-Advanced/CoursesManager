@@ -144,6 +144,8 @@ public partial class App : Application
 
     private void RegisterViewModels(ViewModelFactory viewModelFactory)
     {
+        INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<CalendarViewModel>(nav));
+
         INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<StudentManagerViewModel>(nav));
 
         INavigationService.RegisterViewModelFactoryWithParameters((param, nav) => viewModelFactory.CreateViewModel<StudentDetailViewModel>(nav, param));
