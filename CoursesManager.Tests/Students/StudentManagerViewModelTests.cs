@@ -162,6 +162,9 @@ namespace CoursesManager.Tests.Students
         {
             // Arrange
             var student = new Student { Id = 1, FirstName = "John" };
+            _registrationRepositoryMock.Setup(repo => repo.GetAllRegistrationsByStudent(It.IsAny<Student>()))
+                .Returns(new List<Registration>());
+
             _viewModel.SelectedStudent = student;
 
             _navigationServiceMock.Setup(nav => nav.NavigateTo<StudentDetailViewModel>(It.IsAny<Student>()));
@@ -171,9 +174,11 @@ namespace CoursesManager.Tests.Students
 
             // Assert
             _navigationServiceMock.Verify(nav =>
-                nav.NavigateTo<StudentDetailViewModel>(student),
+                nav.NavigateTo<StudentDetailViewModel>(It.Is<Student>(s => s.Id == student.Id)),
                 Times.Once);
         }
+
+
 
 
         [Test]
