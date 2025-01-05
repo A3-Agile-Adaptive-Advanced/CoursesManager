@@ -199,6 +199,7 @@ namespace CoursesManager.UI.ViewModels.Courses
                 }
             }
             LoadCourseData();
+            _messageBroker.Publish(new CoursePaymentUpdatedMessage());
         }
 
 
