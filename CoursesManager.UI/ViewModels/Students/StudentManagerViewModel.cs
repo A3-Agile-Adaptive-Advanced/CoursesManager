@@ -209,19 +209,6 @@ namespace CoursesManager.UI.ViewModels.Students
             });
         }
 
-        private async void OpenAddStudentPopup()
-        {
-            await ExecuteWithOverlayAsync(_messageBroker, async () =>
-            {
-                var dialogResult = await _dialogService.ShowDialogAsync<AddStudentViewModel, Student>(new Student());
-
-                if (dialogResult?.Outcome == DialogOutcome.Success)
-                {
-                    LoadStudents();
-                }
-            });
-        }
-
         private async void OpenEditStudentPopup(Student student)
         {
             if (student == null)

@@ -29,8 +29,6 @@ public class RegistrationDataAccess : BaseDataAccess<Registration>
         }
     }
 
-    List<Registration> GetAllRegistrationsByStudent(Student student);
-
     public List<Registration> GetAllRegistrationsByStudent(int studentId)
     {
         try
