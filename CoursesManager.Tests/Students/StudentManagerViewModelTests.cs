@@ -162,8 +162,9 @@ namespace CoursesManager.Tests.Students
         {
             // Arrange
             var student = new Student { Id = 1, FirstName = "John" };
-            _registrationRepositoryMock.Setup(repo => repo.GetAll()).Returns(new List<Registration>());
             _viewModel.SelectedStudent = student;
+
+            _navigationServiceMock.Setup(nav => nav.NavigateTo<StudentDetailViewModel>(It.IsAny<Student>()));
 
             // Act
             _viewModel.StudentDetailCommand.Execute(null);
@@ -173,6 +174,7 @@ namespace CoursesManager.Tests.Students
                 nav.NavigateTo<StudentDetailViewModel>(student),
                 Times.Once);
         }
+
 
         [Test]
         public void ToggleIsDeletedCommand_ShouldFilterOnlyDeletedStudents()
