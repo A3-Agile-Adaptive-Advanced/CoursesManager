@@ -9,6 +9,8 @@ using CoursesManager.UI.Repositories.TemplateRepository;
 using CoursesManager.UI.ViewModels.Mailing;
 using Moq;
 using System.Windows.Documents;
+using CoursesManager.UI.Service.PlaceholderService;
+using CoursesManager.UI.Service.TextHandlerService;
 
 namespace CoursesManager.Tests.Mailing
 {
@@ -19,6 +21,8 @@ namespace CoursesManager.Tests.Mailing
         private Mock<IDialogService> _mockDialogService;
         private Mock<ITemplateRepository> _mockTemplateRepository;
         private Mock<INavigationService> _mockNavigationService;
+        private Mock<PlaceholderService> _mockPlaceholderService;
+        private Mock<TextHandlerService> _mockTextHandlerService;
         private EditMailTemplatesViewModel _viewModel;
 
         [SetUp]
@@ -29,6 +33,8 @@ namespace CoursesManager.Tests.Mailing
             _mockDialogService = new Mock<IDialogService>();
             _mockTemplateRepository = new Mock<ITemplateRepository>();
             _mockNavigationService = new Mock<INavigationService>();
+            _mockPlaceholderService = new Mock<PlaceholderService>();
+            _mockTextHandlerService = new Mock<TextHandlerService>();
 
             // Create a template object to return in the mock
             var mockTemplate = new Template
@@ -46,6 +52,8 @@ namespace CoursesManager.Tests.Mailing
                 _mockTemplateRepository.Object,
                 _mockDialogService.Object,
                 _mockMessageBroker.Object,
+                _mockPlaceholderService.Object,
+                _mockTextHandlerService.Object,
                 _mockNavigationService.Object
             );
         }
@@ -59,7 +67,7 @@ namespace CoursesManager.Tests.Mailing
             _mockTemplateRepository.Setup(repo => repo.Update(It.IsAny<Template>()));
 
             // Act
-            _viewModel.SaveTemplate();
+            _viewModel.ValidateAndSaveTemplate();
 
             // Assert
             _mockTemplateRepository.Verify(repo => repo.Update(It.IsAny<Template>()), Times.Once);
@@ -83,9 +91,6 @@ namespace CoursesManager.Tests.Mailing
 
             string GetTextFromFlowDocument(FlowDocument document)
             {
-                if (document == null)
-                    return string.Empty;
-
                 var textRange = new TextRange(document.ContentStart, document.ContentEnd);
                 return textRange.Text.TrimEnd();
             }

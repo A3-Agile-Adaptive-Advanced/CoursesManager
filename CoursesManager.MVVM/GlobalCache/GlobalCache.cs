@@ -14,7 +14,7 @@ public class GlobalCache
 {
     #region Attributes
     private readonly int _initialCapacity;
-    private readonly ConcurrentDictionary<string, CacheItem>_cacheMap;
+    private readonly ConcurrentDictionary<string, CacheItem> _cacheMap;
     private readonly ConcurrentDictionary<string, long> _usageOrder;
     private readonly object _lock = new object();
 
@@ -22,7 +22,7 @@ public class GlobalCache
     private static int _permanentItemCount;
     #endregion
 
-    private static readonly Lazy<GlobalCache> _instance = new (() => new GlobalCache(10));
+    private static readonly Lazy<GlobalCache> _instance = new(() => new GlobalCache(10));
 
     private GlobalCache(int capacity)
     {
@@ -42,8 +42,8 @@ public class GlobalCache
             throw new KeyNotFoundException();
 
         _usageOrder[key] = DateTime.Now.Ticks;
-
         return _cacheMap[key].Value;
+        
     }
 
     // When an item is permanent the only thing possible is to update its contents, a check is done to see if the contents match what is already in cache.
@@ -59,12 +59,12 @@ public class GlobalCache
             {
                 throw new CantBeOverwrittenException($"The item with key '{key}' is not a permanent item.");
             }
-            Update(key, value);
+            Update(key, value, existingItem);
         }
         else
         {
             EnsureCapacity();
-            _cacheMap[key] = new CacheItem(key, value, isPermanent);
+            _cacheMap[key] = new CacheItem(value, isPermanent);
         }
 
         _usageOrder[key] = DateTime.Now.Ticks;
@@ -73,6 +73,7 @@ public class GlobalCache
     // Method is not used but implemented nonetheless for future possibilities.
     // Whenever an item needs to 'survive' longer than the expected lifecycle but
     // still should be cleaned up at some point this method is there to do so.
+    // Should be turned off by default, but in current scenario turned on to run unittests.
     public void RemovePermanentItem(string key)
     {
         lock (_lock)
@@ -95,29 +96,26 @@ public class GlobalCache
     #endregion
     #region helper methods and CacheItem class
 
-
-    private void Update(string key, object value)
+    // when an item already exists this method is there to prevent duplication and checks if overwriting is allowed.
+    private void Update(string key, object value, CacheItem existingItem)
     {
         lock (_lock)
         {
-            if (_cacheMap.TryGetValue(key, out var existingItem))
+            if (existingItem.IsPermanent && ShouldNotUpdateValue(existingItem.Value, value))
             {
-                if (existingItem.IsPermanent && ShouldNotUpdateValue(existingItem.Value, value))
-                {
-                    throw new CantBeOverwrittenException(
-                        $"The item with key '{key}' is of a different type and cannot be overwritten.");
-                }
-
-
-                existingItem.Value = value;
-                _usageOrder[key] = DateTime.Now.Ticks;
+                throw new CantBeOverwrittenException(
+                    $"The item with key '{key}' is of a different type and cannot be overwritten.");
             }
-            else
-            {
-                throw new NullReferenceException($"The item with key '{key}' does not exist in the cache.");
-            }
+
+            existingItem.Value = value;
+            _usageOrder[key] = DateTime.Now.Ticks;
         }
     }
+
+    // This method will grant the cache the ability to grow according to its contents.
+    // When the max capacity is reached and only permanent items are inside this will make it grow.
+    // When a permanent item is removed this method will shrink it.
+    // Reasoning here is that the initial capacity is set for non-permanent items.
     private void EnsureCapacity()
     {
         lock (_lock)
@@ -129,7 +127,7 @@ public class GlobalCache
             }
             else
             {
-                EvictNonPermanentItem();
+                EvictLruNonPermanentItem();
             }
         }
     }
@@ -144,30 +142,29 @@ public class GlobalCache
         if (_capacity > _initialCapacity) _capacity--;
     }
 
-    private void EvictNonPermanentItem()
+    private void EvictLruNonPermanentItem()
     {
-        lock (_lock)
+        var leastUsedKey = _usageOrder.OrderBy(kvp => kvp.Value).FirstOrDefault().Key;
+        if (!string.IsNullOrEmpty(leastUsedKey))
         {
-            var leastUsedKey = _usageOrder.OrderBy(kvp => kvp.Value).FirstOrDefault().Key;
-            if (!string.IsNullOrEmpty(leastUsedKey))
-            {
-                _cacheMap.TryRemove(leastUsedKey, out _);
-                _usageOrder.TryRemove(leastUsedKey, out _);
-            }
+            _cacheMap.TryRemove(leastUsedKey, out _);
+            _usageOrder.TryRemove(leastUsedKey, out _);
         }
     }
 
     // helper-method to make sure that a permanent item can be updated but not overwritten by another (new/different) type.
     private bool ShouldNotUpdateValue(object existingValue, object newValue)
     {
+        if (existingValue.GetType() != newValue.GetType())
+        {
+            return true;
+        }
+
         if (existingValue is System.Collections.IEnumerable existingCollection && newValue is System.Collections.IEnumerable newCollection)
         {
             return CollectionsAreEqual(existingCollection, newCollection);
         }
-        else
-        {
-            return !Equals(existingValue, newValue);
-        }
+        return !Equals(existingValue, newValue);
     }
 
 
@@ -179,15 +176,14 @@ public class GlobalCache
 
     }
 
+    // Private class to handle all possible objects inside the cache in a universal matter.
     private class CacheItem
     {
-        public string Key { get; }
         public object Value { get; set; }
         public bool IsPermanent { get; }
 
-        public CacheItem(string key, object value, bool isPermanent)
+        public CacheItem(object value, bool isPermanent)
         {
-            Key = key;
             Value = value;
             IsPermanent = isPermanent;
 
@@ -226,7 +222,7 @@ public class GlobalCache
     public int GetCapacity()
     {
         return _capacity;
-        
+
     }
     #endregion
 
