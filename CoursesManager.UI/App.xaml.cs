@@ -25,7 +25,8 @@ public partial class App : Application
     public static RepositoryFactory RepositoryFactory = new RepositoryFactory();
     public static INavigationService NavigationService { get; set; } = new NavigationService();
     public static IMessageBroker MessageBroker { get; set; } = new MessageBroker();
-    public static IDialogService DialogService { get; set; } = new DialogService();
+    public static IDialogFactory DialogFactory { get; set; } = new DialogFactory();
+    public static IDialogService DialogService { get; set; } = new DialogService(DialogFactory);
     public static IMailService MailService { get; set; } = new MailService();
     public static IMailProvider MailProvider { get; set; } = new MailProvider(MailService, RepositoryFactory.TemplateRepository, RepositoryFactory.CertificateRepository);
 

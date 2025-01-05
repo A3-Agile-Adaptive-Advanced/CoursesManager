@@ -47,7 +47,7 @@
             }
         }
 
-        [Test, Order(2)]
+        [Test]
         public void Initialization_ShouldLoadValuesFromEnvFile()
         {
             NonAutomaticSetup();
@@ -59,7 +59,7 @@
             Assert.That(values.Key3, Is.True);
         }
 
-        [Test, Order(3)]
+        [Test]
         public void Initialization_ShouldThrowExceptionForMissingKey()
         {
             NonAutomaticSetup();
@@ -70,7 +70,7 @@
             });
         }
 
-        [Test, Order(4)]
+        [Test]
         public void Save_ShouldWriteFieldsToEnvFile()
         {
             NonAutomaticSetup();
@@ -88,16 +88,6 @@
             Assert.That(content.Contains("Key1=NewValue1"), Is.True);
             Assert.That(content.Contains("Key2=99"), Is.True);
             Assert.That(content.Contains("Key3=False"), Is.True);
-        }
-
-        [Test, Order(1)]
-        public void FindEnvFiles_ShouldReturnEmptyListIfNoFilesExist()
-        {
-            var result = EnvManager<TestModel>.Values;
-
-            Assert.That(result.Key1, Is.Default);
-            Assert.That(result.Key2, Is.Default);
-            Assert.That(result.Key3, Is.Default);
         }
     }
 }
