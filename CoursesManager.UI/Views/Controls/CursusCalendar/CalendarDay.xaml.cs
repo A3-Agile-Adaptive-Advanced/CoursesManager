@@ -1,5 +1,6 @@
 ﻿using System.Windows.Controls;
 using System.Windows.Input;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace CoursesManager.UI.Views.Controls.CursusCalendar
 {
@@ -7,7 +8,8 @@ namespace CoursesManager.UI.Views.Controls.CursusCalendar
     {
         public DateTime Date { get; set; }
         public bool IsSelectedMonth { get; set; }
-        public bool IsToday { get; set; }
+
+        public bool IsToday => (Date == DateTime.Today);
 
         public CalendarDay()
         {

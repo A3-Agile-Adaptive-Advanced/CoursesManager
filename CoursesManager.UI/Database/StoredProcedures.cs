@@ -12,6 +12,8 @@ public static class StoredProcedures
 
     public const string CourseEdit = "spCourse_Edit";
 
+    public const string GetCoursesBetweenDates = "spCourse_GetBetweenDates";
+
     #endregion
 
     #region Locations

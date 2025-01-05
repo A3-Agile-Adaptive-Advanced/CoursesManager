@@ -77,4 +77,9 @@ public class DummyCourseRepository : ICourseRepository
     {
         course.IsActive = false;
     }
+
+    public List<Course> GetAllBetweenDates(DateTime start, DateTime end)
+    {
+        throw new NotImplementedException();
+    }
 }

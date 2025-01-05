@@ -1,12 +1,16 @@
 <UserControl x:Class="CoursesManager.UI.Views.Controls.CursusCalendar.CalendarLayout"
+             x:Name="CalendarLayoutControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" 
+             xmlns:converters="clr-namespace:CoursesManager.UI.Helpers.Converters"
              mc:Ignorable="d">
 
     <UserControl.Resources>
+        <converters:MonthNumberToNameConverter x:Key="MonthNumberToNameConverter" />
+        
         <Style x:Key="DayLabelTextBlockStyle" TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
@@ -51,7 +55,7 @@
                                              Background="Transparent" />
                     
                     <TextBlock Grid.Column="1"
-                               Text="{Binding PreviousYearNumber, UpdateSourceTrigger=PropertyChanged}"
+                               Text="{Binding ElementName=CalendarLayoutControl, Path=PreviousYearNumber, UpdateSourceTrigger=PropertyChanged}"
                                HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="32"
@@ -63,7 +67,7 @@
             <!-- Current Year Number -->
             <TextBlock Grid.Column="1"
                        Margin="50 0 50 0"
-                       Text="{Binding SelectedDate, StringFormat='{}{0:yyyy}', UpdateSourceTrigger=PropertyChanged}"
+                       Text="{Binding ElementName=CalendarLayoutControl, Path=SelectedDate, StringFormat='{}{0:yyyy}', UpdateSourceTrigger=PropertyChanged}"
                        HorizontalAlignment="Left"
                        VerticalAlignment="Center"
                        FontSize="48"
@@ -81,7 +85,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="{Binding NextYearNumber, UpdateSourceTrigger=PropertyChanged}"
+                    <TextBlock Text="{Binding ElementName=CalendarLayoutControl, Path=NextYearNumber, UpdateSourceTrigger=PropertyChanged}"
                                HorizontalAlignment="Left"
                                VerticalAlignment="Center"
                                FontSize="32"
@@ -145,7 +149,7 @@
 
                                 <TextBlock Grid.Column="1"
                                            Margin="10 0 0 0"
-                                           Text="{Binding PreviousMonthNumber, UpdateSourceTrigger=PropertyChanged}"
+                                           Text="{Binding ElementName=CalendarLayoutControl, Path=PreviousMonthNumber, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource MonthNumberToNameConverter}}"
                                            HorizontalAlignment="Left"
                                            VerticalAlignment="Center"
                                            FontSize="16"
@@ -156,7 +160,7 @@
 
                         <!-- Current Month Name -->
                         <TextBlock Grid.Column="1"
-                                   Text="{Binding CurrentDate, UpdateSourceTrigger=PropertyChanged}"
+                                   Text="{Binding ElementName=CalendarLayoutControl, Path=SelectedDate, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource MonthNumberToNameConverter}}"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
                                    FontSize="24"
@@ -176,7 +180,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <TextBlock Margin="0 0 10 0"
-                                           Text="{Binding NextMonthNumber, UpdateSourceTrigger=PropertyChanged}"
+                                           Text="{Binding ElementName=CalendarLayoutControl, Path=NextMonthNumber, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource MonthNumberToNameConverter}}"
                                            HorizontalAlignment="Left"
                                            VerticalAlignment="Center"
                                            FontSize="16"

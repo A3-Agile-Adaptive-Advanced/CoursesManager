@@ -13,6 +13,11 @@ namespace CoursesManager.UI.Repositories.CourseRepository
             return _courseDataAccess.GetAll();
         }
 
+        public List<Course> GetAllBetweenDates(DateTime start, DateTime end)
+        {
+            return _courseDataAccess.GetAllBetweenDates(start, end);
+        }
+
         public List<Course> RefreshAll()
         {
             return _courseDataAccess.GetAll();

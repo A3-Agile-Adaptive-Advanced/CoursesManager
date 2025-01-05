@@ -10,6 +10,7 @@ namespace CoursesManager.UI.Views.Controls.CursusCalendar
         public CalendarItem()
         {
             InitializeComponent();
+            DataContext = this;
         }
     }
 }

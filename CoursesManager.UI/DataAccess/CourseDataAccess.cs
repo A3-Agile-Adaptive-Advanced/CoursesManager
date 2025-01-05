@@ -15,7 +15,6 @@ public class CourseDataAccess : BaseDataAccess<Course>
     {
         try
         {
-            // Voer de stored procedure uit
             var results = ExecuteProcedure("spCourses_GetAll");
 
             var students = _studentDataAccess.GetAll();
@@ -43,6 +42,69 @@ public class CourseDataAccess : BaseDataAccess<Course>
             }).ToList();
 
 
+            models.ForEach(m =>
+            {
+                m.Students = new(students.Where(s => s.Registrations.Any(r => r.CourseId == m.Id)));
+                m.Participants = m.Students.Count;
+                m.IsPayed = true;
+                m.Registrations = new();
+
+                foreach (var student in m.Students)
+                {
+                    var registration = student.Registrations?.FirstOrDefault(r => r.CourseId == m.Id);
+                    m.Registrations.Add(registration);
+
+                    if (registration is not null)
+                    {
+                        if (m.IsPayed)
+                        {
+                            m.IsPayed = registration.PaymentStatus;
+                        }
+                    }
+                }
+            });
+
+            return models;
+        }
+        catch (Exception ex)
+        {
+            LogUtil.Error($"Error in GetAll: {ex.Message}");
+            throw;
+        }
+    }
+
+    public List<Course> GetAllBetweenDates(DateTime start, DateTime end)
+    {
+        try
+        {
+            List<Dictionary<string, object?>> results = ExecuteProcedure(
+                StoredProcedures.GetCoursesBetweenDates, 
+                new MySqlParameter("@p_startDate", start),
+                new MySqlParameter("@p_endDate", end)
+            );
+
+            List<Course> models = results.Select(row => new Course
+            {
+                Id = Convert.ToInt32(row["course_id"]),
+                Name = row["course_name"]?.ToString() ?? string.Empty,
+                Code = row["course_code"]?.ToString() ?? string.Empty,
+                Description = row["course_description"]?.ToString() ?? string.Empty,
+                LocationId = Convert.ToInt32(row["course_location_id"]),
+                Location = new Location
+                {
+                    Id = Convert.ToInt32(row["course_location_id"]),
+                    Name = row["location_name"]?.ToString() ?? string.Empty
+                },
+                IsActive = Convert.ToBoolean(row["is_active"]),
+                StartDate = Convert.ToDateTime(row["start_date"]),
+                EndDate = Convert.ToDateTime(row["end_date"]),
+                DateCreated = Convert.ToDateTime(row["created_at"]),
+                Image = row.ContainsKey("tile_image") && row["tile_image"] != DBNull.Value
+                    ? (byte[])row["tile_image"]
+                    : null
+            }).ToList();
+
+            List<Student> students = _studentDataAccess.GetAll();
             models.ForEach(m =>
             {
                 m.Students = new(students.Where(s => s.Registrations.Any(r => r.CourseId == m.Id)));

@@ -11,58 +11,15 @@ namespace CoursesManager.UI.Views.Controls.CursusCalendar
 {
     public partial class CalendarLayout : UserControl, INotifyPropertyChanged
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
-        public event EventHandler<CalendarDay> CalendarDayClickedEvent;
-
         private DateTime _selectedDate = new(DateTime.Today.Year, DateTime.Today.Month, 1);
 
-        public DateTime SelectedDate
-        {
-            get => _selectedDate;
-            set
-            {
-                if (_selectedDate != value)
-                {
-                    _selectedDate = value;
-                    OnPropertyChanged();
-
-                    // Update the four read-only properties below
-                    OnPropertyChanged(nameof(PreviousYearNumber));
-                    OnPropertyChanged(nameof(NextYearNumber));
-                    OnPropertyChanged(nameof(PreviousMonthNumber));
-                    OnPropertyChanged(nameof(NextMonthNumber));
-
-                    OnDateChangedCommand?.Execute(_selectedDate);
-
-                    DrawDays();
-                }
-            }
-        }
-
-        public  string PreviousYearNumber => _selectedDate.AddYears(-1).Year.ToString();
-        public string NextYearNumber => _selectedDate.AddYears(1).Year.ToString();
-        public string PreviousMonthNumber => _selectedDate.AddMonths(-1).Month.ToString();
-        public string NextMonthNumber => _selectedDate.AddMonths(1).Month.ToString();
 
         public static readonly DependencyProperty CoursesProperty = DependencyProperty.Register(
-           nameof(Courses),
-           typeof(List<Course>),
-           typeof(CalendarLayout),
-           new FrameworkPropertyMetadata(null)
+            nameof(Courses),
+            typeof(List<Course>),
+            typeof(CalendarLayout),
+            new FrameworkPropertyMetadata(null)
         );
-
-        /// <summary>
-        /// A list of <see cref="Course"/> objects that could be displayed on the calendar.
-        /// </summary>
-        public List<Course> Courses
-        {
-            get { return (List<Course>)GetValue(CoursesProperty); }
-            set { SetValue(CoursesProperty, value); }
-        }
 
         public static readonly DependencyProperty OnDateChangedCommandProperty = DependencyProperty.Register(
             nameof(OnDateChangedCommand),
@@ -70,6 +27,30 @@ namespace CoursesManager.UI.Views.Controls.CursusCalendar
             typeof(CalendarLayout),
             new PropertyMetadata(null)
         );
+
+        public static readonly DependencyProperty OnDaySelectedCommandProperty = DependencyProperty.Register(
+            nameof(OnDaySelectedCommand),
+            typeof(ICommand),
+            typeof(CalendarLayout),
+            new PropertyMetadata(null)
+        );
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        public event EventHandler<CalendarDay> CalendarDayClickedEvent;
+
+        public CalendarLayout()
+        {
+            InitializeComponent();
+        }
+
+        /// <summary>
+        /// A list of <see cref="Course"/> objects that could be displayed on the calendar.
+        /// </summary>
+        public List<Course> Courses
+        {
+            get => (List<Course>)GetValue(CoursesProperty);
+            set => SetValue(CoursesProperty, value);
+        }
 
         /// <summary>
         /// A command that fires whenever <see cref="SelectedDate"/> changes.
@@ -79,13 +60,6 @@ namespace CoursesManager.UI.Views.Controls.CursusCalendar
             get => (ICommand)GetValue(OnDateChangedCommandProperty);
             set => SetValue(OnDateChangedCommandProperty, value);
         }
-
-        public static readonly DependencyProperty OnDaySelectedCommandProperty = DependencyProperty.Register(
-           nameof(OnDaySelectedCommand),
-           typeof(ICommand),
-           typeof(CalendarLayout),
-           new PropertyMetadata(null)
-       );
 
         /// <summary>
         /// A command that fires whenever <see cref="SelectedDate"/> changes.
@@ -100,13 +74,53 @@ namespace CoursesManager.UI.Views.Controls.CursusCalendar
         /// The collection of days (including previous / next month filler days)
         /// that are currently displayed on the calendar.
         /// </summary>
-        public ObservableCollection<CalendarDay> DaysInCurrentView { get; } = [];
+        public ObservableCollection<CalendarDay> DaysInCurrentView { get; } = new();
 
-        public CalendarLayout()
+        /// <summary>
+        /// The currently selected date. Changing this triggers redraw logic.
+        /// </summary>
+        public DateTime SelectedDate
         {
-            InitializeComponent();
-            DataContext = this;
+            get => _selectedDate;
+            set
+            {
+                if (_selectedDate == value)
+                    return;
+
+                _selectedDate = value;
+                OnPropertyChanged();
+
+                OnPropertyChanged(nameof(PreviousYearNumber));
+                OnPropertyChanged(nameof(NextYearNumber));
+                OnPropertyChanged(nameof(PreviousMonthNumber));
+                OnPropertyChanged(nameof(NextMonthNumber));
+
+                OnDateChangedCommand?.Execute(this);
+
+                DrawDays();
+            }
         }
+
+
+        /// <summary>
+        /// Read-only property for the year label (previous year).
+        /// </summary>
+        public string PreviousYearNumber => _selectedDate.AddYears(-1).Year.ToString();
+
+        /// <summary>
+        /// Read-only property for the year label (next year).
+        /// </summary>
+        public string NextYearNumber => _selectedDate.AddYears(1).Year.ToString();
+
+        /// <summary>
+        /// Read-only property for the month label (previous month).
+        /// </summary>
+        public string PreviousMonthNumber => _selectedDate.AddMonths(-1).Month.ToString();
+
+        /// <summary>
+        /// Read-only property for the month label (next month).
+        /// </summary>
+        public string NextMonthNumber => _selectedDate.AddMonths(1).Month.ToString();
 
         public void DrawDays()
         {
@@ -134,12 +148,85 @@ namespace CoursesManager.UI.Views.Controls.CursusCalendar
             }
 
             PlaceDaysInGrid();
+            DrawItems();
         }
 
         public void DrawItems()
         {
-            // Future expansion
+            LogUtil.Info((Courses == null).ToString());
+            if (Courses == null)
+                return;
+
+            if (Courses is List<Course> courses)
+            {
+                foreach (var course in courses)
+                {
+                    int eventRow = 0;
+
+                    var startDate = course.StartDate;
+                    var endDate = course.EndDate;
+
+                    LogUtil.Info("ran");
+
+                    CalendarDay dayByStartDate = DaysInCurrentView.Where(day => day.Date == course.StartDate).FirstOrDefault();
+                    if (dayByStartDate != null)
+                    {
+                        CalendarItem newItem = new();
+                        int currentAmountOfItemsOnDay = dayByStartDate.Items.Children.Count;
+
+                        if (currentAmountOfItemsOnDay > 0)
+                            eventRow = Grid.GetRow(dayByStartDate.Items.Children[currentAmountOfItemsOnDay - 1]) + 1;
+                        Grid.SetRow(newItem, eventRow);
+
+                        if (currentAmountOfItemsOnDay < 4)
+                        {
+                            if (currentAmountOfItemsOnDay < 3)
+                            {
+                                newItem.Label = course.Code;
+                                newItem.IsStartItem = true;
+                            }
+                            else
+                                newItem.Label = "...";
+
+                            dayByStartDate.Items.Children.Add(newItem);
+                        }
+                    }
+
+                    CalendarDay dayByEndDate = DaysInCurrentView.Where(day => day.Date == course.EndDate).FirstOrDefault();
+                    if (dayByEndDate != null)
+                    {
+                        CalendarItem newItem = new();
+                        int currentAmountOfItemsOnDay = dayByEndDate.Items.Children.Count;
+                        
+                        if (currentAmountOfItemsOnDay > 0)
+                            eventRow = Grid.GetRow(dayByEndDate.Items.Children[currentAmountOfItemsOnDay - 1]) + 1;
+                        Grid.SetRow(newItem, eventRow);
+
+                        if (currentAmountOfItemsOnDay < 4)
+                        {
+                            if (currentAmountOfItemsOnDay < 3)
+                            {
+                                newItem.Label = course.Code;
+                            }
+                            else
+                                newItem.Label = "...";
+
+                            dayByEndDate.Items.Children.Add(newItem);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                throw new ArgumentException("Events must be IEnumerable<ICalendarEvent>");
+            }
         }
+
+        /// <summary>
+        /// Invokes PropertyChanged event.
+        /// </summary>
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
         /// <summary>
         /// Returns the first and last day of the month for the given date.
@@ -172,16 +259,15 @@ namespace CoursesManager.UI.Views.Controls.CursusCalendar
 
         private void AddDaysToCollection(DateTime startDate, DateTime endDate)
         {
-            for (DateTime date = startDate; date <= endDate; date = date.AddDays(1)) {
-                var _newDay = new CalendarDay
+            for (DateTime date = startDate; date <= endDate; date = date.AddDays(1)) 
+            {
+                CalendarDay _newDay = new()
                 {
                     Date = date,
-                    IsSelectedMonth = (date.Month == _selectedDate.Month),
-                    IsToday = (date.Date == DateTime.Today)
+                    IsSelectedMonth = (date.Month == _selectedDate.Month)
                 };
 
                 _newDay.MouseLeftButtonDown += OnDaySelected;
-
                 DaysInCurrentView.Add(_newDay);
             }
         }
@@ -191,6 +277,7 @@ namespace CoursesManager.UI.Views.Controls.CursusCalendar
             int row = 0;
             foreach (var day in DaysInCurrentView)
             {
+                // Sunday => column 6, Monday => column 0
                 int column = (day.Date.DayOfWeek == DayOfWeek.Sunday)
                     ? 6
                     : ((int)day.Date.DayOfWeek - 1);
@@ -227,12 +314,7 @@ namespace CoursesManager.UI.Views.Controls.CursusCalendar
         private void OnDaySelected(object sender, MouseButtonEventArgs e)
         {
             if (sender is CalendarDay clickedDay)
-            {
-                if (OnDaySelectedCommand?.CanExecute(clickedDay) == true)
-                {
-                    OnDaySelectedCommand.Execute(clickedDay);
-                }
-            }
+                OnDaySelectedCommand?.Execute(clickedDay);
         }
     }
 }

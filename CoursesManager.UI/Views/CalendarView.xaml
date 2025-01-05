@@ -14,6 +14,81 @@
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
-        <rs:CalendarLayout x:Name="CourseCalendar" OnDateChangedCommand="{Binding OnCalendarDateChangedCommand}" OnDaySelectedCommand="{Binding OnDaySelectedCommand}"/>
+        <rs:CalendarLayout x:Name="CourseCalendar" Courses="{Binding CoursesBetweenDates}" OnDateChangedCommand="{Binding OnCalendarDateChangedCommand}" OnDaySelectedCommand="{Binding OnDaySelectedCommand}"/>
+
+		<Grid Grid.Column="2" MinWidth="350" Margin="0 110 0 50">
+			<Border Grid.Column="1" CornerRadius="15 15 15 15" Background="White" Height="Auto" Width="Auto">
+				<Border.Effect>
+					<DropShadowEffect Color="Black" Opacity="0.3" BlurRadius="10" ShadowDepth="5" />
+				</Border.Effect>
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto" />
+						<RowDefinition Height="5" />
+						<RowDefinition Height="*" />
+					</Grid.RowDefinitions>
+
+					<!-- Headerbar with title -->
+					<Border Grid.ColumnSpan="5" Grid.Row="0"  Width="Auto" Height="55" CornerRadius="15 15 0 0">
+						<Border.Effect>
+							<DropShadowEffect Color="Black" Opacity="0.3" BlurRadius="10" ShadowDepth="5" />
+						</Border.Effect>
+						<Grid Grid.IsSharedSizeScope="True">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="25"/>
+								<ColumnDefinition Width="Auto" MinWidth="200" SharedSizeGroup="Column1" />
+								<ColumnDefinition Width="25" />
+								<ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="Column2" />
+								<ColumnDefinition Width="25" />
+								<ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="Column3" />
+								<ColumnDefinition Width="25"/>
+							</Grid.ColumnDefinitions>
+							<TextBlock Grid.Column="1" Text="Cursusnaam" FontWeight="Bold" FontSize="20" Foreground="White" HorizontalAlignment="left" VerticalAlignment="Center" />
+							<TextBlock Grid.Column="3" Text="Betaald" FontWeight="Bold" FontSize="20" Foreground="White" HorizontalAlignment="center" VerticalAlignment="Center" />
+							<TextBlock Grid.Column="5" Text="Afgerond" FontWeight="Bold" FontSize="20" Foreground="White" HorizontalAlignment="center" VerticalAlignment="Center" />
+						</Grid>
+						<Border.Style>
+							<Style TargetType="Border">
+								<Setter Property="Background" Value="{StaticResource PrimaryGradient}" />
+							</Style>
+						</Border.Style>
+					</Border>
+
+					<Grid Grid.Row="4">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="25" />
+							<ColumnDefinition Width="Auto" />
+							<ColumnDefinition Width="25" />
+						</Grid.ColumnDefinitions>
+						<!-- Scrollable Card Grid -->
+						<ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Style="{DynamicResource ScrollViewerStyle1}">
+							<ItemsControl ItemsSource="{Binding CoursePaymentList}">
+								<ItemsControl.ItemsPanel>
+									<ItemsPanelTemplate>
+										<WrapPanel Orientation="Vertical" />
+									</ItemsPanelTemplate>
+								</ItemsControl.ItemsPanel>
+
+								<ItemsControl.ItemTemplate>
+									<DataTemplate>
+										<Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent">
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="Auto" MinWidth="225" MaxWidth="225" SharedSizeGroup="Column1" />
+												<ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="Column2" />
+												<ColumnDefinition Width="25" />
+												<ColumnDefinition Width="Auto" MinWidth="100" SharedSizeGroup="Column3" />
+											</Grid.ColumnDefinitions>
+											<TextBlock Grid.Column="0" Margin="0 0 6 0" Text="{Binding FullName}" FontWeight="Bold" FontSize="18" MaxWidth="200" Foreground="#02008C" TextWrapping="Wrap"/>
+											<CheckBox Grid.Column="1" Style="{DynamicResource CheckBoxStyle2}" HorizontalAlignment="Center" IsChecked="{Binding IsPaid, Mode=TwoWay}" Command="{Binding DataContext.CheckboxChangedCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
+											<CheckBox Grid.Column="3" Style="{DynamicResource CheckBoxStyle2}" HorizontalAlignment="Center" IsChecked="{Binding IsAchieved, Mode=TwoWay}" IsEnabled="{Binding IsPaid}" Command="{Binding DataContext.CheckboxChangedCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
+										</Grid>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</ScrollViewer>
+					</Grid>
+				</Grid>
+			</Border>
+		</Grid>		
     </Grid>
 </UserControl>
