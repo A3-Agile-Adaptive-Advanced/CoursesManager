@@ -143,6 +143,10 @@ namespace CoursesManager.UI.Mailing
             if (ValidateStudentEmail(student))
                 throw new InvalidOperationException("Student email is not valid");
 
+            Registration? registration = student.Registrations.FirstOrDefault(r => r.CourseId == course.Id);
+            if (registration?.IsAchieved != true)
+                return null;
+
             byte[]? certificate = GeneratePdf(course, student);
             if (certificate == null)
                 return null;
