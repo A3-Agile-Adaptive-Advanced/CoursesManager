@@ -147,13 +147,13 @@ namespace CoursesManager.UI.Mailing
             if (registration?.IsAchieved != true)
                 return null;
 
-            byte[]? certificate = GeneratePdf(course, student);
+            byte[]? certificate = GenerateAndSavePdf(course, student);
             if (certificate == null)
                 return null;
 
             Template template = originalTemplate.Copy();
             template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
-            return CreateMessage("jarnogerrets@gmail.com", template.SubjectString, template.HtmlString, certificate);
+            return CreateMessage(student.Email, template.SubjectString, template.HtmlString, certificate);
         }
         private MailMessage CreateMessage(string toMail, string subject, string body, byte[]? certificate = null)
         {
@@ -179,7 +179,7 @@ namespace CoursesManager.UI.Mailing
             }
             return false;
         }
-        private byte[]? GeneratePdf(Course course, Student student)
+        private byte[]? GenerateAndSavePdf(Course course, Student student)
         {
             Template template = GetTemplateByName("Certificate");
             template.HtmlString = FillTemplate(template.HtmlString, student, course);
