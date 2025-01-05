@@ -55,7 +55,6 @@ namespace CoursesManager.UI.Mailing
                 }
                 catch (InvalidOperationException)
                 {
-                    allMailResults.Add(new MailResult { Outcome = MailOutcome.Failure, StudentName = $"{student.FirstName} {student.Insertion} {student.LastName}" });
                 }
             }
 
@@ -74,14 +73,13 @@ namespace CoursesManager.UI.Mailing
 
             var originalTemplate = GetTemplateByName("CourseStartMail");
 
-            ProcessResult processResult = ProcessStudents(course.Students, originalTemplate, course);
+            ProcessResult processResult = ProcessDataAndCreateMessages(course.Students, originalTemplate, course);
 
 
             if (processResult.Messages.Any())
             {
                 processResult.Results.AddRange(await _mailService.SendMail(processResult.Messages));
             }
-
             return processResult.Results;
         }
 
@@ -99,11 +97,10 @@ namespace CoursesManager.UI.Mailing
                 .Where(s => s != null)
                 .ToList());
 
-
             if (!unpaidStudents.Any())
                 return allMailResults;
 
-            var processResult = ProcessStudents(unpaidStudents, originalTemplate, course, "https://tinyurl.com/CourseManager/{student.Id}");
+            var processResult = ProcessDataAndCreateMessages(unpaidStudents, originalTemplate, course, "https://tinyurl.com/CourseManager/{student.Id}");
 
             allMailResults.AddRange(processResult.Results);
 
@@ -111,13 +108,12 @@ namespace CoursesManager.UI.Mailing
             {
                 allMailResults.AddRange(await _mailService.SendMail(processResult.Messages));
             }
-
             return allMailResults;
         }
 
         #region Helper methods
 
-        private ProcessResult ProcessStudents(ObservableCollection<Student> students,
+        private ProcessResult ProcessDataAndCreateMessages(ObservableCollection<Student> students,
             Template originalTemplate,
             Course course,
             string? url = null)
@@ -136,7 +132,7 @@ namespace CoursesManager.UI.Mailing
                 var template = originalTemplate.Copy();
                 template.HtmlString = FillTemplate(template.HtmlString, student, course, url);
 
-                processResult.Messages.Add(CreateMessage(student.Email, template.SubjectString, template.HtmlString, null));
+                processResult.Messages.Add(CreateMessage(student.Email, template.SubjectString, template.HtmlString));
             }
 
             return processResult;
@@ -147,75 +143,15 @@ namespace CoursesManager.UI.Mailing
             if (ValidateStudentEmail(student))
                 throw new InvalidOperationException("Student email is not valid");
 
-            Registration? registration = student.Registrations.FirstOrDefault(r => r.CourseId == course.Id);
-            if (registration?.IsAchieved != true)
-                return null;
-
             byte[]? certificate = GeneratePdf(course, student);
             if (certificate == null)
                 return null;
 
             Template template = originalTemplate.Copy();
             template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
-            return CreateMessage(student.Email, template.SubjectString, template.HtmlString, certificate);
+            return CreateMessage("jarnogerrets@gmail.com", template.SubjectString, template.HtmlString, certificate);
         }
-
-        private bool ValidateStudentEmail(Student student)
-        {
-            if (!Regex.IsMatch(student.Email, @"^[^@]+@[^@]+\.[^@\s]{2,}$"))
-            {
-                return true;
-            }
-            return false;
-        }
-        private byte[]? GeneratePdf(Course course, Student student)
-        {
-            Template template = GetTemplateByName("Certificate");
-            template.HtmlString = FillTemplate(template.HtmlString, student, course, null);
-            using (var memoryStream = new MemoryStream())
-            {
-                // Since the way a Certificate is saved is using a html string we can seperate the actual pdf from the template.
-                // First we are converting the html to pdf, in the event of failure the html is also not saved to the db, preventing the storage of a faulty html string.
-                HtmlConverter.ConvertToPdf(template.HtmlString, memoryStream);
-                try
-                {
-                    SaveCertificate(template, course, student);
-                    return memoryStream.ToArray();
-                }
-                catch (Exception ex)
-                {
-                    return null;
-                }
-
-            }
-        }
-
-        private Template GetTemplateByName(string name)
-        {
-            try
-            {
-                return _templateRepository.GetTemplateByName(name) ??
-                       throw new InvalidOperationException($"Template '{name}' not found.");
-            }
-            catch (DataAccessException)
-            {
-                throw new InvalidOperationException($"Template '{name}' not found.");
-            }
-        }
-
-        private string FillTemplate(string template, Student student, Course course, string? URL)
-        {
-            template = course.ReplaceCoursePlaceholders(template, course);
-            template = student.ReplaceStudentPlaceholders(template, student);
-
-            if (URL != null)
-            {
-                template = template.Replace("[Betaal Link]", URL);
-            }
-            return template;
-        }
-
-        private MailMessage CreateMessage(string toMail, string subject, string body, byte[]? certificate)
+        private MailMessage CreateMessage(string toMail, string subject, string body, byte[]? certificate = null)
         {
             MailMessage message = new MailMessage();
             message.To.Add(toMail);
@@ -231,19 +167,60 @@ namespace CoursesManager.UI.Mailing
             }
             return message;
         }
+        private bool ValidateStudentEmail(Student student)
+        {
+            if (!Regex.IsMatch(student.Email, @"^[^@]+@[^@]+\.[^@\s]{2,}$"))
+            {
+                return true;
+            }
+            return false;
+        }
+        private byte[]? GeneratePdf(Course course, Student student)
+        {
+            Template template = GetTemplateByName("Certificate");
+            template.HtmlString = FillTemplate(template.HtmlString, student, course);
+            using (var memoryStream = new MemoryStream())
+            {
+                // Since the way a Certificate is saved is using a html string we can seperate the actual pdf from the template.
+                // First we are converting the html to pdf, in the event of failure the html is also not saved to the db, preventing the storage of a faulty html string.
+                HtmlConverter.ConvertToPdf(template.HtmlString, memoryStream);
+                SaveCertificate(template, course, student);
+                return memoryStream.ToArray();
+            }
+        }
+        private Template GetTemplateByName(string name)
+        {
+            try
+            {
+                return _templateRepository.GetTemplateByName(name) ??
+                       throw new TemplateNotFoundException($"Template '{name}' not found.");
+            }
+            catch (DataAccessException)
+            {
+                throw new TemplateNotFoundException($"Template '{name}' not found.");
+            }
+        }
+        private string FillTemplate(string template, Student student, Course course, string? URL = null)
+        {
+            template = course.ReplaceCoursePlaceholders(template, course);
+            template = student.ReplaceStudentPlaceholders(template, student);
 
-        private async Task SaveCertificate(Template template, Course course, Student student)
+            if (URL != null)
+            {
+                template = template.Replace("[Betaal Link]", URL);
+            }
+            return template;
+        }
+        private void SaveCertificate(Template template, Course course, Student student)
         {
             Certificate certificate = new();
             certificate.PdfString = template.HtmlString;
             certificate.StudentCode = student.Id;
             certificate.CourseCode = course.Code;
-
             _certificateRepository.Add(certificate);
 
         }
         #endregion
-
         private class ProcessResult
         {
             public List<MailResult> Results { get; set; } = new();

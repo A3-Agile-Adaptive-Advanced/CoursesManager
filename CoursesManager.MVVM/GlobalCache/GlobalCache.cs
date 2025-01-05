@@ -59,7 +59,7 @@ public class GlobalCache
             {
                 throw new CantBeOverwrittenException($"The item with key '{key}' is not a permanent item.");
             }
-            Update(key, value, existingItem);
+            UpdateItem(key, value, existingItem);
         }
         else
         {
@@ -97,7 +97,7 @@ public class GlobalCache
     #region helper methods and CacheItem class
 
     // when an item already exists this method is there to prevent duplication and checks if overwriting is allowed.
-    private void Update(string key, object value, CacheItem existingItem)
+    private void UpdateItem(string key, object value, CacheItem existingItem)
     {
         lock (_lock)
         {
@@ -166,8 +166,6 @@ public class GlobalCache
         }
         return !Equals(existingValue, newValue);
     }
-
-
     private bool CollectionsAreEqual(System.Collections.IEnumerable collection1, System.Collections.IEnumerable collection2)
     {
         if (ReferenceEquals(collection1, collection2)) return false;
