@@ -11,6 +11,8 @@ using CoursesManager.UI.Repositories.RegistrationRepository;
 using CoursesManager.UI.Repositories.StudentRepository;
 using CoursesManager.UI.Repositories.TemplateRepository;
 using CoursesManager.UI.Service;
+using CoursesManager.UI.Service.PlaceholderService;
+using CoursesManager.UI.Service.TextHandlerService;
 using CoursesManager.UI.ViewModels;
 using CoursesManager.UI.ViewModels.Courses;
 using CoursesManager.UI.ViewModels.Mailing;
@@ -30,6 +32,8 @@ namespace CoursesManager.UI.Factory
         private readonly IDialogService _dialogService;
         private readonly IConfigurationService _configurationService;
         private readonly IMailProvider _mailProvider;
+        private readonly IPlaceholderService _placeholderService;
+        private readonly ITextHandlerService _textHandlerService;
 
 
         public ViewModelFactory(
@@ -42,6 +46,8 @@ namespace CoursesManager.UI.Factory
             IMessageBroker messageBroker,
             IDialogService dialogService,
             IConfigurationService configurationService,
+            IPlaceholderService placeholderService,
+            ITextHandlerService textHandlerService,
             IMailProvider mailProvider)
         {
             _courseRepository = courseRepository;
@@ -53,6 +59,8 @@ namespace CoursesManager.UI.Factory
             _messageBroker = messageBroker;
             _dialogService = dialogService;
             _configurationService = configurationService;
+            _placeholderService = placeholderService;
+            _textHandlerService = textHandlerService;
             _mailProvider = mailProvider;
         }
 
@@ -85,7 +93,7 @@ namespace CoursesManager.UI.Factory
                 Type vmType when vmType == typeof(CoursesManagerViewModel) =>
                     new CoursesManagerViewModel(_courseRepository, _messageBroker, _dialogService, navigationService) as T,
                 Type vmType when vmType == typeof(EditMailTemplatesViewModel) =>
-                    new EditMailTemplatesViewModel(_templateRepository, _dialogService, _messageBroker, navigationService) as T,
+                    new EditMailTemplatesViewModel(_templateRepository, _dialogService, _messageBroker, _placeholderService, _textHandlerService, navigationService) as T,
 
                 Type vmType when vmType == typeof(ConfigurationViewModel) =>
                     new ConfigurationViewModel(_configurationService, _messageBroker, navigationService) as T,

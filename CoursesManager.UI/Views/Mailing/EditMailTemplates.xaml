@@ -133,10 +133,10 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <Button CommandParameter="CertificateMail" Command="{Binding ShowMailCommand}" Grid.Column="0" Height="80" Style="{StaticResource PrimaryButtonTemplate}">Certificaten mail</Button>
-                <Button CommandParameter="PaymentMail" Command="{Binding ShowMailCommand}" Grid.Column="1" Height="80" Style="{StaticResource PrimaryButtonTemplate}">Betaalherinnering mail</Button>
-                <Button CommandParameter="CourseStartMail" Command="{Binding ShowMailCommand}" Grid.Column="2" Height="80" Style="{StaticResource PrimaryButtonTemplate}">Cursus start mail</Button>
-                <Button CommandParameter="Certificate" Command="{Binding ShowMailCommand}" Grid.Column="3" Height="80" Style="{StaticResource PrimaryButtonTemplate}">PDF certificaat</Button>
+                <Button Name="ButtonCertificateMail" CommandParameter="CertificateMail" Command="{Binding ShowMailCommand}" Grid.Column="0" Height="80" Style="{StaticResource PrimaryButtonTemplate}">Certificaten mail</Button>
+                <Button Name="ButtonPaymentMail"  CommandParameter="PaymentMail" Command="{Binding ShowMailCommand}" Grid.Column="1" Height="80" Style="{StaticResource PrimaryButtonTemplate}">Betaalherinnering mail</Button>
+                <Button Name="ButtonCourseStartMail" CommandParameter="CourseStartMail" Command="{Binding ShowMailCommand}" Grid.Column="2" Height="80" Style="{StaticResource PrimaryButtonTemplate}">Cursus start mail</Button>
+                <Button Name="ButtonCertificate" CommandParameter="Certificate" Command="{Binding ShowMailCommand}" Grid.Column="3" Height="80" Style="{StaticResource PrimaryButtonTemplate}">PDF certificaat</Button>
 
                 <Grid Grid.Row="1" Grid.ColumnSpan="4">
                     <Border CornerRadius="10">
