@@ -177,7 +177,6 @@ namespace CoursesManager.UI.ViewModels.Students
                 }
             }
             UpdateStudentCourses();
-            _messageBroker.Publish(new StudentPaymentUpdatedMessage());
         }
 
 
