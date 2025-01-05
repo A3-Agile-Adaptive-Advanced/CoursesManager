@@ -55,10 +55,6 @@ namespace CoursesManager.UI.Models
             }
         }
 
-
-
-
-
         // Validation logic for IDataErrorInfo
         public string Error => null;
 
