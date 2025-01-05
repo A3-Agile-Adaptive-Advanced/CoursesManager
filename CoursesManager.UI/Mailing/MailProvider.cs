@@ -179,19 +179,6 @@ namespace CoursesManager.UI.Mailing
             }
             return false;
         }
-        private byte[]? GenerateAndSavePdf(Course course, Student student)
-        {
-            Template template = GetTemplateByName("Certificate");
-            template.HtmlString = FillTemplate(template.HtmlString, student, course);
-            using (var memoryStream = new MemoryStream())
-            {
-                // Since the way a Certificate is saved is using a html string we can seperate the actual pdf from the template.
-                // First we are converting the html to pdf, in the event of failure the html is also not saved to the db, preventing the storage of a faulty html string.
-                HtmlConverter.ConvertToPdf(template.HtmlString, memoryStream);
-                SaveCertificate(template, course, student);
-                return memoryStream.ToArray();
-            }
-        }
         private Template GetTemplateByName(string name)
         {
             try
@@ -215,7 +202,20 @@ namespace CoursesManager.UI.Mailing
             }
             return template;
         }
-        private void SaveCertificate(Template template, Course course, Student student)
+        private byte[]? GenerateAndSavePdf(Course course, Student student)
+        {
+            Template template = GetTemplateByName("Certificate");
+            template.HtmlString = FillTemplate(template.HtmlString, student, course);
+            using (var memoryStream = new MemoryStream())
+            {
+                // Since the way a Certificate is saved is using a html string we can seperate the actual pdf from the template.
+                // First we are converting the html to pdf, in the event of failure the html is also not saved to the db, preventing the storage of a faulty html string.
+                HtmlConverter.ConvertToPdf(template.HtmlString, memoryStream);
+                SaveCertificate(template, course, student);
+                return memoryStream.ToArray();
+            }
+        }
+        private async Task SaveCertificate(Template template, Course course, Student student)
         {
             Certificate certificate = new();
             certificate.PdfString = template.HtmlString;

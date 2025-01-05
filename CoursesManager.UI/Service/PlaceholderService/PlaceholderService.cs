@@ -3,9 +3,14 @@ using System.Text.RegularExpressions;
 
 namespace CoursesManager.UI.Service.PlaceholderService
 {
-
+    /// <summary>
+    /// Provides functionality for handling and validating placeholders within text.
+    /// </summary>
     public class PlaceholderService : IPlaceholderService
     {
+        /// <summary>
+        /// A list of valid placeholders supported by the application.
+        /// </summary>
         private readonly List<string> _validPlaceholders = new()
         {
 
@@ -37,8 +42,17 @@ namespace CoursesManager.UI.Service.PlaceholderService
             "[Cursist adres toevoeging]"
         };
 
+        /// <summary>
+        /// Retrieves the list of all valid placeholders.
+        /// </summary>
+        /// <returns>A list of valid placeholders.</returns>
         public List<string> GetValidPlaceholders() => _validPlaceholders;
 
+        /// <summary>
+        /// Validates placeholders in a given HTML string against the list of valid placeholders.
+        /// </summary>
+        /// <param name="htmlString">The HTML string containing placeholders to validate.</param>
+        /// <returns>A list of invalid placeholders found in the provided HTML string.</returns>
         public List<string> ValidatePlaceholders(string htmlString)
         {
             var invalidPlaceholders = new List<string>();
