@@ -1,7 +1,9 @@
 ﻿using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Dialogs;
+using CoursesManager.MVVM.Messages;
 using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Dialogs.ViewModels;
+using CoursesManager.UI.Enums;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Repositories.LocationRepository;
@@ -18,6 +20,7 @@ namespace CoursesManager.UI.ViewModels.Courses
         private readonly ICourseRepository _courseRepository;
         private readonly IDialogService _dialogService;
         private readonly ILocationRepository _locationRepository;
+        private readonly IMessageBroker _messageBroker;
 
         private Course? OriginalCourse { get; }
 
@@ -44,16 +47,17 @@ namespace CoursesManager.UI.ViewModels.Courses
 
         public ObservableCollection<Location> Locations { get; set; }
 
-        public CourseDialogViewModel(ICourseRepository courseRepository, IDialogService dialogService, ILocationRepository locationRepository, Course? course) : base(course)
+        public CourseDialogViewModel(ICourseRepository courseRepository, IDialogService dialogService, ILocationRepository locationRepository, IMessageBroker messageBroker, Course? course) : base(course)
         {
             _courseRepository = courseRepository ?? throw new ArgumentNullException(nameof(courseRepository));
             _locationRepository = locationRepository ?? throw new ArgumentNullException(nameof(locationRepository));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+            _messageBroker = messageBroker ?? throw new ArgumentNullException(nameof(messageBroker));
 
             IsStartAnimationTriggered = true;
 
             OriginalCourse = course;
-            
+
             Locations = GetLocations();
 
             Course = course != null
@@ -73,7 +77,7 @@ namespace CoursesManager.UI.ViewModels.Courses
 
             Course.Location = Locations.FirstOrDefault(l => l.Id == Course.LocationId);
 
-            SaveCommand = new RelayCommand(ExecuteSave,CanExecuteSave);
+            SaveCommand = new RelayCommand(ExecuteSave);
             CancelCommand = new RelayCommand(ExecuteCancel);
             UploadCommand = new RelayCommand(UploadImage);
         }
@@ -99,11 +103,39 @@ namespace CoursesManager.UI.ViewModels.Courses
             ResponseCallback?.Invoke(dialogResult);
         }
 
+        private List<string> GetMissingFields()
+        {
+            var missingFields = new List<string>();
+
+            if (Course == null) return missingFields;
+
+            if (string.IsNullOrWhiteSpace(Course.Name)) missingFields.Add("Naam");
+            if (string.IsNullOrWhiteSpace(Course.Code)) missingFields.Add("Code");
+            if (Course.StartDate == default) missingFields.Add("Startdatum");
+            if (Course.EndDate == default) missingFields.Add("Einddatum");
+            if (Course.Location == null) missingFields.Add("Locatie");
+            if (string.IsNullOrWhiteSpace(Course.Description)) missingFields.Add("Beschrijving");
+
+            return missingFields;
+        }
+
         private void ExecuteSave()
         {
             if (Course == null)
             {
                 throw new InvalidOperationException("Cursusgegevens ontbreken. Opslaan is niet mogelijk.");
+            }
+
+            var missingFields = GetMissingFields();
+            if (missingFields.Any())
+            {
+                // Toon toastmelding met ontbrekende velden
+                var message = "De volgende velden ontbreken: " + string.Join(", ", missingFields);
+                _messageBroker.Publish(new ToastNotificationMessage(
+                    true,
+                    message,
+                    ToastType.Warning));
+                return;
             }
 
             _ = OnSaveAsync();
@@ -182,7 +214,7 @@ namespace CoursesManager.UI.ViewModels.Courses
 
                 var bitmap = new BitmapImage(new Uri(openDialog.FileName));
 
-              
+
                 Course!.Image = ConvertImageToByteArray(bitmap);
 
 

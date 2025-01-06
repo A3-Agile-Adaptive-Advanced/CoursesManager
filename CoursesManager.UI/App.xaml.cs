@@ -139,7 +139,7 @@ public partial class App : Application
 
         DialogService.RegisterDialog<TemplatePreviewDialogViewModel, TemplatePreviewDialogWindow, DialogResultType>((initial) => new  TemplatePreviewDialogViewModel(initial, MessageBroker));
 
-        DialogService.RegisterDialog<CourseDialogViewModel, CourseDialogWindow, Course>((initial) => new CourseDialogViewModel(CourseRepository, DialogService, LocationRepository, initial));
+        DialogService.RegisterDialog<CourseDialogViewModel, CourseDialogWindow, Course>((initial) => new CourseDialogViewModel(CourseRepository, DialogService, LocationRepository, MessageBroker, initial));
     }
 
     private void RegisterViewModels(ViewModelFactory viewModelFactory)

@@ -48,6 +48,7 @@
                 </Style.Triggers>
             </Style>
         </Grid.Style>
+
         <Grid>
             <Border Background="{StaticResource SecondaryGradient}" CornerRadius="15">
 
@@ -135,7 +136,7 @@
                                                     <Style TargetType="TextBox" BasedOn="{StaticResource TextBoxEditCourseStyle1}">
                                                         <Style.Triggers>
                                                             <Trigger Property="Validation.HasError" Value="True">
-                                                                <Setter Property="BorderBrush" Value="Red"/>
+                                                                
                                                                 <Setter Property="BorderThickness" Value="2"/>
                                                             </Trigger>
                                                         </Style.Triggers>
@@ -149,7 +150,7 @@
                                                     <Style TargetType="TextBox" BasedOn="{StaticResource TextBoxEditCourseStyle1}">
                                                         <Style.Triggers>
                                                             <Trigger Property="Validation.HasError" Value="True">
-                                                                <Setter Property="BorderBrush" Value="Red"/>
+                                                               
                                                                 <Setter Property="BorderThickness" Value="2"/>
                                                             </Trigger>
                                                         </Style.Triggers>
@@ -179,7 +180,7 @@
                                                     <Style TargetType="DatePicker" BasedOn="{StaticResource RoundedDatePickerStyle}" >
                                                         <Style.Triggers>
                                                             <Trigger Property="Validation.HasError" Value="True">
-                                                                <Setter Property="BorderBrush" Value="Red"/>
+                                                               
                                                                 <Setter Property="BorderThickness" Value="2"/>
                                                             </Trigger>
                                                         </Style.Triggers>
@@ -192,7 +193,7 @@
                                                     <Style TargetType="DatePicker" BasedOn="{StaticResource RoundedDatePickerStyle}">
                                                         <Style.Triggers>
                                                             <Trigger Property="Validation.HasError" Value="True">
-                                                                <Setter Property="BorderBrush" Value="Red"/>
+                                                              
                                                                 <Setter Property="BorderThickness" Value="2"/>
                                                             </Trigger>
                                                         </Style.Triggers>
@@ -216,7 +217,7 @@
                                                     <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxStyle}">
                                                         <Style.Triggers>
                                                             <Trigger Property="Validation.HasError" Value="True">
-                                                                <Setter Property="BorderBrush" Value="Red"/>
+                                                                
                                                                 <Setter Property="BorderThickness" Value="2"/>
                                                             </Trigger>
                                                         </Style.Triggers>
@@ -241,7 +242,7 @@
                                                         <Style.Triggers>
 
                                                             <Trigger Property="Validation.HasError" Value="True">
-                                                                <Setter Property="BorderBrush" Value="Red"/>
+                                                                
                                                                 <Setter Property="BorderThickness" Value="2"/>
                                                             </Trigger>
                                                         </Style.Triggers>
@@ -289,7 +290,7 @@
                                                 <Style.Triggers>
                                                     <!-- Trigger voor als Image null is -->
                                                     <DataTrigger Binding="{Binding Course.Image}" Value="{x:Null}">
-                                                        <Setter Property="BorderBrush" Value="Red" />
+                                                       
                                                         <Setter Property="BorderThickness" Value="2" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
@@ -326,7 +327,7 @@
                                                 <Style TargetType="TextBox" >
                                                     <Style.Triggers>
                                                         <Trigger Property="Validation.HasError" Value="True">
-                                                            <Setter Property="BorderBrush" Value="Red"/>
+                                                           
                                                             <Setter Property="BorderThickness" Value="2"/>
                                                         </Trigger>
                                                     </Style.Triggers>
