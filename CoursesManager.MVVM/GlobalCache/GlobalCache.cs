@@ -193,31 +193,32 @@ public class GlobalCache
     }
     #endregion
     #region Debug methods
+    // methods are internal, in AssemblyInfo access is granted to the unittests project "CoursesManager.MVVM.Tests"
     /// <summary>
     /// Clears the cache for unit testing purposes.
     /// </summary>
-    public void Clear()
+    internal void Clear()
     {
         _cacheMap.Clear();
         _usageOrder.Clear();
     }
 
     // This allows you to create a custom cache instance for testing purposes in DEBUG builds
-    private static int _testCapacity = 10;
+    internal static int _testCapacity = 10;
 
     // A method for unit tests to set the custom capacity
-    public static void SetTestCapacity(int capacity)
+    internal static void SetTestCapacity(int capacity)
     {
         _testCapacity = capacity;
     }
 
     // Factory method for creating a cache with custom capacity in debug mode so you don't need to enter the default amount for each test.
-    public static GlobalCache CreateForTesting()
+    internal static GlobalCache CreateForTesting()
     {
         return new GlobalCache(_testCapacity);
     }
 
-    public int GetCapacity()
+    internal int GetCapacity()
     {
         return _capacity;
 
