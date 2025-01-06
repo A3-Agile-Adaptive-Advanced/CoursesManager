@@ -11,7 +11,7 @@
             <Setter Property="Margin" Value="0 0 10 0"/>
             <Setter Property="HorizontalAlignment" Value="right"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Foreground" Value="#A2A2A6"/>
         </Style>

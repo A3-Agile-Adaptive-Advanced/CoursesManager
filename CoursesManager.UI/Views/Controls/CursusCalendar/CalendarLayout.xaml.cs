@@ -16,9 +16,9 @@ namespace CoursesManager.UI.Views.Controls.CursusCalendar
 
         public static readonly DependencyProperty CoursesProperty = DependencyProperty.Register(
             nameof(Courses),
-            typeof(List<Course>),
+            typeof(ObservableCollection<Course>),
             typeof(CalendarLayout),
-            new FrameworkPropertyMetadata(null)
+            new PropertyMetadata(null, OnCoursesChanged)
         );
 
         public static readonly DependencyProperty OnDateChangedCommandProperty = DependencyProperty.Register(
@@ -46,9 +46,9 @@ namespace CoursesManager.UI.Views.Controls.CursusCalendar
         /// <summary>
         /// A list of <see cref="Course"/> objects that could be displayed on the calendar.
         /// </summary>
-        public List<Course> Courses
+        public ObservableCollection<Course> Courses
         {
-            get => (List<Course>)GetValue(CoursesProperty);
+            get => (ObservableCollection<Course>)GetValue(CoursesProperty);
             set => SetValue(CoursesProperty, value);
         }
 
@@ -95,9 +95,9 @@ namespace CoursesManager.UI.Views.Controls.CursusCalendar
                 OnPropertyChanged(nameof(PreviousMonthNumber));
                 OnPropertyChanged(nameof(NextMonthNumber));
 
-                OnDateChangedCommand?.Execute(this);
 
                 DrawDays();
+                OnDateChangedCommand?.Execute(this);
             }
         }
 
@@ -153,11 +153,10 @@ namespace CoursesManager.UI.Views.Controls.CursusCalendar
 
         public void DrawItems()
         {
-            LogUtil.Info((Courses == null).ToString());
             if (Courses == null)
                 return;
 
-            if (Courses is List<Course> courses)
+            if (Courses is ObservableCollection<Course> courses)
             {
                 foreach (var course in courses)
                 {
@@ -165,8 +164,6 @@ namespace CoursesManager.UI.Views.Controls.CursusCalendar
 
                     var startDate = course.StartDate;
                     var endDate = course.EndDate;
-
-                    LogUtil.Info("ran");
 
                     CalendarDay dayByStartDate = DaysInCurrentView.Where(day => day.Date == course.StartDate).FirstOrDefault();
                     if (dayByStartDate != null)
@@ -299,6 +296,17 @@ namespace CoursesManager.UI.Views.Controls.CursusCalendar
                 if (column == 6) row++;
             }
         }
+
+        private static void OnCoursesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.NewValue is ObservableCollection<Course> newCollection)
+            {
+                var viewModel = d as CalendarLayout;
+                viewModel?.OnCoursesUpdated(newCollection);
+            }
+        }
+
+        private void OnCoursesUpdated(ObservableCollection<Course> courses) => DrawDays();
 
         private void PreviousYearButton_OnClick(object sender, RoutedEventArgs e)
             => SelectedDate = SelectedDate.AddYears(-1);

@@ -12,11 +12,22 @@ namespace CoursesManager.UI.ViewModels
     public class CalendarViewModel : ViewModelWithNavigation
     {
         private ICourseRepository _courseRepository;
+        private ObservableCollection<Course> _coursesBetweenDates;
+        private ObservableCollection<Course> _coursesForSelectedDay;
 
         public ICommand OnCalendarDateChangedCommand { get; }
         public ICommand OnDaySelectedCommand { get; }
+        public ObservableCollection<Course> CoursesBetweenDates
+        {
+            get => _coursesBetweenDates;
+            set => SetProperty(ref _coursesBetweenDates, value);
+        }
 
-        public List<Course> CoursesBetweenDates { get; private set; }
+        public ObservableCollection<Course> CoursesForSelectedDay
+        {
+            get => _coursesForSelectedDay;
+            set => SetProperty(ref _coursesForSelectedDay, value);
+        }
 
         public CalendarViewModel(INavigationService navigationService, ICourseRepository courseRepository) : base(navigationService)
         {
@@ -24,17 +35,26 @@ namespace CoursesManager.UI.ViewModels
 
             _courseRepository = courseRepository;
 
+            CoursesBetweenDates = new ObservableCollection<Course>(_courseRepository.GetAll());
+            CoursesForSelectedDay = new();
+
             OnCalendarDateChangedCommand = new RelayCommand<CalendarLayout>((calendarLayout) =>
             {
-                var daysInCurrentView = calendarLayout.DaysInCurrentView;
-                var courses = _courseRepository.GetAllBetweenDates(daysInCurrentView.First().Date, daysInCurrentView.Last().Date);
+                ObservableCollection<CalendarDay> daysInCurrentView = calendarLayout.DaysInCurrentView;
+                List<Course> courses = _courseRepository.GetAllBetweenDates(daysInCurrentView.First().Date, daysInCurrentView.Last().Date);
 
-                CoursesBetweenDates = new List<Course>(courses);
+                CoursesBetweenDates.Clear();
+                foreach (Course course in courses)
+                    CoursesBetweenDates.Add(course);
             });
 
-            OnDaySelectedCommand = new RelayCommand(() =>
+            OnDaySelectedCommand = new RelayCommand<CalendarDay>((calendarDay) =>
             {
-                LogUtil.Info("select");
+                List<Course> courses = _courseRepository.GetAllBetweenDates(calendarDay.Date, calendarDay.Date);
+
+                CoursesForSelectedDay.Clear();
+                foreach (Course course in courses)
+                    CoursesForSelectedDay.Add(course);
             });
         }
     }
