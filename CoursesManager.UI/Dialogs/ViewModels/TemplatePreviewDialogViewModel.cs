@@ -7,7 +7,7 @@ using System.Windows.Input;
 namespace CoursesManager.UI.Dialogs.ViewModels
 {
 
-    class TemplatePreviewDialogViewModel : DialogViewModel<DialogResultType>
+    public class TemplatePreviewDialogViewModel : DialogViewModel<DialogResultType>
     {
         private readonly IMessageBroker _messageBroker;
         private string _title = null!;

@@ -9,6 +9,8 @@ using System.Collections.ObjectModel;
 using System.Windows.Media.Imaging;
 using CoursesManager.MVVM.Dialogs;
 using Microsoft.Win32;
+using CoursesManager.UI.Dialogs.ResultTypes;
+using CoursesManager.UI.Dialogs.ViewModels;
 
 
 namespace CoursesManager.Tests.Courses
@@ -51,7 +53,7 @@ namespace CoursesManager.Tests.Courses
         public async Task SaveCommand_ShouldAddNewCourse_WhenOriginalCourseIsNull()
         {
             // Arrange
-            _viewModel.Course.Name = "New Course";
+            _viewModel.Course!.Name = "New Course";
             _viewModel.Course.Code = "NC123";
             _viewModel.Course.StartDate = DateTime.Now;
             _viewModel.Course.EndDate = DateTime.Now.AddDays(5);
@@ -160,6 +162,29 @@ namespace CoursesManager.Tests.Courses
                 null,
                 null
             ), "De constructor moet een ArgumentNullException gooien als locationRepository null is.");
+        }
+
+
+        [Test]
+        public async Task SaveCommand_ShouldShowErrorDialog_WhenExceptionIsThrown()
+        {
+            // Arrange
+            _viewModel.Course = new Course { Name = "Valid Course" };
+
+            _courseRepositoryMock
+                .Setup(repo => repo.Add(It.IsAny<Course>()))
+                .Throws(new Exception("Test exception"));
+
+            // Act
+            await Task.Run(() => _viewModel.SaveCommand.Execute(null));
+
+            // Assert
+            _dialogServiceMock.Verify(service => service.ShowDialogAsync<ErrorDialogViewModel, DialogResultType>(
+                It.Is<DialogResultType>(d =>
+                    d.DialogText == "Er is iets fout gegaan. Probeer het later opnieuw." &&
+                    d.DialogTitle == "Fout"
+                )
+            ), Times.Once, "ShowDialogAsync moet worden aangeroepen wanneer een uitzondering wordt gegooid.");
         }
 
 
