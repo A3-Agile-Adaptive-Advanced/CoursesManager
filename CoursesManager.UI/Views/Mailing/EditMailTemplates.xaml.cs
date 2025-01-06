@@ -17,6 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using CoursesManager.UI.Enums;
+using CoursesManager.UI.Service.PlaceholderService;
 
 namespace CoursesManager.UI.Views.Mailing
 {
@@ -30,36 +31,9 @@ namespace CoursesManager.UI.Views.Mailing
         public EditMailTemplates()
         {
             InitializeComponent();
-            var placeholders = new List<string>
-        {
+            PlaceholderService placeholderService = new();
 
-            "[Cursus naam]",
-            "[Cursus code]",
-            "[Cursus beschrijving]",
-            "[Cursus categorie]",
-            "[Cursus startdatum]",
-            "[Cursus einddatum]",
-            "[Cursus locatie naam]",
-            "[Cursus locatie land]",
-            "[Cursus locatie postcode]",
-            "[Cursus locatie stad]",
-            "[Cursus locatie straat]",
-            "[Cursus locatie huisnummer]",
-            "[Cursus locatie toevoeging]",
-
-            "[Betaal link]",
-
-            "[Cursist naam]",
-            "[Cursist email]",
-            "[Cursist telefoonnummer]",
-            "[Cursist geboortedatum]",
-            "[Cursist adres land]",
-            "[Cursist adres postcode]",
-            "[Cursist adres stad]",
-            "[Cursist adres straat]",
-            "[Cursist adres huisnummer]",
-            "[Cursist adres toevoeging]"
-        };
+            var placeholders = placeholderService.GetValidPlaceholders();
             SuggestionsList.ItemsSource = placeholders;
         }
 
@@ -143,18 +117,37 @@ namespace CoursesManager.UI.Views.Mailing
                 if (selection != null)
                 {
                     var currentCaret = richTextBox.CaretPosition;
-                    string trailingText = currentCaret.GetTextInRun(LogicalDirection.Forward);
-                    string firstFourCharacters = trailingText.Length >= 4 ? trailingText.Substring(0, 4) : trailingText;
-                    if (firstFourCharacters == "</p>")
+
+                    TextPointer endOfCurrentBlock = currentCaret.GetLineStartPosition(1, out int linesMoved);
+                    if (linesMoved == 0 || endOfCurrentBlock == null)
                     {
-                        richTextBox.CaretPosition = currentCaret.GetPositionAtOffset(4);
+                        endOfCurrentBlock = richTextBox.Document.ContentEnd.GetPositionAtOffset(-1);
+                        while (endOfCurrentBlock != null &&
+                               (endOfCurrentBlock.GetPointerContext(LogicalDirection.Forward) ==
+                                TextPointerContext.None ||
+                                endOfCurrentBlock.GetPointerContext(LogicalDirection.Forward) ==
+                                TextPointerContext.ElementEnd))
+                        {
+                            endOfCurrentBlock = endOfCurrentBlock.GetPositionAtOffset(1, LogicalDirection.Forward);
+                        }
                     }
 
-                    var newLine = Environment.NewLine;
+                    if (endOfCurrentBlock != null)
+                    {
+                        richTextBox.CaretPosition = endOfCurrentBlock;
 
-                    selection.Text = $"{newLine}<p></p>";
+                        var newLine = Environment.NewLine;
 
-                    var newPosition = selection.Start.GetPositionAtOffset(7, LogicalDirection.Forward);
+                        selection.Text = $"<p></p>{newLine}";
+                    }
+                    else
+                    {
+                        richTextBox.CaretPosition = richTextBox.Document.ContentEnd.GetPositionAtOffset(-1);
+                        var newLine = Environment.NewLine;
+
+                        selection.Text = $"{newLine}<p></p>";
+                    }
+                    var newPosition = selection.Start.GetPositionAtOffset(3, LogicalDirection.Forward);
                     if (newPosition != null)
                     {
                         richTextBox.CaretPosition = newPosition;
@@ -167,12 +160,23 @@ namespace CoursesManager.UI.Views.Mailing
                 string leadingText = currentCaret.GetTextInRun(LogicalDirection.Backward);
                 string trailingText = currentCaret.GetTextInRun(LogicalDirection.Forward);
 
-                if (leadingText == "<p>" && trailingText.StartsWith("</p>"))
+                if (leadingText.EndsWith("<p>") && trailingText.StartsWith("</p>"))
                 {
-                    richTextBox.Selection.Select(currentCaret.GetPositionAtOffset(-3), currentCaret.GetPositionAtOffset(4));
+                    TextPointer start = currentCaret.GetPositionAtOffset(-3);
+                    TextPointer end = currentCaret.GetPositionAtOffset(4);
+
+                    richTextBox.Selection.Select(start, end);
                     richTextBox.Selection.Text = "";
 
-                    richTextBox.CaretPosition = currentCaret.GetPositionAtOffset(-8);
+                    var nextLineStart = end.GetLineStartPosition(1);
+                    if (nextLineStart != null)
+                    {
+                        richTextBox.Selection.Select(start, nextLineStart);
+                        richTextBox.Selection.Text = "";
+                    }
+
+                    richTextBox.CaretPosition = start.GetPositionAtOffset(-6);
+
 
                     e.Handled = true;
                 }

@@ -14,8 +14,11 @@ using CoursesManager.UI.Repositories.RegistrationRepository;
 using CoursesManager.UI.Repositories.StudentRepository;
 using iText.Bouncycastle.Crypto;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Windows.Input;
 using CoursesManager.MVVM.Exceptions;
+using System.Linq;
+using System.Text;
 
 namespace CoursesManager.UI.ViewModels.Courses
 {
@@ -41,10 +44,11 @@ namespace CoursesManager.UI.ViewModels.Courses
         public Course CurrentCourse
         {
             get => _currentCourse;
-            private set => SetProperty(ref _currentCourse, value);
+            set => SetProperty(ref _currentCourse, value);
         }
 
         private bool _isPaid;
+
         public bool IsPaid
         {
             get => _isPaid;
@@ -52,6 +56,7 @@ namespace CoursesManager.UI.ViewModels.Courses
         }
 
         private bool _hasStarted;
+
         public bool HasStarted
         {
             get => _hasStarted;
@@ -59,6 +64,7 @@ namespace CoursesManager.UI.ViewModels.Courses
         }
 
         private bool _isFinished;
+
         public bool IsFinished
         {
             get => _isFinished;
@@ -72,25 +78,32 @@ namespace CoursesManager.UI.ViewModels.Courses
         public ObservableCollection<CourseStudentPayment> StudentPayments
         {
             get => _studentPayments;
-            private set => SetProperty(ref _studentPayments, value);
+            set => SetProperty(ref _studentPayments, value);
         }
 
-        public CourseOverViewViewModel(IStudentRepository studentRepository, IRegistrationRepository registrationRepository, ICourseRepository courseRepository, IDialogService dialogService, IMessageBroker messageBroker, INavigationService navigationService, IMailProvider mailProvider) : base(navigationService)
+        public CourseOverViewViewModel(IStudentRepository studentRepository,
+            IRegistrationRepository registrationRepository, ICourseRepository courseRepository,
+            IDialogService dialogService, IMessageBroker messageBroker, INavigationService navigationService,
+            IMailProvider mailProvider) : base(navigationService)
         {
             _studentRepository = studentRepository ?? throw new ArgumentNullException(nameof(studentRepository));
-            _registrationRepository = registrationRepository ?? throw new ArgumentNullException(nameof(registrationRepository));
+            _registrationRepository =
+                registrationRepository ?? throw new ArgumentNullException(nameof(registrationRepository));
 
             _courseRepository = courseRepository;
             _dialogService = dialogService;
             _messageBroker = messageBroker;
             _mailProvider = mailProvider;
 
+            ViewTitle = "Cursus details";
+            CurrentCourse = GlobalCache.Instance.Get("Opened Course") as Course;
+
             ChangeCourseCommand = new RelayCommand(ChangeCourse);
             DeleteCourseCommand = new RelayCommand(DeleteCourse);
             CheckboxChangedCommand = new RelayCommand<CourseStudentPayment>(OnCheckboxChanged);
-            PaymentMailCommand = new RelayCommand(SendPaymentMail);
-            StartCourseMailCommand = new RelayCommand(SendStartCourseMail);
-            CertificateMailCommand = new RelayCommand(SendCertificateMail);
+            PaymentMailCommand = new AsyncRelayCommand(SendPaymentMail);
+            StartCourseMailCommand = new AsyncRelayCommand(SendStartCourseMail);
+            CertificateMailCommand = new AsyncRelayCommand(SendCertificateMail);
 
             LoadCourseData();
 
@@ -98,24 +111,23 @@ namespace CoursesManager.UI.ViewModels.Courses
 
         private void LoadCourseData()
         {
-            CurrentCourse = GlobalCache.Instance.Get("Opened Course") as Course;
+            CurrentCourse = _courseRepository.GetById(CurrentCourse.Id);
 
             if (CurrentCourse != null)
             {
                 SetupEmailButtons();
 
-                var registrations = _registrationRepository.GetAll()
-                    .Where(r => r.CourseId == CurrentCourse.Id)
-                    .ToList();
+                var registrations = CurrentCourse.Registrations;
 
                 var payments = registrations.Select(registration =>
                 {
                     var student = _studentRepository.GetById(registration.StudentId);
                     if (student == null)
                     {
-                        _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de beheerder", ToastType.Error));
+                        SendGeneralErrorNotification();
                         return null;
                     }
+
                     return new CourseStudentPayment(student, registration);
                 }).Where(payment => payment != null);
 
@@ -123,14 +135,15 @@ namespace CoursesManager.UI.ViewModels.Courses
             }
             else
             {
-                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de beheerder", ToastType.Error));
+                SendGeneralErrorNotification();
             }
         }
 
-        //Making sure the correct email buttons are shown to the user.
-        //HasStarted will display the 'send course start mail' button
-        //IsPaid will show the 'send payment mail' button
-        //IsFinished will display the 'send certificates' button
+        // Making sure the correct email buttons are shown to the user, never do we need all 3 to be shown.
+        // For cleaner look this method will determine which buttons are visible to the user.
+        // HasStarted will display the 'send course start mail' button
+        // IsPaid will show the 'send payment mail' button
+        // IsFinished will display the 'send certificates' button
         private void SetupEmailButtons()
         {
             if (CurrentCourse.Students != null)
@@ -142,6 +155,7 @@ namespace CoursesManager.UI.ViewModels.Courses
                 {
                     HasStarted = true;
                 }
+
                 if (CurrentCourse.EndDate <= DateTime.Now)
                 {
                     HasStarted = false;
@@ -155,11 +169,16 @@ namespace CoursesManager.UI.ViewModels.Courses
         {
             if (payment == null || CurrentCourse == null) return;
 
-            var existingRegistration = _registrationRepository.GetAll()
-                .FirstOrDefault(r => r.CourseId == CurrentCourse.Id && r.StudentId == payment.Student?.Id);
+            var existingRegistration = CurrentCourse.Registrations
+                .FirstOrDefault(r => r.StudentId == payment.Student.Id);
 
             if (existingRegistration != null)
             {
+                if (!payment.IsPaid)
+                {
+                    CurrentCourse.IsPayed = payment.IsPaid;
+                }
+
                 existingRegistration.PaymentStatus = payment.IsPaid;
                 existingRegistration.IsAchieved = payment.IsAchieved;
                 _registrationRepository.Update(existingRegistration);
@@ -176,6 +195,7 @@ namespace CoursesManager.UI.ViewModels.Courses
                     IsActive = true
                 });
             }
+
             LoadCourseData();
         }
 
@@ -186,7 +206,8 @@ namespace CoursesManager.UI.ViewModels.Courses
             {
                 if (_registrationRepository.GetAllRegistrationsByCourse(CurrentCourse).Any())
                 {
-                    _messageBroker.Publish(new ToastNotificationMessage(true, "Cursus heeft nog actieve registraties.", ToastType.Error));
+                    _messageBroker.Publish(new ToastNotificationMessage(true, "Cursus heeft nog actieve registraties.",
+                        ToastType.Error));
                 }
                 else
                 {
@@ -208,54 +229,94 @@ namespace CoursesManager.UI.ViewModels.Courses
                         catch (Exception ex)
                         {
                             LogUtil.Error(ex.Message);
-                            _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de beheerder", ToastType.Error));
+                            SendGeneralErrorNotification();
                         }
                     }
                 }
             });
         }
 
-        private async void SendPaymentMail()
+        #region MailMethods
+
+        private async Task SendPaymentMail()
         {
-            List<MailResult> mailResults = new ();
+            await SendEmailAsync(
+                () => _mailProvider.SendPaymentNotifications(CurrentCourse)
+            );
+        }
+
+        private async Task SendStartCourseMail()
+        {
+            await SendEmailAsync(
+                () => _mailProvider.SendCourseStartNotifications(CurrentCourse)
+            );
+        }
+
+        private async Task SendCertificateMail()
+        {
+            await SendEmailAsync(
+                () => _mailProvider.SendCertificates(CurrentCourse)
+            );
+        }
+
+        // Due to the nature of similarity between the send mail commands this task is created to reduce duplication.
+        // For user feedback a permanent message is sent to show that sending is still being done.
+        // This is important because with larger address lists the task can take a while to complete.
+        private async Task SendEmailAsync(Func<Task<List<MailResult>>> sendEmailTask)
+        {
+            _messageBroker.Publish(new ToastNotificationMessage(true, "E-mails versturen", ToastType.Info, true));
+            List<MailResult> mailResults = new();
+
             try
             {
-                mailResults = await _mailProvider.SendPaymentNotifications(CurrentCourse);
+                mailResults = await sendEmailTask();
             }
             catch (DataAccessException)
             {
-                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error));
+                SendGeneralErrorNotification();
+            }
+            catch (InvalidOperationException)
+            {
+                _messageBroker.Publish(new ToastNotificationMessage(true,
+                    "Er zijn geen studenten aangemeld bij deze cursus", ToastType.Error));
             }
 
             CheckMailOutcome(mailResults);
         }
 
-        private async void SendStartCourseMail()
+        // This method will loop over all mail-outcomes regardless of what email has been sent.
+        // To ensure user feedback each possible outcome will be shown via a toast-message.
+        private void CheckMailOutcome(List<MailResult> mailResults)
         {
-            List<MailResult> mailResults = new();
-            try
+            if (!mailResults.Any())
             {
-                mailResults = await _mailProvider.SendCourseStartNotifications(CurrentCourse);
+                _messageBroker.Publish(new ToastNotificationMessage(true,
+                    "De huidige studenten met afgeronde status \n hebben al een mail ontvangen", ToastType.Warning));
+                return;
             }
-            catch (DataAccessException)
+            var failedEmails = new StringBuilder();
+            foreach (var mailResult in mailResults.Where(r => r.Outcome != MailOutcome.Success))
             {
-                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error));
+                failedEmails.Append(mailResult.MailMessage?.To.FirstOrDefault()?.Address ?? mailResult.StudentName);
+                failedEmails.Append("; ");
             }
-            CheckMailOutcome(mailResults);
-        }
 
-        private async void SendCertificateMail()
+            if (failedEmails.Length > 0)
+            {
+                _messageBroker.Publish(new ToastNotificationMessage(true,
+                    $"De volgende emails zijn niet verstuurd: {failedEmails}", ToastType.Error));
+                return;
+            }
+
+            _messageBroker.Publish(new ToastNotificationMessage(true, "Email(s) zijn succesvol verstuurd",
+                ToastType.Confirmation, false));
+        }
+        #endregion
+
+        private void SendGeneralErrorNotification()
         {
-            List<MailResult> mailResults = new();
-            try
-            {
-                mailResults = await _mailProvider.SendCertificates(CurrentCourse);
-            }
-            catch (DataAccessException)
-            {
-                _messageBroker.Publish(new ToastNotificationMessage(true, "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error));
-            }
-            CheckMailOutcome(mailResults);
+            _messageBroker.Publish(new ToastNotificationMessage(true,
+                "Er is een fout opgetreden, neem contact op met de systeembeheerder.", ToastType.Error));
         }
 
         private async void ChangeCourse()
@@ -272,35 +333,6 @@ namespace CoursesManager.UI.ViewModels.Courses
                 }
 
             });
-        }
-
-        private void CheckMailOutcome(List<MailResult> mailResults)
-        {
-            string failedEmails = string.Empty;
-            foreach (MailResult mailResult in mailResults)
-            {
-                if (!(mailResult.Outcome == MailOutcome.Success))
-                {
-                    if (mailResult.MailMessage != null)
-                    {
-                        failedEmails += mailResult.MailMessage.To.First().Address + "; ";
-                    }
-                    else
-                    {
-                        failedEmails += mailResult.StudentName + "; ";
-                    }
-
-                }
-            }
-
-            if (failedEmails.Length > 0)
-            {
-                _messageBroker.Publish(new ToastNotificationMessage(true, $"De volgende emails zijn niet verstuurd: {failedEmails}", ToastType.Error));
-            }
-            else
-            {
-                _messageBroker.Publish(new ToastNotificationMessage(true, "Email(s) zijn succesvol verstuurd", ToastType.Confirmation));
-            }
         }
     }
 }
