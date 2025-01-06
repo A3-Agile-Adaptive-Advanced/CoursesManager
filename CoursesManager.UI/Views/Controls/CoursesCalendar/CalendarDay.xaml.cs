@@ -1,8 +1,6 @@
 ﻿using System.Windows.Controls;
-using System.Windows.Input;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace CoursesManager.UI.Views.Controls.CursusCalendar
+namespace CoursesManager.UI.Views.Controls.CoursesCalendar
 {
     public partial class CalendarDay : UserControl
     {

@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace CoursesManager.UI.Views.Controls.CursusCalendar
+namespace CoursesManager.UI.Views.Controls.CoursesCalendar
 {
     public partial class CalendarItem : UserControl
     {

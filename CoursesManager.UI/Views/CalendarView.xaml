@@ -4,7 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:CoursesManager.UI.Views"
-             xmlns:rs="clr-namespace:CoursesManager.UI.Views.Controls.CursusCalendar"
+             xmlns:rs="clr-namespace:CoursesManager.UI.Views.Controls.CoursesCalendar"
+             xmlns:rsc="clr-namespace:CoursesManager.UI.Views.Controls.Courses"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:viewmodels="clr-namespace:CoursesManager.UI.ViewModels" 
              mc:Ignorable="d">
@@ -69,7 +70,35 @@
 																	 Width="24" Height="24"
 																	 Foreground="{StaticResource PrimaryGradient}"
 																	 Background="Transparent" />
+
+											<Popup x:Name="popover"
+												   IsOpen="{Binding IsPopoverOpen, RelativeSource={RelativeSource Mode=Self}}"
+												   Placement="Bottom"
+												   PlacementTarget="{Binding RelativeSource={RelativeSource Mode=Self}}">
+													<rsc:CourseCard/>
+											</Popup>
 										</Grid>
+
+										<Button.Triggers>
+											<EventTrigger RoutedEvent="Button.MouseEnter">
+												<BeginStoryboard>
+													<Storyboard>
+														<BooleanAnimationUsingKeyFrames Storyboard.TargetProperty="(Popup.IsOpen)" Storyboard.TargetName="popover">
+															<DiscreteBooleanKeyFrame KeyTime="0:0:0" Value="True"/>
+														</BooleanAnimationUsingKeyFrames>
+													</Storyboard>
+												</BeginStoryboard>
+											</EventTrigger>
+											<EventTrigger RoutedEvent="Button.MouseLeave">
+												<BeginStoryboard>
+													<Storyboard>
+														<BooleanAnimationUsingKeyFrames Storyboard.TargetProperty="(Popup.IsOpen)" Storyboard.TargetName="popover">
+															<DiscreteBooleanKeyFrame KeyTime="0:0:0" Value="False"/>
+														</BooleanAnimationUsingKeyFrames>
+													</Storyboard>
+												</BeginStoryboard>
+											</EventTrigger>
+										</Button.Triggers>
 									</Button>
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>

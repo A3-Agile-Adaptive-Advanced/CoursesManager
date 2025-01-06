@@ -3,7 +3,7 @@ using CoursesManager.MVVM.Data;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.CourseRepository;
-using CoursesManager.UI.Views.Controls.CursusCalendar;
+using CoursesManager.UI.Views.Controls.CoursesCalendar;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 

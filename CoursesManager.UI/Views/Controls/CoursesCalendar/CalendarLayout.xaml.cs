@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace CoursesManager.UI.Views.Controls.CursusCalendar
+namespace CoursesManager.UI.Views.Controls.CoursesCalendar
 {
     public partial class CalendarLayout : UserControl, INotifyPropertyChanged
     {
@@ -97,6 +97,7 @@ namespace CoursesManager.UI.Views.Controls.CursusCalendar
 
 
                 DrawDays();
+
                 OnDateChangedCommand?.Execute(this);
             }
         }
