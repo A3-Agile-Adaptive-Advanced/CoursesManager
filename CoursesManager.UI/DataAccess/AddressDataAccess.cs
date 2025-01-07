@@ -32,7 +32,6 @@ namespace CoursesManager.UI.DataAccess
 
         public dynamic Add(Address address)
         {
-            string procedureName = "spAddresses_Add";
             var parameters = new MySqlParameter[]
             {
                 new MySqlParameter("@p_country", address.Country),
@@ -49,7 +48,7 @@ namespace CoursesManager.UI.DataAccess
                 }
             };
 
-            ExecuteNonProcedure(procedureName, parameters);
+            ExecuteNonProcedure(StoredProcedures.AddAddress, parameters);
 
             int addressId = Convert.ToInt32(parameters.Single(p => p.ParameterName == "@p_id").Value);
             LogUtil.Log($"Address created successfully with ID: {addressId}");

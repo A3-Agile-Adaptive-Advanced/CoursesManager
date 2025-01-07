@@ -12,13 +12,13 @@ using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Repositories.RegistrationRepository;
 using CoursesManager.UI.Repositories.StudentRepository;
-using iText.Bouncycastle.Crypto;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows.Input;
 using CoursesManager.MVVM.Exceptions;
 using System.Linq;
 using System.Text;
+using CoursesManager.UI.Messages;
 
 namespace CoursesManager.UI.ViewModels.Courses
 {
@@ -119,19 +119,22 @@ namespace CoursesManager.UI.ViewModels.Courses
 
                 var registrations = CurrentCourse.Registrations;
 
-                var payments = registrations.Select(registration =>
+                if (registrations is not null)
                 {
-                    var student = _studentRepository.GetById(registration.StudentId);
-                    if (student == null)
+                    var payments = registrations.Select(registration =>
                     {
-                        SendGeneralErrorNotification();
-                        return null;
-                    }
+                        var student = _studentRepository.GetById(registration.StudentId);
+                        if (student == null)
+                        {
+                            SendGeneralErrorNotification();
+                            return null;
+                        }
 
-                    return new CourseStudentPayment(student, registration);
-                }).Where(payment => payment != null);
+                        return new CourseStudentPayment(student, registration);
+                    }).Where(payment => payment != null);
 
-                StudentPayments = new ObservableCollection<CourseStudentPayment>(payments);
+                    StudentPayments = new ObservableCollection<CourseStudentPayment>(payments);
+                }
             }
             else
             {
@@ -169,35 +172,25 @@ namespace CoursesManager.UI.ViewModels.Courses
         {
             if (payment == null || CurrentCourse == null) return;
 
-            var existingRegistration = CurrentCourse.Registrations
-                .FirstOrDefault(r => r.StudentId == payment.Student.Id);
+            var currentRegistration = _registrationRepository.GetAllRegistrationsByCourse(CurrentCourse).FirstOrDefault(r => r.StudentId == payment.Student?.Id);
 
-            if (existingRegistration != null)
+            if (currentRegistration != null)
             {
-                if (!payment.IsPaid)
+                try
                 {
-                    CurrentCourse.IsPayed = payment.IsPaid;
+                    // Haal de true of false checkbox op voor paid, achieved en update de velden zodra deze gewijzigd worden.
+                    currentRegistration.PaymentStatus = payment.IsPaid;
+                    currentRegistration.IsAchieved = payment.IsAchieved;
+                    _registrationRepository.Update(currentRegistration);
                 }
-
-                existingRegistration.PaymentStatus = payment.IsPaid;
-                existingRegistration.IsAchieved = payment.IsAchieved;
-                _registrationRepository.Update(existingRegistration);
-            }
-            else if (payment.IsPaid || payment.IsAchieved)
-            {
-                _registrationRepository.Add(new Registration
+                catch
                 {
-                    StudentId = payment.Student?.Id ?? 0,
-                    CourseId = CurrentCourse.Id,
-                    PaymentStatus = payment.IsPaid,
-                    IsAchieved = payment.IsAchieved,
-                    RegistrationDate = DateTime.Now,
-                    IsActive = true
-                });
+                    throw new Exception("No registration found");
+                }
             }
-
             LoadCourseData();
         }
+
 
         private async void DeleteCourse()
         {
@@ -222,8 +215,6 @@ namespace CoursesManager.UI.ViewModels.Courses
                         try
                         {
                             _courseRepository.Delete(CurrentCourse);
-
-                            _messageBroker.Publish(new CoursesChangedMessage());
                             _navigationService.GoBackAndClearForward();
                         }
                         catch (Exception ex)

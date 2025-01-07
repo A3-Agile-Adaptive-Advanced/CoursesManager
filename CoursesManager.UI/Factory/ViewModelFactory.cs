@@ -4,12 +4,6 @@ using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Mailing;
 using CoursesManager.UI.Models;
-using CoursesManager.UI.Repositories.AddressRepository;
-using CoursesManager.UI.Repositories.CourseRepository;
-using CoursesManager.UI.Repositories.LocationRepository;
-using CoursesManager.UI.Repositories.RegistrationRepository;
-using CoursesManager.UI.Repositories.StudentRepository;
-using CoursesManager.UI.Repositories.TemplateRepository;
 using CoursesManager.UI.Service;
 using CoursesManager.UI.Service.PlaceholderService;
 using CoursesManager.UI.Service.TextHandlerService;
@@ -22,12 +16,6 @@ namespace CoursesManager.UI.Factory
 {
     public class ViewModelFactory
     {
-        private readonly ICourseRepository _courseRepository;
-        private readonly ILocationRepository _locationRepository;
-        private readonly IRegistrationRepository _registrationRepository;
-        private readonly IStudentRepository _studentRepository;
-        private readonly IAddressRepository _addressRepository;
-        private readonly ITemplateRepository _templateRepository;
         private readonly IMessageBroker _messageBroker;
         private readonly IDialogService _dialogService;
         private readonly IConfigurationService _configurationService;
@@ -35,14 +23,10 @@ namespace CoursesManager.UI.Factory
         private readonly IPlaceholderService _placeholderService;
         private readonly ITextHandlerService _textHandlerService;
 
+        private readonly RepositoryFactory _repositoryFactory;
 
         public ViewModelFactory(
-            ICourseRepository courseRepository,
-            ILocationRepository locationRepository,
-            IRegistrationRepository registrationRepository,
-            IStudentRepository studentRepository,
-            IAddressRepository addressRepository,
-            ITemplateRepository templateRepository,
+            RepositoryFactory repositoryFactory,
             IMessageBroker messageBroker,
             IDialogService dialogService,
             IConfigurationService configurationService,
@@ -50,12 +34,7 @@ namespace CoursesManager.UI.Factory
             ITextHandlerService textHandlerService,
             IMailProvider mailProvider)
         {
-            _courseRepository = courseRepository;
-            _locationRepository = locationRepository;
-            _registrationRepository = registrationRepository;
-            _studentRepository = studentRepository;
-            _addressRepository = addressRepository;
-            _templateRepository = templateRepository;
+            _repositoryFactory = repositoryFactory;
             _messageBroker = messageBroker;
             _dialogService = dialogService;
             _configurationService = configurationService;
@@ -79,23 +58,31 @@ namespace CoursesManager.UI.Factory
             return typeof(T) switch
             {
                 Type vmType when vmType == typeof(CourseOverViewViewModel) =>
-                    new CourseOverViewViewModel(_studentRepository, _registrationRepository, _courseRepository, _dialogService, _messageBroker, navigationService, _mailProvider) as T,
+                    new CourseOverViewViewModel(
+                        _repositoryFactory.StudentRepository,
+                        _repositoryFactory.RegistrationRepository,
+                        _repositoryFactory.CourseRepository,
+                        _dialogService,
+                        _messageBroker,
+                        navigationService,
+                        _mailProvider) as T,
                 Type vmType when vmType == typeof(StudentManagerViewModel) =>
-                    new StudentManagerViewModel(_dialogService, _studentRepository, _courseRepository,
-                        _registrationRepository, _messageBroker, navigationService) as T,
+                    new StudentManagerViewModel(_dialogService, _repositoryFactory.StudentRepository, _repositoryFactory.CourseRepository,
+                        _repositoryFactory.RegistrationRepository, _messageBroker, navigationService) as T,
                 Type vmType when vmType == typeof(StudentDetailViewModel) =>
                     new StudentDetailViewModel(
                         _dialogService,
                         _messageBroker,
-                        _registrationRepository,
+                        _repositoryFactory.RegistrationRepository,
                         navigationService,
                         parameter as Student) as T,
                 Type vmType when vmType == typeof(CoursesManagerViewModel) =>
-                    new CoursesManagerViewModel(_courseRepository, _messageBroker, _dialogService, navigationService) as T,
+                    new CoursesManagerViewModel(_repositoryFactory.CourseRepository, _messageBroker, _dialogService, navigationService) as T,
                 Type vmType when vmType == typeof(EditMailTemplatesViewModel) =>
-                    new EditMailTemplatesViewModel(_templateRepository, _dialogService, _messageBroker, _placeholderService, _textHandlerService, navigationService) as T,
+                    new EditMailTemplatesViewModel(_repositoryFactory.TemplateRepository, _dialogService, _messageBroker, _placeholderService, _textHandlerService, navigationService) as T,
+
                 Type vmType when vmType == typeof(ConfigurationViewModel) =>
-                    new ConfigurationViewModel(_configurationService, navigationService, _messageBroker) as T,
+                    new ConfigurationViewModel(_configurationService, _messageBroker, navigationService) as T,
 
                 // Add other view model cases here...
                 _ => throw new ArgumentException($"Unknown ViewModel type: {typeof(T)}")

@@ -1,99 +1,119 @@
-﻿using CoursesManager.UI.DataAccess;
+﻿using System.Collections.ObjectModel;
+using CoursesManager.UI.DataAccess;
 using CoursesManager.UI.Models;
+using CoursesManager.UI.Repositories.AddressRepository;
+using CoursesManager.UI.Repositories.Base;
 
 namespace CoursesManager.UI.Repositories.LocationRepository;
 
-public class LocationRepository : BaseRepository, ILocationRepository
+public class LocationRepository : BaseRepository<Location>, ILocationRepository
 {
     private readonly LocationDataAccess _locationDataAccess;
 
-    private readonly List<Location> _allLocations;
+    private readonly ObservableCollection<Location> _locations;
 
-    public LocationRepository()
-    {
-        _locationDataAccess = new LocationDataAccess();
-        _allLocations = new();
-    }
+    private const string Cachekey = "locationsCache";
 
-    public List<Location> GetAll()
+    private static readonly object SharedLock = new();
+
+    private readonly IAddressRepository _addressRepository;
+
+    public LocationRepository(LocationDataAccess locationDataAccess, IAddressRepository addressRepository)
     {
-        if (_allLocations.Count == 0 || ShouldRefresh)
+        _locationDataAccess = locationDataAccess;
+        _addressRepository = addressRepository;
+
+        try
         {
-            return RefreshAll();
+            _locations = GlobalCache.Instance.Get(Cachekey) as ObservableCollection<Location> ?? SetupCache(Cachekey);
         }
-
-        return _allLocations;
+        catch
+        {
+            _locations = SetupCache(Cachekey);
+        }
+        finally
+        {
+            GetAll();
+        }
     }
 
-    public List<Location> RefreshAll()
+    private Location JoinWithAddress(Location location)
     {
-        lock (_allLocations)
+        location.Address = _addressRepository.GetById(location.AddressId);
+        return location;
+    }
+
+    public ObservableCollection<Location> GetAll()
+    {
+        lock (SharedLock)
         {
-            _lastUpdated = DateTime.Now;
+            if (_locations.Count == 0)
+            {
+                _locationDataAccess.GetAll().ForEach(l => _locations.Add(JoinWithAddress(l)));
+            }
 
-            _allLocations.Clear();
-
-            _allLocations.AddRange(_locationDataAccess.GetAllWithAddresses());
-
-            return _allLocations;
+            return _locations;
         }
     }
 
     public Location? GetById(int id)
     {
-        return _allLocations.First(l => l.Id == id);
-    }
-
-    public void Add(Location data)
-    {
-        lock (_allLocations)
+        lock (SharedLock)
         {
-            ArgumentNullException.ThrowIfNull(data);
+            var item = _locations.FirstOrDefault(l => l.Id == id);
 
-            _locationDataAccess.Add(data);
-            _allLocations.Add(data);
-        }
-    }
-
-    public void Update(Location data)
-    {
-        lock (_allLocations)
-        {
-            ArgumentNullException.ThrowIfNull(data);
-
-            _locationDataAccess.Update(data);
-
-            if (!_allLocations.Contains(data))
+            if (item is null)
             {
-                var existing = _allLocations.FirstOrDefault(l => l.Id == data.Id);
-                if (existing is not null)
-                {
-                    existing.Id = data.Id;
-                    existing.Name = data.Name;
-                    existing.Address = data.Address;
-                }
-                else
-                {
-                    _allLocations.Add(data);
-                }
+                item = _locationDataAccess.GetById(id);
+
+                if (item is not null) _locations.Add(JoinWithAddress(item));
             }
+
+            return item;
         }
     }
 
-    public void Delete(Location data)
+    public void Add(Location location)
     {
-        ArgumentNullException.ThrowIfNull(data);
+        lock (SharedLock)
+        {
+            ArgumentNullException.ThrowIfNull(location);
 
-        Delete(data.Id);
+            _locationDataAccess.Add(location);
+            _locations.Add(location);
+        }
+    }
+
+    public void Update(Location location)
+    {
+        lock (SharedLock)
+        {
+            ArgumentNullException.ThrowIfNull(location);
+
+            _locationDataAccess.Update(location);
+
+            var item = _locations.FirstOrDefault(l => l.Id == location.Id) ?? throw new InvalidOperationException($"Location with id: {location.Id} does not exist.");
+
+            OverwriteItemInPlace(item, location);
+        }
+    }
+
+    public void Delete(Location location)
+    {
+        ArgumentNullException.ThrowIfNull(location);
+
+        Delete(location.Id);
     }
 
     public void Delete(int id)
     {
-        lock (_allLocations)
+        lock (SharedLock)
         {
             _locationDataAccess.Delete(id);
 
-            _allLocations.RemoveAll(loc => loc.Id == id);
+            var item = _locations.FirstOrDefault(l => l.Id == id) ?? throw new InvalidOperationException($"Location with id: {id} does not exist.");
+
+            _locations.Remove(item);
         }
     }
 }

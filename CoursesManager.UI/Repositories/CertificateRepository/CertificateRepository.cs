@@ -1,57 +1,72 @@
 ﻿using CoursesManager.UI.DataAccess;
 using CoursesManager.UI.Models;
-using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections.ObjectModel;
+using CoursesManager.UI.Repositories.Base;
 
 namespace CoursesManager.UI.Repositories.CertificateRepository
 {
-    public class CertificateRepository : ICertificateRepository
+    public class CertificateRepository : BaseRepository<Certificate>, ICertificateRepository
     {
         private readonly CertificateDataAccess _certificateDataAccess;
 
-        public CertificateRepository()
+        private readonly ObservableCollection<Certificate> _certificates;
+
+        private const string Cachekey = "certificatesCache";
+
+        private static readonly object SharedLock = new();
+
+        public CertificateRepository(CertificateDataAccess certificateDataAccess)
         {
-            CertificateDataAccess certificateDataAccess = new CertificateDataAccess();
             _certificateDataAccess = certificateDataAccess;
+
+            try
+            {
+                _certificates = GlobalCache.Instance.Get(Cachekey) as ObservableCollection<Certificate> ??
+                                SetupCache(Cachekey);
+            }
+            catch
+            {
+                _certificates = SetupCache(Cachekey);
+            }
         }
 
-        public void Add(Certificate certificate)
+        public ObservableCollection<Certificate> GetAll()
         {
-            _certificateDataAccess.SaveCertificate(certificate);
-        }
+            lock (SharedLock)
+            {
+                if (_certificates.Count == 0)
+                {
+                    _certificateDataAccess.GetAll().ForEach(_certificates.Add);
+                }
 
-        public void Delete(Certificate data)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Delete(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<Certificate> GetAll()
-        {
-            throw new NotImplementedException();
+                return _certificates;
+            }
         }
 
         public Certificate? GetById(int id)
         {
-            throw new NotImplementedException();
+            lock (SharedLock)
+            {
+                var item = _certificates.FirstOrDefault(c => c.Id == id);
+
+                if (item is null)
+                {
+                    item = _certificateDataAccess.GetById(id);
+
+                    if (item is not null) _certificates.Add(item);
+                }
+
+                return item;
+            }
         }
 
-        public List<Certificate> RefreshAll()
+        public void Add(Certificate certificate)
         {
-            throw new NotImplementedException();
-        }
-
-        public void Update(Certificate data)
-        {
-            throw new NotImplementedException();
+            lock (SharedLock)
+            {
+                _certificateDataAccess.SaveCertificate(certificate);
+                _certificates.Add(certificate);
+            }
         }
     }
 }

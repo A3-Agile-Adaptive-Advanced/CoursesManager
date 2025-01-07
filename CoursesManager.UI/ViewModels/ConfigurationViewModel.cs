@@ -1,28 +1,28 @@
-﻿
-using System.Windows;
-using System.Windows.Input;
-using CoursesManager.MVVM.Commands;
+﻿using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Data;
 using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Enums;
+using CoursesManager.UI.Messages;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Service;
+using System.Windows.Input;
+using System.Windows.Navigation;
 
 namespace CoursesManager.UI.ViewModels
 {
     public class ConfigurationViewModel : ViewModelWithNavigation
     {
         private readonly IConfigurationService _configurationService;
-        private readonly INavigationService _navigationService;
         private readonly IMessageBroker _messageBroker;
-
+        private readonly INavigationService _navigationService;
 
         private string _dbServer;
         public string DbServer
         {
             get => _dbServer;
             set => SetProperty(ref _dbServer, value);
+
         }
 
         private string _dbPort;
@@ -92,11 +92,13 @@ namespace CoursesManager.UI.ViewModels
 
         public ICommand SaveCommand { get; }
 
-        public ConfigurationViewModel(IConfigurationService configurationService, INavigationService navigationService, IMessageBroker messageBroker) : base(navigationService)
+        public ConfigurationViewModel(IConfigurationService configurationService, IMessageBroker messageBroker, INavigationService navigationService) : base(navigationService)
         {
+
             _configurationService = configurationService;
-            _navigationService = navigationService;
             _messageBroker = messageBroker;
+            _navigationService = navigationService;
+            
             
             InitializeSettings();
             SaveCommand = new RelayCommand(ValidateAndSave);
@@ -186,11 +188,11 @@ namespace CoursesManager.UI.ViewModels
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Fout bij opslaan: {ex.Message}");
+                _messageBroker.Publish(new ToastNotificationMessage(true,
+                    $"Fout bij opslaan: {ex.Message}", ToastType.Error));
             }
         }
-
-
+       
         private bool CanSave()
         {
             return !string.IsNullOrWhiteSpace(DbServer) &&

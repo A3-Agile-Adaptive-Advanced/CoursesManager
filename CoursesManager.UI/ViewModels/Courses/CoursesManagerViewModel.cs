@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Windows.Input;
 using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Data;
@@ -30,7 +31,14 @@ namespace CoursesManager.UI.ViewModels
         public ObservableCollection<Course> Courses
         {
             get => _courses;
-            set => SetProperty(ref _courses, value);
+            set
+            {
+                if (_courses is not null) _courses.CollectionChanged -= CoursesChanged;
+
+                SetProperty(ref _courses, value);
+
+                if (_courses is not null) _courses.CollectionChanged += CoursesChanged;
+            }
         }
 
         public ObservableCollection<Course> FilteredCourses
@@ -42,18 +50,20 @@ namespace CoursesManager.UI.ViewModels
         public string SearchTerm
         {
             get => _searchTerm;
-            set { 
-                if (SetProperty(ref _searchTerm, value.Trim())) 
-                    _ = FilterCoursesAsync(); 
+            set
+            {
+                if (SetProperty(ref _searchTerm, value.Trim()))
+                    _ = FilterCoursesAsync();
             }
         }
 
         public bool IsSwitchToggled
         {
             get => _isSwitchToggled;
-            set { 
+            set
+            {
                 if (SetProperty(ref _isSwitchToggled, value))
-                    _ = FilterCoursesAsync(); 
+                    _ = FilterCoursesAsync();
             }
         }
 
@@ -67,8 +77,6 @@ namespace CoursesManager.UI.ViewModels
             _messageBroker = messageBroker;
             _dialogService = dialogService;
 
-            _messageBroker.Subscribe<CoursesChangedMessage, CoursesManagerViewModel>(OnCoursesChangedMessage, this);
-
             ViewTitle = "Cursus beheer";
 
             SearchCommand = new RelayCommand(() => _ = FilterCoursesAsync());
@@ -79,11 +87,14 @@ namespace CoursesManager.UI.ViewModels
             LoadCourses();
         }
 
-        private void OnCoursesChangedMessage(CoursesChangedMessage obj) => LoadCourses();
+        private void CoursesChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            _ = FilterCoursesAsync();
+        }
 
         private void LoadCourses()
         {
-            Courses = new ObservableCollection<Course>(_courseRepository.GetAll());
+            Courses = _courseRepository.GetAll();
             FilteredCourses = new ObservableCollection<Course>(Courses);
             _ = FilterCoursesAsync();
         }
@@ -116,13 +127,12 @@ namespace CoursesManager.UI.ViewModels
 
             // Update the filtered courses collection
             FilteredCourses.Clear();
-            foreach (var course in filteredCourses) 
+            foreach (var course in filteredCourses)
                 FilteredCourses.Add(course);
         }
 
-        private void OpenCourseOptions(Course parameter)
+        private void OpenCourseOptions(Course? parameter)
         {
-
             GlobalCache.Instance.Put("Opened Course", parameter, false);
             _navigationService.NavigateTo<CourseOverViewViewModel>();
         }

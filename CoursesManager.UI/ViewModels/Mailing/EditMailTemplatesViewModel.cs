@@ -13,6 +13,12 @@ using CoursesManager.UI.Service.PlaceholderService;
 using CoursesManager.UI.Service.TextHandlerService;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
+using CoursesManager.MVVM.Mail.MailService;
+using CoursesManager.UI.Enums;
+using MySql.Data.MySqlClient;
+using CoursesManager.MVVM.Exceptions;
+using CoursesManager.UI.Messages;
 
 namespace CoursesManager.UI.ViewModels.Mailing
 {

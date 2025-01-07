@@ -37,7 +37,7 @@ namespace CoursesManager.Tests.Courses
             _messageBrokerMock = new Mock<IMessageBroker>();
 
 
-            var locations = new List<Location>
+            var locations = new ObservableCollection<Location>
             {
                 new Location { Id = 1, Name = "Test Locatie" }
             };

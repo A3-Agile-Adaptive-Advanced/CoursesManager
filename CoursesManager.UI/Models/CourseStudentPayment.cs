@@ -2,6 +2,13 @@
 
 namespace CoursesManager.UI.Models
 {
+
+    /// <summary>
+    /// Class designed to make data available to the UI.
+    /// This class makes it possible to present the payment status in multiple pages without adding any extra code.
+    /// Using overloading for the constructor this can be used this both on courses and on students.
+    /// This class removes the need for extensive if loops in a viewmodel to make the data available to the UI.
+    /// </summary>
     public class CourseStudentPayment : IsObservable
     {
         private bool _isPaid;

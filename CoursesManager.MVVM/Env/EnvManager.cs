@@ -7,7 +7,11 @@ namespace CoursesManager.MVVM.Env;
 public class EnvManager<T>
     where T : new()
 {
-    private static Lazy<T> _values = new(() =>
+    public static string EnvFolderPath { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CoursesManager");
+
+    private static Lazy<T> _values = new(ValueFactory);
+
+    private static T ValueFactory()
     {
         var model = new T();
 
@@ -25,19 +29,13 @@ public class EnvManager<T>
 
         LoadValues(model);
         return model;
-    });
-
+    }
 
     public static T Values => _values.Value;
 
-
-
     private static void LoadValues(T model)
     {
-
-        ArgumentNullException.ThrowIfNull(model);
-
-        var envFields = model.GetType().GetFields().Where(f => f.IsPublic);
+        var envFields = model!.GetType().GetFields().Where(f => f.IsPublic);
 
         foreach (var field in envFields)
         {
@@ -53,50 +51,41 @@ public class EnvManager<T>
             {
                 nameof(Int32) => EnvReader.GetIntValue(envKey),
                 nameof(Boolean) => EnvReader.GetBooleanValue(envKey),
-                nameof(Decimal) => EnvReader.GetDecimalValue(envKey),
-                nameof(Double) => EnvReader.GetDoubleValue(envKey),
                 nameof(String) => EnvReader.GetStringValue(envKey),
                 _ => throw new Exception($"Invalid type in model: {field.FieldType}")
             };
 
-            Console.WriteLine($"Sleutel: {envKey}, Waarde: {value}");
             field.SetValue(model, value);
         }
     }
 
-
     public static void Save()
     {
+        Directory.CreateDirectory(EnvFolderPath);
 
         Dictionary<string, string> envData = new();
 
-        if (Values == null)
-        {
-            throw new ArgumentNullException();
-        }
-
-        var envFields = Values.GetType().GetFields().Where(f => f.IsPublic);
+        var envFields = Values!.GetType().GetFields().Where(f => f.IsPublic);
 
         foreach (var field in envFields)
         {
             var envKey = field.Name;
             var value = field.GetValue(Values)?.ToString();
 
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                envData[envKey] = value;
-            }
+            envData[envKey] = value ?? string.Empty;
         }
 
         SaveToFile(envData);
     }
 
-
+    public static void Reset()
+    {
+        _values = new Lazy<T>(ValueFactory);
+    }
 
     public static void SaveToFile(Dictionary<string, string> envdata)
     {
-        var startDirectory = Directory.GetCurrentDirectory();
-        var envFilePath = Path.Combine(startDirectory, ".env");
+        var envFilePath = Path.Combine(EnvFolderPath, ".env");
 
         try
         {
@@ -112,16 +101,13 @@ public class EnvManager<T>
         }
     }
 
-
-
     private static List<string> FindEnvFiles()
     {
         var envFiles = new List<string>();
-        var startDirectory = Directory.GetCurrentDirectory();
 
         try
         {
-            var files = Directory.GetFiles(startDirectory, "*.env", SearchOption.TopDirectoryOnly);
+            var files = Directory.GetFiles(EnvFolderPath, "*.env", SearchOption.TopDirectoryOnly);
 
             if (files.Length == 0)
             {
@@ -140,5 +126,4 @@ public class EnvManager<T>
 
         return envFiles;
     }
-
 }
