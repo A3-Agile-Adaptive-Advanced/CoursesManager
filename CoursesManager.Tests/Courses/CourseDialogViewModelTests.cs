@@ -14,6 +14,7 @@ using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Dialogs.ViewModels;
 using CoursesManager.UI.Service;
 using CoursesManager.UI.Enums;
+using CoursesManager.UI.Messages;
 
 
 namespace CoursesManager.Tests.Courses
