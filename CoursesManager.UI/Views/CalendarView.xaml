@@ -74,7 +74,8 @@
 											<Popup x:Name="popover"
 												   IsOpen="{Binding IsPopoverOpen, RelativeSource={RelativeSource Mode=Self}}"
 												   Placement="Bottom"
-												   PlacementTarget="{Binding RelativeSource={RelativeSource Mode=Self}}">
+												   PlacementTarget="{Binding RelativeSource={RelativeSource Mode=Self}}"
+                                                   AllowsTransparency="True">
 													<rsc:CourseCard/>
 											</Popup>
 										</Grid>
