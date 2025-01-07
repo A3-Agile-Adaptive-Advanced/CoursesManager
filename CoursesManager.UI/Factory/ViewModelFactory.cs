@@ -58,7 +58,7 @@ namespace CoursesManager.UI.Factory
             return typeof(T) switch
             {
                 Type vmType when vmType == typeof(CalendarViewModel) =>
-                    new CalendarViewModel(navigationService, _courseRepository) as T,
+                    new CalendarViewModel(navigationService, _repositoryFactory.CourseRepository) as T,
                 Type vmType when vmType == typeof(CourseOverViewViewModel) =>
                     new CourseOverViewViewModel(
                         _repositoryFactory.StudentRepository,
