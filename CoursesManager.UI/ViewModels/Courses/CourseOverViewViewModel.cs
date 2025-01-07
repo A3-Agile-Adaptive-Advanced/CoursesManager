@@ -123,9 +123,12 @@ namespace CoursesManager.UI.ViewModels.Courses
                 {
                     var payments = registrations.Select(registration =>
                     {
-                        SendGeneralErrorNotification();
-                        return null;
-                    }
+                        var student = _studentRepository.GetById(registration.StudentId);
+                        if (student == null)
+                        {
+                            SendGeneralErrorNotification();
+                            return null;
+                        }
 
                         return new CourseStudentPayment(student, registration);
                     }).Where(payment => payment != null);
@@ -179,21 +182,8 @@ namespace CoursesManager.UI.ViewModels.Courses
                     currentRegistration.PaymentStatus = payment.IsPaid;
                     currentRegistration.IsAchieved = payment.IsAchieved;
                     _registrationRepository.Update(currentRegistration);
-
-                    // Haal alle registrations van de CurrentCourse op en check of alle studenten betaald hebben zet dan CurrentCourse.IsPayed op true, zo niet dan false.
-                    var allCurrentRegistrations = _registrationRepository.GetAllRegistrationsByCourse(CurrentCourse);
-                    if (allCurrentRegistrations.All(r => r.PaymentStatus))
-                    {
-                        CurrentCourse.IsPayed = true;
-                        _courseRepository.Update(CurrentCourse);
-                    }
-                    else
-                    {
-                        CurrentCourse.IsPayed = false;
-                    }
                 }
                 catch
-                (Exception ex)
                 {
                     throw new Exception("No registration found");
                 }

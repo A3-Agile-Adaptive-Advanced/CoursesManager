@@ -118,9 +118,9 @@ namespace CoursesManager.Tests.Courses
             Assert.That(_viewModel.FilteredCourses, Has.Count.EqualTo(1));
             Assert.That(
                 _viewModel.FilteredCourses,
-                Has.All.Matches<Course>(c => 
+                Has.All.Matches<Course>(c =>
                     c.GenerateFilterString().Contains(
-                        _viewModel.SearchTerm, 
+                        _viewModel.SearchTerm,
                         StringComparison.CurrentCultureIgnoreCase
                     )
                 )
@@ -132,17 +132,18 @@ namespace CoursesManager.Tests.Courses
             Assert.That(_viewModel.FilteredCourses, Has.Count.EqualTo(2));
             Assert.That(
                 _viewModel.FilteredCourses,
-                Has.All.Matches<Course>(c => 
+                Has.All.Matches<Course>(c =>
                     c.GenerateFilterString().Contains(
-                        _viewModel.SearchTerm, 
+                        _viewModel.SearchTerm,
                         StringComparison.CurrentCultureIgnoreCase
                     )
                 )
             );
 
-        //    // Reset SearchTerm
-        //    _viewModel.SearchTerm = String.Empty;
-        //}
+            //    // Reset SearchTerm
+            //    _viewModel.SearchTerm = String.Empty;
+            //}
+        }
 
         [Test]
         public async Task Should_Return_Empty_When_SearchTerm_Does_Not_Match_Any_Course()

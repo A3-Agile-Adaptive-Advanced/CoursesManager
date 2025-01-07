@@ -164,6 +164,11 @@ namespace CoursesManager.Tests.Students
             // Arrange
             var student = new Student { Id = 1, FirstName = "John" };
             _registrationRepositoryMock.Setup(repo => repo.GetAll()).Returns(new ObservableCollection<Registration>());
+
+            _registrationRepositoryMock
+                .Setup(repo => repo.GetAllRegistrationsByStudent(It.IsAny<Student>()))
+                .Returns((Student student) => new List<Registration>());
+
             _viewModel.SelectedStudent = student;
 
             _navigationServiceMock.Setup(nav => nav.NavigateTo<StudentDetailViewModel>(It.IsAny<Student>()));
@@ -207,11 +212,14 @@ namespace CoursesManager.Tests.Students
 
 
         [Test]
-        public async Task CheckboxChangedCommand_ShouldUpdateRegistration_WhenCheckboxesAreUpdated()
+        public void CheckboxChangedCommand_ShouldUpdateRegistration_WhenCheckboxesAreUpdated()
         {
             // Arrange
             var registration = new Registration { Id = 1, StudentId = 1, CourseId = 1, PaymentStatus = false, IsAchieved = false };
-            _registrationRepositoryMock.Setup(repo => repo.GetAll()).Returns(new ObservableCollection<Registration> { registration });
+
+            _registrationRepositoryMock
+                .Setup(repo => repo.GetAllRegistrationsByStudent(It.IsAny<Student>()))
+                .Returns((Student student) => [ registration ]);
 
             var course = new Course { Id = 1, Name = "Math" };
             var payment = new CourseStudentPayment(course, registration) { IsPaid = true, IsAchieved = true };

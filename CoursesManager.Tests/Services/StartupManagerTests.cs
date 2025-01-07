@@ -1,5 +1,6 @@
 ﻿using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
+using CoursesManager.UI.Messages;
 using CoursesManager.UI.Service;
 using CoursesManager.UI.ViewModels;
 using Moq;

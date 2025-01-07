@@ -163,33 +163,6 @@ namespace CoursesManager.UI.ViewModels.Students
 
             FilteredStudentRecords = new ObservableCollection<Student>(filtered);
 
-            //if (string.IsNullOrWhiteSpace(SearchText))
-            //{
-            //    FilteredStudentRecords = new ObservableCollection<Student>(Students);
-            //}
-            //else
-            //{
-            //    var searchTerm = SearchText.Trim().ToLower();
-            //    var filtered = Students.Where(s => s.TableFilter().ToLower().Contains(searchTerm)).ToList();
-            //    FilteredStudentRecords = new ObservableCollection<Student>(filtered);
-            //}
-
-            //if (!IsToggled)
-            //{
-            //    List<Student> filtered = new List<Student>();
-            //    var students = _studentRepository.GetAll();
-            //    foreach (var student in students)
-            //    {
-            //        if (student.IsDeleted)
-            //        {
-            //            filtered.Add(student);
-            //        }
-            //    }
-
-            //    FilteredStudentRecords = new ObservableCollection<Student>(filtered);
-
-            //}
-
             OnPropertyChanged(nameof(FilteredStudentRecords));
         }
 

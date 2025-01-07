@@ -233,11 +233,6 @@ namespace CoursesManager.Tests.Courses
                 r.PaymentStatus == payment.IsPaid &&
                 r.IsAchieved == payment.IsAchieved
             )), Times.Once);
-
-            _courseRepositoryMock.Verify(repo => repo.Update(It.Is<Course>(c =>
-                c.Id == course.Id &&
-                c.IsPayed == true
-            )), Times.Once);
         }
     }
 }

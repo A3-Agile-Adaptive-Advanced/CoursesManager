@@ -1,8 +1,6 @@
 ﻿using CoursesManager.UI.Models;
 using MySql.Data.MySqlClient;
-using System.Reflection;
 using CoursesManager.UI.Database;
-using System.Linq;
 
 namespace CoursesManager.UI.DataAccess;
 
@@ -22,9 +20,13 @@ public class RegistrationDataAccess : BaseDataAccess<Registration>
 
     private static Registration MapToRegistration(Dictionary<string, object?> row)
     {
+        if (row.TryGetValue("id", out var id))
+        {
+        }
+
         return new Registration
         {
-            Id = Convert.ToInt32(row["id"]),
+            Id = Convert.ToInt32(id ?? row["registration_id"]),
             CourseId = Convert.ToInt32(row["course_id"]),
             StudentId = Convert.ToInt32(row["student_id"]),
             RegistrationDate = Convert.ToDateTime(row["registration_date"]),
@@ -141,6 +143,18 @@ public class RegistrationDataAccess : BaseDataAccess<Registration>
             var res = ExecuteProcedure(StoredProcedures.GetRegistrationById, new MySqlParameter("@p_id", id));
 
             return !res.Any() ? null : MapToRegistration(res.First());
+        }
+        catch (MySqlException ex)
+        {
+            throw new InvalidOperationException(ex.Message, ex);
+        }
+    }
+
+    public List<Registration> GetAllRegistrationsByStudent(int studentId)
+    {
+        try
+        {
+            return ExecuteProcedure(StoredProcedures.GetRegistrationsByStudentId, new MySqlParameter("@p_studentId", studentId)).Select(MapToRegistration).ToList();
         }
         catch (MySqlException ex)
         {

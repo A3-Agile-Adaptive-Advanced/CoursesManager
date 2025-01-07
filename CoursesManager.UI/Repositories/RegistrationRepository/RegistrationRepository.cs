@@ -116,12 +116,19 @@ public class RegistrationRepository : BaseRepository<Registration>, IRegistratio
     {
         ArgumentNullException.ThrowIfNull(course);
 
-        return GetAll().Where(r => r.CourseId == course.Id).ToList();
+        lock (SharedLock)
+        {
+            return _registrations.Where(r => r.CourseId == course.Id).ToList();
+        }
     }
+
     public List<Registration> GetAllRegistrationsByStudent(Student student)
     {
         ArgumentNullException.ThrowIfNull(student);
 
-        return _registrationDataAccess.GetAllRegistrationsByStudent(student.Id);
+        lock (SharedLock)
+        {
+            return _registrations.Where(r => r.StudentId == student.Id).ToList();
+        }
     }
 }
