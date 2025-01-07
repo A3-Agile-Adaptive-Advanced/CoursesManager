@@ -11,10 +11,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="coverlet.collector" Version="6.0.2">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
+	  <Compile Remove="Course\**" />
+	  <EmbeddedResource Remove="Course\**" />
+	  <None Remove="Course\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="coverlet.collector" Version="6.0.0" />
 		<PackageReference Include="coverlet.msbuild" Version="6.0.2">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -36,7 +39,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Course\" />
+	  <Folder Include="Messages\" />
+	  <Folder Include="Repositories\" />
 	</ItemGroup>
 
 </Project>

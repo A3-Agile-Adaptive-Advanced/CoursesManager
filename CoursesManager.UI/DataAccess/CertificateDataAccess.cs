@@ -40,9 +40,49 @@ namespace CoursesManager.UI.DataAccess
             catch (MySqlException ex)
             {
                 LogUtil.Error(ex.Message);
-                throw new DataAccessException("Something went wrong while accessing the database");
+                throw new DataAccessException("Something went wrong while accessing the database", ex);
             }
         }
 
+        public List<Certificate> GetAll()
+        {
+            try
+            {
+                return ExecuteProcedure(StoredProcedures.GetAllCertificates).Select(MapToCertificate).ToList();
+            }
+            catch (MySqlException ex)
+            {
+                LogUtil.Error(ex.Message);
+                throw new DataAccessException("Something went wrong while accessing the database", ex);
+            }
+        }
+
+        private static Certificate MapToCertificate(Dictionary<string, object?> row)
+        {
+            return new Certificate
+            {
+                CourseCode = row["course_code"]?.ToString() ?? string.Empty,
+                Id = Convert.ToInt32(row["id"]),
+                PdfString = row["pdf_html"]?.ToString() ?? string.Empty,
+                StudentCode = Convert.ToInt32(row["student_code"])
+            };
+        }
+
+        public Certificate? GetById(int id)
+        {
+            try
+            {
+                var res = ExecuteProcedure(StoredProcedures.GetCertificateById, [
+                    new MySqlParameter("@p_id", id)
+                ]);
+
+                return !res.Any() ? null : MapToCertificate(res.First());
+            }
+            catch (MySqlException ex)
+            {
+                LogUtil.Error(ex.Message);
+                throw new DataAccessException("Something went wrong while accessing the database", ex);
+            }
+        }
     }
 }

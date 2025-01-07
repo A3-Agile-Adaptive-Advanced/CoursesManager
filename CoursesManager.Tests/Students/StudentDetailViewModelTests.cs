@@ -35,36 +35,32 @@ namespace CoursesManager.Tests.Students
                 Id = 1,
                 FirstName = "John",
                 LastName = "Doe",
-                Email = "john.doe@example.com",
-                Courses = new ObservableCollection<Course>
+                Email = "john.doe@example.com"
+            };
+
+            var course = new Course
+            {
+                Id = 1,
+                Name = "Math 101",
+                Code = "MATH101",
+                Description = "Basic Mathematics",
+                IsActive = true,
+                Category = "Mathematics",
+                StartDate = DateTime.Now,
+                EndDate = DateTime.Now.AddMonths(3),
+                LocationId = 1,
+                Location = new Location
                 {
-                    new Course
+                    Id = 1,
+                    Name = "Main Campus",
+                    Address = new Address
                     {
                         Id = 1,
-                        Name = "Math 101",
-                        Code = "MATH101",
-                        Description = "Basic Mathematics",
-                        Participants = 30,
-                        IsActive = true,
-                        IsPayed = true,
-                        Category = "Mathematics",
-                        StartDate = DateTime.Now,
-                        EndDate = DateTime.Now.AddMonths(3),
-                        LocationId = 1,
-                        Location = new Location
-                        {
-                            Id = 1,
-                            Name = "Main Campus",
-                            Address = new Address
-                            {
-                                Id = 1,
-                                Country = "USA",
-                                ZipCode = "12345",
-                                City = "City",
-                                Street = "Street",
-                                HouseNumber = "123"
-                            }
-                        }
+                        Country = "USA",
+                        ZipCode = "12345",
+                        City = "City",
+                        Street = "Street",
+                        HouseNumber = "123"
                     }
                 }
             };
@@ -74,20 +70,24 @@ namespace CoursesManager.Tests.Students
                 Id = 1,
                 StudentId = _testStudent.Id,
                 Student = _testStudent,
-                CourseId = _testStudent.Courses.First().Id,
-                Course = _testStudent.Courses.First(),
+                CourseId = course.Id,
+                Course = course,
                 RegistrationDate = DateTime.Now,
                 PaymentStatus = true,
                 IsActive = true,
                 IsAchieved = false,
             };
-            
 
-            // Mock registration repository
+            course.Registrations = new ObservableCollection<Registration> { registration };
+
+            _testStudent.Registrations = new ObservableCollection<Registration> { registration };
+
+
+        // Mock registration repository
             _mockRegistrationRepository.Setup(repo => repo.GetAll())
-                .Returns(new List<Registration>
+                .Returns(new ObservableCollection<Registration>
                 {
-                    new Registration { StudentId = 1, CourseId = 1 }
+                    registration
                 });
 
             _viewModel = new StudentDetailViewModel(
@@ -104,7 +104,6 @@ namespace CoursesManager.Tests.Students
             // Assert initial properties are set correctly
             Assert.That(_viewModel.Student, Is.EqualTo(_testStudent));
             Assert.That(_viewModel.EditStudent, Is.Not.Null);
-
         }
 
         [Test]

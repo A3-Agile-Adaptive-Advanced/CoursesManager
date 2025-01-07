@@ -1,8 +1,6 @@
 ﻿using CoursesManager.UI.Models;
 using MySql.Data.MySqlClient;
-using System.Reflection;
 using CoursesManager.UI.Database;
-using System.Linq;
 
 namespace CoursesManager.UI.DataAccess;
 
@@ -12,16 +10,7 @@ public class RegistrationDataAccess : BaseDataAccess<Registration>
     {
         try
         {
-            return ExecuteProcedure(StoredProcedures.RegistrationsGetByCourseId, new MySqlParameter("@p_courseId", courseId)).Select(row => new Registration
-            {
-                Id = Convert.ToInt32(row["registration_id"]),
-                CourseId = Convert.ToInt32(row["course_id"]),
-                StudentId = Convert.ToInt32(row["student_id"]),
-                RegistrationDate = Convert.ToDateTime(row["registration_date"]),
-                PaymentStatus = Convert.ToBoolean(row["payment_status"]),
-                IsAchieved = Convert.ToBoolean(row["is_achieved"]),
-                IsActive = Convert.ToBoolean(row["is_active"])
-            }).ToList();
+            return ExecuteProcedure(StoredProcedures.GetRegistrationsByCourseId, new MySqlParameter("@p_courseId", courseId)).Select(MapToRegistration).ToList();
         }
         catch (MySqlException ex)
         {
@@ -29,65 +18,36 @@ public class RegistrationDataAccess : BaseDataAccess<Registration>
         }
     }
 
-    public List<Registration> GetAllRegistrationsByStudent(int studentId)
+    private static Registration MapToRegistration(Dictionary<string, object?> row)
     {
-        try
+        if (row.TryGetValue("id", out var id))
         {
-            return ExecuteProcedure(StoredProcedures.RegistrationsGetByStudentId, new MySqlParameter("@p_studentId", studentId)).Select(row => new Registration
-            {
-                Id = Convert.ToInt32(row["registration_id"]),
-                CourseId = Convert.ToInt32(row["course_id"]),
-                StudentId = Convert.ToInt32(row["student_id"]),
-                RegistrationDate = Convert.ToDateTime(row["registration_date"]),
-                PaymentStatus = Convert.ToBoolean(row["payment_status"]),
-                IsAchieved = Convert.ToBoolean(row["is_achieved"]),
-                IsActive = Convert.ToBoolean(row["is_active"]),
-                Course = new Course
-                {
-                    Id = Convert.ToInt32(row["course_id"]),
-                    Name = Convert.ToString(row["name"])
-                }
-            }).ToList();
         }
-        catch (MySqlException ex)
-        {
-            LogUtil.Error($"MySQL error in get registration by student: {ex.Message}");
-            throw;
-        }
-        catch (Exception ex)
-        {
-            LogUtil.Error($"General error in get registration by student: {ex.Message}");
-            throw;
-        }
-    }
 
-    public List<Registration> GetAll()
-    {
-        return ExecuteProcedure(StoredProcedures.GetAllRegistrations).Select(row => new Registration
+        return new Registration
         {
-            Id = Convert.ToInt32(row["id"]),
+            Id = Convert.ToInt32(id ?? row["registration_id"]),
             CourseId = Convert.ToInt32(row["course_id"]),
             StudentId = Convert.ToInt32(row["student_id"]),
             RegistrationDate = Convert.ToDateTime(row["registration_date"]),
             PaymentStatus = Convert.ToBoolean(row["payment_status"]),
-            IsActive = Convert.ToBoolean(row["is_active"]),
             IsAchieved = Convert.ToBoolean(row["is_achieved"]),
-            Course = new Course
-            {
-                Id = Convert.ToInt32(row["course_id"]),
-                Name = row["course_name"].ToString(),
-            }
-        }).ToList();
+            IsActive = Convert.ToBoolean(row["is_active"])
+        };
+    }
+
+    public List<Registration> GetAll()
+    {
+        return ExecuteProcedure(StoredProcedures.GetAllRegistrations).Select(MapToRegistration).ToList();
     }
 
     public void Delete(int id)
     {
         try
         {
-            ExecuteNonProcedure(
-                    StoredProcedures.DeleteRegistrations,
-                    new MySqlParameter("@p_id", id)
-                );
+            ExecuteNonProcedure(StoredProcedures.DeleteRegistration,
+                new MySqlParameter("@p_id", id)
+            );
             LogUtil.Log($"Registration deleted successfully for Registration ID: {id}");
         }
         catch (MySqlException ex)
@@ -107,7 +67,7 @@ public class RegistrationDataAccess : BaseDataAccess<Registration>
         try
         {
             ExecuteNonProcedure(
-                StoredProcedures.AddRegistrations,
+                StoredProcedures.AddRegistration,
                 new MySqlParameter("@p_is_achieved", registration.IsAchieved),
                 new MySqlParameter("@p_is_active", registration.IsActive),
                 new MySqlParameter("@p_payment_status", registration.PaymentStatus),
@@ -135,7 +95,7 @@ public class RegistrationDataAccess : BaseDataAccess<Registration>
         try
         {
             ExecuteNonProcedure(
-                StoredProcedures.EditRegistrations,
+                StoredProcedures.EditRegistration,
                 new MySqlParameter("@p_id", registration.Id),
                 new MySqlParameter("@p_is_achieved", registration.IsAchieved),
                 new MySqlParameter("@p_is_active", registration.IsActive),
@@ -168,16 +128,33 @@ public class RegistrationDataAccess : BaseDataAccess<Registration>
                 new MySqlParameter("@p_student_id", studentId)
             });
 
-            return result.Select(row => new Registration
-            {
-                Id = Convert.ToInt32(row["id"]),
-                CourseId = Convert.ToInt32(row["course_id"]),
-                StudentId = Convert.ToInt32(row["student_id"]),
-                RegistrationDate = Convert.ToDateTime(row["registration_date"]),
-                PaymentStatus = Convert.ToBoolean(row["payment_status"]),
-                IsAchieved = Convert.ToBoolean(row["is_achieved"]),
-                IsActive = Convert.ToBoolean(row["is_active"])
-            }).ToList();
+            return result.Select(MapToRegistration).ToList();
+        }
+        catch (MySqlException ex)
+        {
+            throw new InvalidOperationException(ex.Message, ex);
+        }
+    }
+
+    public Registration? GetById(int id)
+    {
+        try
+        {
+            var res = ExecuteProcedure(StoredProcedures.GetRegistrationById, new MySqlParameter("@p_id", id));
+
+            return !res.Any() ? null : MapToRegistration(res.First());
+        }
+        catch (MySqlException ex)
+        {
+            throw new InvalidOperationException(ex.Message, ex);
+        }
+    }
+
+    public List<Registration> GetAllRegistrationsByStudent(int studentId)
+    {
+        try
+        {
+            return ExecuteProcedure(StoredProcedures.GetRegistrationsByStudentId, new MySqlParameter("@p_studentId", studentId)).Select(MapToRegistration).ToList();
         }
         catch (MySqlException ex)
         {

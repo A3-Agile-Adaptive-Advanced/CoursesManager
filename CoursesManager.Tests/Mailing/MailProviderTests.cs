@@ -32,8 +32,54 @@ public class MailProviderTests
     [Test]
     public async Task Test_Send_Certificates_When_Students_Are_Eligible()
     {
-        // Arrange
-        var course = new Course { Id = 1, Students = new ObservableCollection<Student> { new Student { Id = 1, Email = "x@x.com", Registrations = new ObservableCollection<Registration> { new Registration { CourseId = 1, IsAchieved = true } } } } };
+        var course = new Course
+        {
+            Id = 1
+        };
+
+        var student1 = new Student
+        {
+            Id = 1,
+            Email = "x@x.com"
+        };
+
+        var student2 = new Student
+        {
+            Id = 2,
+            Email = "x@x.com"
+        };
+
+        var registration1 = new Registration
+        {
+            Id = 1,
+            Course = course,
+            CourseId = course.Id,
+            IsAchieved = true,
+            IsActive = true,
+            PaymentStatus = false,
+            RegistrationDate = DateTime.Now,
+            Student = student1,
+            StudentId = student1.Id
+        };
+
+        var registration2 = new Registration
+        {
+            Id = 1,
+            Course = course,
+            CourseId = course.Id,
+            IsAchieved = true,
+            IsActive = true,
+            PaymentStatus = false,
+            RegistrationDate = DateTime.Now,
+            Student = student2,
+            StudentId = student2.Id
+        };
+
+        student1.Registrations = new ObservableCollection<Registration> { registration1 };
+        student2.Registrations = new ObservableCollection<Registration> { registration2 };
+        course.Registrations = new ObservableCollection<Registration> { registration1, registration2 };
+        
+
         var templateMail = new Template { Name = "CertificateMail", HtmlString = "[Cursist naam]", SubjectString = "CertificateMail" };
         var templateCertificate = new Template { Name = "Certificate", HtmlString = "[Cursist naam]", SubjectString = "Certificate" };
 
@@ -57,7 +103,36 @@ public class MailProviderTests
     public async Task Test_Send_Course_Start_Notifications()
     {
         // Arrange
-        var course = new Course { Id = 1, Students = new ObservableCollection<Student> { new Student { Id = 1, Email = "x@x.com" }, new Student { Id = 2, Email = "x@x.com" } } };
+        var course = new Course { Id = 1 };
+
+        course.Registrations = new ObservableCollection<Registration>
+        {
+            new Registration
+            {
+                Id = 1,
+                Course = course,
+                CourseId = course.Id,
+                IsAchieved = true,
+                IsActive = true,
+                PaymentStatus = true,
+                RegistrationDate = DateTime.Now,
+                Student = new Student { Id = 1, Email = "x@x.com" },
+                StudentId = 1
+            },
+            new Registration
+            {
+                Id = 1,
+                Course = course,
+                CourseId = course.Id,
+                IsAchieved = true,
+                IsActive = true,
+                PaymentStatus = true,
+                RegistrationDate = DateTime.Now,
+                Student = new Student { Id = 2, Email = "x@x.com" },
+                StudentId = 2
+            }
+        };
+
         var template = new Template { Name = "CourseStartMail", HtmlString = "[Placeholder]", SubjectString = "Course Start" };
 
         _mockTemplateRepository.Setup(repo => repo.GetTemplateByName("CourseStartMail"))
@@ -80,10 +155,29 @@ public class MailProviderTests
         // Arrange
         var course = new Course
         {
-            Id = 1,
-            Students = new ObservableCollection<Student> { new Student { Id = 1, Email = "x@x.com" } },
-            Registrations = new List<Registration> { new Registration { StudentId = 1, PaymentStatus = false } }
+            Id = 1
         };
+
+        course.Registrations = new ObservableCollection<Registration>
+        {
+            new Registration
+            {
+                Id = 1,
+                Course = course,
+                CourseId = course.Id,
+                IsAchieved = true,
+                IsActive = true,
+                PaymentStatus = false,
+                RegistrationDate = DateTime.Now,
+                Student = new Student
+                {
+                    Id = 1,
+                    Email = "x@x.com"
+                },
+                StudentId = 1
+            }
+        };
+
         var template = new Template { HtmlString = "[Placeholder]", SubjectString = "Payment Due" };
 
         _mockTemplateRepository.Setup(repo => repo.GetTemplateByName("PaymentMail"))
@@ -106,24 +200,23 @@ public class MailProviderTests
         // Arrange
         var course = new Course
         {
-            Id = 1,
-            Students = new ObservableCollection<Student>
-            {
-                new Student { Id = 1, Email = "x@x.com"},
-                new Student { Id = 2, Email = "x@x.com" },
-                new Student { Id = 3, Email = "x@x.com" },
-                new Student { Id = 4 , Email = "x@x.com"},
-                new Student { Id = 5 , Email = "x@x.com"}
-            },
-            Registrations = new List<Registration>
-            {
-                new Registration { StudentId = 1, PaymentStatus = false },
-                new Registration { StudentId = 2, PaymentStatus = true },
-                new Registration { StudentId = 3, PaymentStatus = false },
-                new Registration { StudentId = 4, PaymentStatus = true },
-                new Registration { StudentId = 5, PaymentStatus = false }
-            }
+            Id = 1
         };
+
+        course.Registrations = new ObservableCollection<Registration>
+        {
+            new Registration
+                { StudentId = 1, Student = new Student { Id = 1, Email = "x@x.com" }, PaymentStatus = false },
+            new Registration
+                { StudentId = 2, Student = new Student { Id = 2, Email = "x@x.com" }, PaymentStatus = true },
+            new Registration
+                { StudentId = 3, Student = new Student { Id = 3, Email = "x@x.com" }, PaymentStatus = false },
+            new Registration
+                { StudentId = 4, Student = new Student { Id = 4, Email = "x@x.com" }, PaymentStatus = true },
+            new Registration
+                { StudentId = 5, Student = new Student { Id = 5, Email = "x@x.com" }, PaymentStatus = false },
+        };
+
         var template = new Template { HtmlString = "[Placeholder]", SubjectString = "Payment Due" };
 
         _mockTemplateRepository.Setup(repo => repo.GetTemplateByName("PaymentMail"))
@@ -150,7 +243,34 @@ public class MailProviderTests
     public async Task Test_Null_Certificate_Should_Throw_Exception()
     {
         // Arrange
-        var course = new Course { Id = 1, Students = new ObservableCollection<Student> { new Student { Id = 1, Email = "x@x.com", Registrations = new ObservableCollection<Registration> { new Registration { CourseId = 1, IsAchieved = true } } } } };
+        var course = new Course { Id = 1 };
+
+        var student = new Student
+        {
+            Id = 1,
+            Email = "x@x.com"
+        };
+
+        var registration = new Registration
+        {
+            Id = 1,
+            Course = course,
+            CourseId = course.Id,
+            IsAchieved = true,
+            IsActive = true,
+            PaymentStatus = true,
+            RegistrationDate = DateTime.Now,
+            Student = student,
+            StudentId = 1
+        };
+
+        student.Registrations = new ObservableCollection<Registration> { registration };
+
+        course.Registrations = new ObservableCollection<Registration>
+        {
+            registration
+        };
+
         var templateMail = new Template { Name = "CertificateMail", HtmlString = "[Cursist naam]", SubjectString = "CertificateMail" };
         Template? templateCertificate = null;
 
@@ -171,12 +291,28 @@ public class MailProviderTests
     public async Task Test_Null_Template_Should_Throw_Exception()
     {
         // Arrange
-        var course = new Course
+        var course = new Course { Id = 1 };
+
+        course.Registrations = new ObservableCollection<Registration>
         {
-            Id = 1,
-            Students = new ObservableCollection<Student> { new Student { Id = 1 } },
-            Registrations = new List<Registration> { new Registration { StudentId = 1, PaymentStatus = false } }
+            new Registration
+            {
+                Id = 1,
+                Course = course,
+                CourseId = course.Id,
+                IsAchieved = true,
+                IsActive = true,
+                PaymentStatus = true,
+                RegistrationDate = DateTime.Now,
+                Student = new Student
+                {
+                    Id = 1,
+                    Email = "x@x.com"
+                },
+                StudentId = 1
+            }
         };
+
         Template? template = null;
 
         _mockTemplateRepository.Setup(repo => repo.GetTemplateByName("PaymentMail"))
@@ -217,18 +353,17 @@ public class MailProviderTests
         // Arrange
         var course = new Course
         {
-            Id = 1,
-            Registrations = new List<Registration>
-            {
-                new Registration { CourseId = 1, StudentId = 1, PaymentStatus = false },
-                new Registration { CourseId = 1, StudentId = 2, PaymentStatus = false }
-            },
-            Students = new ObservableCollection<Student>
-            {
-                new Student { Id = 1, Email = "" },
-                new Student { Id = 2, Email = "x@x.com" }
-            }
+            Id = 1
         };
+
+        course.Registrations = new ObservableCollection<Registration>
+        {
+            new Registration
+                { StudentId = 1, Student = new Student { Id = 1, Email = "" }, PaymentStatus = false },
+            new Registration
+                { StudentId = 2, Student = new Student { Id = 2, Email = "x@x.com" }, PaymentStatus = false }
+        };
+
         var template = new Template { HtmlString = "[Placeholder]", SubjectString = "Payment Due" };
 
         _mockTemplateRepository.Setup(repo => repo.GetTemplateByName("PaymentMail"))

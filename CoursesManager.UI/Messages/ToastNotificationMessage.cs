@@ -1,13 +1,7 @@
-﻿using CoursesManager.UI.Enums;
-using CoursesManager.UI.Messages;
-using Google.Protobuf.WellKnownTypes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CoursesManager.MVVM.Messages;
+using CoursesManager.UI.Enums;
 
-namespace CoursesManager.MVVM.Messages
+namespace CoursesManager.UI.Messages
 {
     public class ToastNotificationMessage : BaseMessage<ToastNotificationMessage>
     {
@@ -22,7 +16,6 @@ namespace CoursesManager.MVVM.Messages
             NotificationText = notificationText;
             ToastType = toastType;
             IsPersistent = isPersistent;
-
         }
 
 

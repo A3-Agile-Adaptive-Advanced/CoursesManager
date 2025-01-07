@@ -3,9 +3,10 @@ using System.Windows;
 
 namespace CoursesManager.MVVM.Dialogs;
 
-public sealed class DialogService : IDialogService
+public sealed class DialogService(IDialogFactory dialogFactory) : IDialogService
 {
     private readonly Dictionary<Type, (Type windowType, Func<object, ViewModel> viewModelFactory)> _dialogMapping = new();
+    private readonly IDialogFactory _dialogFactory = dialogFactory;
 
     public void RegisterDialog<TDialogViewModel, TDialogWindow, TDialogResultType>(Func<TDialogResultType?, TDialogViewModel> viewModelFactory)
         where TDialogViewModel : DialogViewModel<TDialogResultType>
@@ -38,9 +39,9 @@ public sealed class DialogService : IDialogService
 
         var (windowType, viewModelFactory) = mappingTuple;
 
-        var window = (Window)Activator.CreateInstance(windowType)!;
-
         var viewModel = (DialogViewModel<TDialogResultType>)viewModelFactory(initialData!);
+
+        var window = _dialogFactory.SetupWindow(windowType);
 
         window.DataContext = viewModel;
 
@@ -66,7 +67,7 @@ public sealed class DialogService : IDialogService
             tcs.SetResult(failureResponse);
         };
 
-        window.ShowDialog();
+        _dialogFactory.OpenDialog(window);
 
         return tcs.Task;
     }
