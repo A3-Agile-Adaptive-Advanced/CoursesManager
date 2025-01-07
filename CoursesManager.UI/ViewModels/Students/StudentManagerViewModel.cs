@@ -197,45 +197,39 @@ namespace CoursesManager.UI.ViewModels.Students
         {
             if (payment == null || SelectedStudent == null) return;
 
-            var existingRegistration = _registrationRepository.GetAll()
-                .FirstOrDefault(r => r.CourseId == payment.Course?.Id && r.StudentId == SelectedStudent.Id);
+            var existingRegistration = _registrationRepository.GetAllRegistrationsByStudent(SelectedStudent).FirstOrDefault(r => r.CourseId == payment.Course?.Id);
 
             if (existingRegistration != null)
             {
-                existingRegistration.PaymentStatus = payment.IsPaid;
-                existingRegistration.IsAchieved = payment.IsAchieved;
-                _registrationRepository.Update(existingRegistration);
-            }
-            else if (payment.IsPaid || payment.IsAchieved)
-            {
-                _registrationRepository.Add(new Registration
+                try
                 {
-                    StudentId = SelectedStudent.Id,
-                    CourseId = payment.Course?.Id ?? 0,
-                    PaymentStatus = payment.IsPaid,
-                    IsAchieved = payment.IsAchieved,
-                    RegistrationDate = DateTime.Now,
-                    IsActive = true
-                });
+                    // Update de velden IsPaid of IsAchieved zodra deze gewijzigd worden.
+                    existingRegistration.PaymentStatus = payment.IsPaid;
+                    existingRegistration.IsAchieved = payment.IsAchieved;
+                    _registrationRepository.Update(existingRegistration);
+                }
+                catch
+                (Exception ex)
+                {
+                    throw new Exception("No registration found");
+                }
             }
             UpdateStudentCourses();
         }
+
 
         private void UpdateStudentCourses()
         {
             if (SelectedStudent == null) return;
 
-            var registrations = _registrationRepository.GetAll()?.Where(r => r.StudentId == SelectedStudent.Id) ??
-                                Enumerable.Empty<Registration>();
-            CoursePaymentList.Clear();
+            var registrations = _registrationRepository.GetAllRegistrationsByStudent(SelectedStudent);
 
-            foreach (var registration in registrations)
-            {
-                if (registration.Course != null)
-                {
-                    CoursePaymentList.Add(new CourseStudentPayment(registration.Course, registration));
-                }
-            }
+            var payments = registrations
+                .Where(registration => registration.Course != null)
+                .Select(registration => new CourseStudentPayment(registration.Course, registration))
+                .ToList();
+
+            CoursePaymentList = new ObservableCollection<CourseStudentPayment>(payments);
             OnPropertyChanged(nameof(CoursePaymentList));
         }
 

@@ -166,14 +166,19 @@ namespace CoursesManager.Tests.Students
             _registrationRepositoryMock.Setup(repo => repo.GetAll()).Returns(new ObservableCollection<Registration>());
             _viewModel.SelectedStudent = student;
 
+            _navigationServiceMock.Setup(nav => nav.NavigateTo<StudentDetailViewModel>(It.IsAny<Student>()));
+
             // Act
             _viewModel.StudentDetailCommand.Execute(null);
 
             // Assert
             _navigationServiceMock.Verify(nav =>
-                nav.NavigateTo<StudentDetailViewModel>(student),
+                nav.NavigateTo<StudentDetailViewModel>(It.Is<Student>(s => s.Id == student.Id)),
                 Times.Once);
         }
+
+
+
 
         [Test]
         public void ToggleIsDeletedCommand_ShouldFilterOnlyDeletedStudents()

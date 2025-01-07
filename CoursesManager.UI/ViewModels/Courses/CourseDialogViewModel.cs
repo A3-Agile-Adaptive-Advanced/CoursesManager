@@ -66,7 +66,7 @@ namespace CoursesManager.UI.ViewModels.Courses
                     Location = null,
                     IsActive = false,
                     StartDate = DateTime.Now,
-                    EndDate =  DateTime.Now,
+                    EndDate = DateTime.Now,
                     Image = null,
 
                 };
@@ -92,31 +92,21 @@ namespace CoursesManager.UI.ViewModels.Courses
                 Course.Location is not null &&
                 !string.IsNullOrWhiteSpace(Course.Description);
 
-
-
         protected override void InvokeResponseCallback(DialogResult<Course> dialogResult)
         {
-            ResponseCallback.Invoke(dialogResult);
-        }
-
-        private async Task ExecuteSaveAsync()
-        {
-            try
-            {
-                await OnSaveAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-            }
+            ResponseCallback?.Invoke(dialogResult);
         }
 
         private void ExecuteSave()
         {
-            _ = ExecuteSaveAsync();
+            if (Course == null)
+            {
+                throw new InvalidOperationException("Cursusgegevens ontbreken. Opslaan is niet mogelijk.");
+            }
+
+            _ = OnSaveAsync();
         }
 
-        
 
         private async Task OnSaveAsync()
         {
@@ -137,7 +127,6 @@ namespace CoursesManager.UI.ViewModels.Courses
                 {
                     _courseRepository.Update(Course);
                 }
-
 
 
                 var successDialogResult = DialogResult<Course>.Builder()
@@ -170,7 +159,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             var dialogResult = DialogResult<Course>.Builder()
                 .SetCanceled("Wijzigingen geannuleerd door de gebruiker.")
                 .Build();
-            
+
             await TriggerEndAnimationAsync();
 
             InvokeResponseCallback(dialogResult);
@@ -188,13 +177,13 @@ namespace CoursesManager.UI.ViewModels.Courses
 
             if (openDialog.ShowDialog() == true)
             {
-                
+
                 var bitmap = new BitmapImage(new Uri(openDialog.FileName));
 
               
                 Course!.Image = ConvertImageToByteArray(bitmap);
 
-                
+
                 ImageSource = bitmap;
             }
         }
@@ -209,7 +198,7 @@ namespace CoursesManager.UI.ViewModels.Courses
             {
                 var encoder = new JpegBitmapEncoder
                 {
-                    QualityLevel = 90 
+                    QualityLevel = 90
                 };
 
                 encoder.Frames.Add(BitmapFrame.Create(image));

@@ -12,12 +12,14 @@ namespace CoursesManager.Tests
         private Mock<IConfigurationService> _configurationServiceMock;
         private ConfigurationViewModel _viewModel;
         private Mock<IMessageBroker> _messageBrokerMock;
+        private Mock<INavigationService> _navigationServiceMock;
 
         [SetUp]
         public void SetUp()
         {
             _configurationServiceMock = new Mock<IConfigurationService>();
             _messageBrokerMock = new Mock<IMessageBroker>();
+            _navigationServiceMock = new Mock<INavigationService>();
             
 
             // mock voor de DB gegevens
@@ -43,7 +45,7 @@ namespace CoursesManager.Tests
                     { "Password", "password" }
                 });
 
-            _viewModel = new ConfigurationViewModel(_configurationServiceMock.Object, _messageBrokerMock.Object );
+            _viewModel = new ConfigurationViewModel(_configurationServiceMock.Object, _messageBrokerMock.Object, _navigationServiceMock.Object);
         }
 
         [Test]

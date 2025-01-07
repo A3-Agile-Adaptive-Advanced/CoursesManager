@@ -140,9 +140,9 @@ namespace CoursesManager.Tests.Courses
                 )
             );
 
-            // Reset SearchTerm
-            _viewModel.SearchTerm = String.Empty;
-        }
+        //    // Reset SearchTerm
+        //    _viewModel.SearchTerm = String.Empty;
+        //}
 
         [Test]
         public async Task Should_Return_Empty_When_SearchTerm_Does_Not_Match_Any_Course()

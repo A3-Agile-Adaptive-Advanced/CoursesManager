@@ -118,4 +118,10 @@ public class RegistrationRepository : BaseRepository<Registration>, IRegistratio
 
         return GetAll().Where(r => r.CourseId == course.Id).ToList();
     }
+    public List<Registration> GetAllRegistrationsByStudent(Student student)
+    {
+        ArgumentNullException.ThrowIfNull(student);
+
+        return _registrationDataAccess.GetAllRegistrationsByStudent(student.Id);
+    }
 }

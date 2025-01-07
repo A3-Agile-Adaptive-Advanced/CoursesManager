@@ -177,7 +177,7 @@ public class MainWindowViewModel : ViewModelWithNavigation
 
     }
 
-    private async void UpdateSidebarVisibility()
+    private async Task UpdateSidebarVisibility()
     {
         await Task.Delay(300);
         if (IsMouseOverButton || IsMouseOverBorder)
@@ -190,7 +190,7 @@ public class MainWindowViewModel : ViewModelWithNavigation
         }
     }
 
-    private async void OverlayActivationHandler(OverlayActivationMessage message)
+    private void OverlayActivationHandler(OverlayActivationMessage message)
     {
         IsDialogOpen = message.IsVisible;
     }
@@ -198,64 +198,91 @@ public class MainWindowViewModel : ViewModelWithNavigation
     // This method gives the ability to show messages any time you need to. if a message is displayed a token is generated and stored for the next message.
     // When a message is displayed while a new one is called, this method will gracefully retract the ongoing message to display the new message.
     // This ensures smooth transitions between messages instead of abrupt changing the content of the message while the stack pane is displayed.
+
+
     private async void ShowToastNotification(ToastNotificationMessage message)
     {
-
-        if (_isToastProcessing)
-        {
-            _nextMessage = message;
-            _toastCancellationTokenSource?.Cancel();
+        if (HandleMessageQueue(message))
             return;
-        }
 
-        _isToastProcessing = true;
-        _nextMessage = null;
-        _toastCancellationTokenSource = new CancellationTokenSource();
-        var token = _toastCancellationTokenSource.Token;
+        InitializeProcessing();
 
         try
         {
-            await SetToastMessageDetails(message.NotificationText, message.SetVisibillity, message.ToastType);
-
-
-            if (message.IsPersistent)
-            {
-                int counter = 0;
-                const int maxDots = 3;
-
-                while (!token.IsCancellationRequested)
-                {
-                    int dotsCount = counter % (maxDots + 1);
-                    string dots = new string('.', dotsCount);
-                    string spaces = new string(' ', maxDots - dotsCount);
-
-                    ToastText = $"{message.NotificationText}{dots}{spaces}";
-                    counter++;
-
-                    await Task.Delay(200, token);
-                }
-            }
-            else
-            {
-                await Task.Delay(5000, token);
-            }
+            await ProcessMessageAsync(message);
         }
         catch (TaskCanceledException)
         {
             // Making sure that the above process is canceled when the token is used.
         }
+        finally
+        {
+            await FinalizeProcessingAsync();
+            ProcessNextMessage();
+        }
+    }
+
+    private bool HandleMessageQueue(ToastNotificationMessage message)
+    {
+        if (_isToastProcessing)
+        {
+            _nextMessage = message;
+            _toastCancellationTokenSource?.Cancel();
+            return true;
+        }
+        return false;
+    }
+
+    private void InitializeProcessing()
+    {
+        _isToastProcessing = true;
+        _nextMessage = null;
+        _toastCancellationTokenSource = new CancellationTokenSource();
+    }
+
+    private async Task ProcessMessageAsync(ToastNotificationMessage message)
+    {
+        var token = _toastCancellationTokenSource.Token;
+
+        await SetToastMessageDetails(message.NotificationText, message.SetVisibillity, message.ToastType);
+
+        if (message.IsPersistent)
+        {
+            await DisplayPersistentMessageAsync(message.NotificationText, token);
+        }
+        else
+        {
+            await Task.Delay(5000, token);
+        }
+    }
+
+    private async Task DisplayPersistentMessageAsync(string notificationText, CancellationToken token)
+    {
+        int counter = 0;
+        const int maxDots = 3;
+
+        while (!token.IsCancellationRequested)
+        {
+            int dotsCount = counter % (maxDots + 1);
+            string dots = new string('.', dotsCount);
+            string spaces = new string(' ', maxDots - dotsCount);
+
+            ToastText = $"{notificationText}{dots}{spaces}";
+            counter++;
+
+            await Task.Delay(200, token);
+        }
+    }
+
+    private async Task FinalizeProcessingAsync()
+    {
         await SetToastMessageDetails(string.Empty, false, ToastType.None);
         _isToastProcessing = false;
 
-        if (_toastCancellationTokenSource?.Token == token)
+        if (_toastCancellationTokenSource != null)
         {
             _toastCancellationTokenSource.Dispose();
             _toastCancellationTokenSource = null;
-        }
-
-        if (_nextMessage != null)
-        {
-            ShowToastNotification(_nextMessage);
         }
     }
 
@@ -270,6 +297,14 @@ public class MainWindowViewModel : ViewModelWithNavigation
         ToastType = toastType;
     }
 
+    private void ProcessNextMessage()
+    {
+        if (_nextMessage != null)
+        {
+            ShowToastNotification(_nextMessage);
+        }
+    }
+    
     private static BitmapImage LoadImage(string relativePath)
     {
         var uri = new Uri($"pack://application:,,,/{relativePath}", UriKind.Absolute);

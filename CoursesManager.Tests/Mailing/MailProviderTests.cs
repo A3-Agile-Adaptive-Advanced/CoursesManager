@@ -9,6 +9,7 @@ using CoursesManager.UI.Repositories.TemplateRepository;
 using Moq;
 using System.Net.Mail;
 using MySqlX.XDevAPI.Common;
+using CoursesManager.MVVM.Exceptions;
 
 namespace CoursesManager.Tests.Mailing;
 [TestFixture]
@@ -236,7 +237,7 @@ public class MailProviderTests
         Assert.That(results.All(r => r.Outcome == MailOutcome.Success));
 
     }
-#endregion
+    #endregion
     #region Unhappy flow
     [Test]
     public async Task Test_Null_Certificate_Should_Throw_Exception()
@@ -282,7 +283,7 @@ public class MailProviderTests
             .ReturnsAsync(new List<MailResult> { new MailResult { Outcome = MailOutcome.Success } });
 
         // Act & Assert
-        var exception = Assert.ThrowsAsync<InvalidOperationException>(async () => await _mailProvider.SendCertificates(course));
+        var exception = Assert.ThrowsAsync<TemplateNotFoundException>(async () => await _mailProvider.SendCertificates(course));
         Assert.That(exception.Message, Is.EqualTo("Template 'Certificate' not found."));
     }
 
@@ -321,7 +322,7 @@ public class MailProviderTests
             .ReturnsAsync(new List<MailResult> { new MailResult { Outcome = MailOutcome.Success } });
 
         // Act & Assert
-        var exception = Assert.ThrowsAsync<InvalidOperationException>(async () => await _mailProvider.SendPaymentNotifications(course));
+        var exception = Assert.ThrowsAsync<TemplateNotFoundException>(async () => await _mailProvider.SendPaymentNotifications(course));
         Assert.That(exception.Message, Is.EqualTo("Template 'PaymentMail' not found."));
     }
 

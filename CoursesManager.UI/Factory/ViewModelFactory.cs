@@ -5,6 +5,8 @@ using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Mailing;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Service;
+using CoursesManager.UI.Service.PlaceholderService;
+using CoursesManager.UI.Service.TextHandlerService;
 using CoursesManager.UI.ViewModels;
 using CoursesManager.UI.ViewModels.Courses;
 using CoursesManager.UI.ViewModels.Mailing;
@@ -18,6 +20,9 @@ namespace CoursesManager.UI.Factory
         private readonly IDialogService _dialogService;
         private readonly IConfigurationService _configurationService;
         private readonly IMailProvider _mailProvider;
+        private readonly IPlaceholderService _placeholderService;
+        private readonly ITextHandlerService _textHandlerService;
+
         private readonly RepositoryFactory _repositoryFactory;
 
         public ViewModelFactory(
@@ -25,12 +30,16 @@ namespace CoursesManager.UI.Factory
             IMessageBroker messageBroker,
             IDialogService dialogService,
             IConfigurationService configurationService,
+            IPlaceholderService placeholderService,
+            ITextHandlerService textHandlerService,
             IMailProvider mailProvider)
         {
             _repositoryFactory = repositoryFactory;
             _messageBroker = messageBroker;
             _dialogService = dialogService;
             _configurationService = configurationService;
+            _placeholderService = placeholderService;
+            _textHandlerService = textHandlerService;
             _mailProvider = mailProvider;
         }
 
@@ -38,9 +47,6 @@ namespace CoursesManager.UI.Factory
         {
             return typeof(T) switch
             {
-                Type vmType when vmType == typeof(ConfigurationViewModel) =>
-                    new ConfigurationViewModel(_configurationService, _messageBroker) as T,
-
                 _ => throw new ArgumentException($"Unknown ViewModel type: {typeof(T)}")
             };
         }
@@ -73,7 +79,10 @@ namespace CoursesManager.UI.Factory
                 Type vmType when vmType == typeof(CoursesManagerViewModel) =>
                     new CoursesManagerViewModel(_repositoryFactory.CourseRepository, _messageBroker, _dialogService, navigationService) as T,
                 Type vmType when vmType == typeof(EditMailTemplatesViewModel) =>
-                    new EditMailTemplatesViewModel(_repositoryFactory.TemplateRepository, _dialogService, _messageBroker, navigationService) as T,
+                    new EditMailTemplatesViewModel(_templateRepository, _dialogService, _messageBroker, _placeholderService, _textHandlerService, navigationService) as T,
+
+                Type vmType when vmType == typeof(ConfigurationViewModel) =>
+                    new ConfigurationViewModel(_configurationService, _messageBroker, navigationService) as T,
 
                 // Add other view model cases here...
                 _ => throw new ArgumentException($"Unknown ViewModel type: {typeof(T)}")

@@ -16,6 +16,9 @@ using CoursesManager.UI.Service;
 using CoursesManager.UI.ViewModels.Courses;
 using CoursesManager.UI.ViewModels.Mailing;
 using CoursesManager.UI.Mailing;
+using CoursesManager.UI.Repositories.CertificateRepository;
+using CoursesManager.UI.Service.PlaceholderService;
+using CoursesManager.UI.Service.TextHandlerService;
 using CoursesManager.MVVM.Messages.DefaultMessages;
 
 namespace CoursesManager.UI;
@@ -28,7 +31,9 @@ public partial class App : Application
     public static IDialogFactory DialogFactory { get; set; } = new DialogFactory();
     public static IDialogService DialogService { get; set; } = new DialogService(DialogFactory);
     public static IMailService MailService { get; set; } = new MailService();
-    public static IMailProvider MailProvider { get; set; } = new MailProvider(MailService, RepositoryFactory.TemplateRepository, RepositoryFactory.CertificateRepository);
+    public static IPlaceholderService PlaceholderService { get; set; } = new PlaceholderService();
+    public static ITextHandlerService TextHandlerService { get; set; } = new TextHandlerService();
+    public static IMailProvider MailProvider { get; set; } = new MailProvider(MailService, TemplateRepository, CertificateRepository);
 
     public static IConfigurationService ConfigurationService { get; set; } = new ConfigurationService(new EncryptionService("SmpjQzNZMWdCdW11bTlER2owdFRzOHIzQUpWWmhYQ0U="));
 
@@ -53,6 +58,8 @@ public partial class App : Application
             MessageBroker,
             DialogService,
             ConfigurationService,
+            PlaceholderService,
+            TextHandlerService,
             MailProvider);
 
 
@@ -121,7 +128,7 @@ public partial class App : Application
 
         INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<CourseOverViewViewModel>(nav));
 
-        INavigationService.RegisterViewModelFactory(() => viewModelFactory.CreateViewModel<ConfigurationViewModel>());
+        INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<ConfigurationViewModel>(nav));
 
         INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<EditMailTemplatesViewModel>(nav));
     }

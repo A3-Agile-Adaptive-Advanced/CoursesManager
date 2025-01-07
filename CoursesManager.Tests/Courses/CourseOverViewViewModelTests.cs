@@ -207,6 +207,9 @@ namespace CoursesManager.Tests.Courses
             _courseRepositoryMock.Setup(repo => repo.GetById(It.IsAny<int>()))
                 .Returns(course);
 
+            _registrationRepositoryMock.Setup(repo => repo.GetAllRegistrationsByCourse(It.IsAny<Course>()))
+                .Returns(new List<Registration> { registration });
+
             _registrationRepositoryMock.Setup(repo => repo.Update(It.IsAny<Registration>()));
             _registrationRepositoryMock.Setup(repo => repo.Add(It.IsAny<Registration>()));
 
@@ -230,11 +233,12 @@ namespace CoursesManager.Tests.Courses
                 r.PaymentStatus == payment.IsPaid &&
                 r.IsAchieved == payment.IsAchieved
             )), Times.Once);
+
+            _courseRepositoryMock.Verify(repo => repo.Update(It.Is<Course>(c =>
+                c.Id == course.Id &&
+                c.IsPayed == true
+            )), Times.Once);
         }
     }
-
-
-
-
 }
 
