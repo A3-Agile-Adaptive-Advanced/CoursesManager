@@ -40,12 +40,7 @@ namespace CoursesManager.UI.Repositories.CourseRepository
             }
         }
 
-        public List<Course> GetAllBetweenDates(DateTime start, DateTime end)
-        {
-            return _courseDataAccess.GetAllBetweenDates(start, end);
-        }
-
-        public List<Course> RefreshAll()
+        public ObservableCollection<Course> GetAll()
         {
             lock (SharedLock)
             {
@@ -62,6 +57,11 @@ namespace CoursesManager.UI.Repositories.CourseRepository
 
                 return _courses;
             }
+        }
+
+        public List<Course> GetAllBetweenDates(DateTime start, DateTime end)
+        {
+            return _courseDataAccess.GetAllBetweenDates(start, end);
         }
 
         public Course? GetById(int id)

@@ -35,49 +35,7 @@ public class CourseDataAccess : BaseDataAccess<Course>
                 new MySqlParameter("@p_endDate", end)
             );
 
-            List<Course> models = results.Select(row => new Course
-            {
-                Id = Convert.ToInt32(row["course_id"]),
-                Name = row["course_name"]?.ToString() ?? string.Empty,
-                Code = row["course_code"]?.ToString() ?? string.Empty,
-                Description = row["course_description"]?.ToString() ?? string.Empty,
-                LocationId = Convert.ToInt32(row["course_location_id"]),
-                Location = new Location
-                {
-                    Id = Convert.ToInt32(row["course_location_id"]),
-                    Name = row["location_name"]?.ToString() ?? string.Empty
-                },
-                IsActive = Convert.ToBoolean(row["is_active"]),
-                StartDate = Convert.ToDateTime(row["start_date"]),
-                EndDate = Convert.ToDateTime(row["end_date"]),
-                DateCreated = Convert.ToDateTime(row["created_at"]),
-                Image = row.ContainsKey("tile_image") && row["tile_image"] != DBNull.Value
-                    ? (byte[])row["tile_image"]
-                    : null
-            }).ToList();
-
-            List<Student> students = _studentDataAccess.GetAll();
-            models.ForEach(m =>
-            {
-                m.Students = new(students.Where(s => s.Registrations.Any(r => r.CourseId == m.Id)));
-                m.Participants = m.Students.Count;
-                m.IsPayed = true;
-                m.Registrations = new();
-
-                foreach (var student in m.Students)
-                {
-                    var registration = student.Registrations?.FirstOrDefault(r => r.CourseId == m.Id);
-                    m.Registrations.Add(registration);
-
-                    if (registration is not null)
-                    {
-                        if (m.IsPayed)
-                        {
-                            m.IsPayed = registration.PaymentStatus;
-                        }
-                    }
-                }
-            });
+            List<Course> models = results.Select(MapToCourse).ToList();
 
             return models;
         }
@@ -88,64 +46,23 @@ public class CourseDataAccess : BaseDataAccess<Course>
         }
     }
 
-    public Course GetById(int id)
+    private static Course MapToCourse(Dictionary<string, object?> row)
     {
         return new Course
         {
-            string procedureName = StoredProcedures.CourseGetById;
-            var results = ExecuteProcedure(procedureName, new MySqlParameter("@p_id", id));
-
-            var row = results.First();
-
-            var students = _studentDataAccess.GetAll();
-
-            var course = new Course
-            {
-                Id = Convert.ToInt32(row["course_id"]),
-                Name = row["course_name"]?.ToString() ?? string.Empty,
-                Code = row["course_code"]?.ToString() ?? string.Empty,
-                Description = row["course_description"]?.ToString() ?? string.Empty,
-                LocationId = Convert.ToInt32(row["course_location_id"]),
-                Location = new Location
-                {
-                    Id = Convert.ToInt32(row["course_location_id"]),
-                    Name = row["location_name"]?.ToString() ?? string.Empty
-                },
-                IsActive = Convert.ToBoolean(row["is_active"]),
-                StartDate = Convert.ToDateTime(row["start_date"]),
-                EndDate = Convert.ToDateTime(row["end_date"]),
-                DateCreated = Convert.ToDateTime(row["created_at"]),
-                Image = row.ContainsKey("tile_image") && row["tile_image"] != DBNull.Value
-                    ? (byte[])row["tile_image"]
-                    : null
-            };
-
-            course.Students = new(students.Where(s => s.Registrations.Any(r => r.CourseId == course.Id)));
-            course.Participants = course.Students.Count;
-            course.IsPayed = true;
-            course.Registrations = new List<Registration>();
-
-            foreach (var student in course.Students)
-            {
-                var registration = student.Registrations?.FirstOrDefault(r => r.CourseId == course.Id);
-                if (registration != null)
-                {
-                    course.Registrations.Add(registration);
-
-                    if (course.IsPayed)
-                    {
-                        course.IsPayed = registration.PaymentStatus;
-                    }
-                }
-            }
-
-            return course;
-        }
-        catch (Exception ex)
-        {
-            LogUtil.Error($"Error in GetById: {ex.Message}");
-            throw;
-        }
+            Id = Convert.ToInt32(row["course_id"]),
+            Name = row["course_name"]?.ToString() ?? string.Empty,
+            Code = row["course_code"]?.ToString() ?? string.Empty,
+            Description = row["course_description"]?.ToString() ?? string.Empty,
+            LocationId = Convert.ToInt32(row["course_location_id"]),
+            IsActive = Convert.ToBoolean(row["is_active"]),
+            StartDate = Convert.ToDateTime(row["start_date"]),
+            EndDate = Convert.ToDateTime(row["end_date"]),
+            DateCreated = Convert.ToDateTime(row["created_at"]),
+            Image = row.ContainsKey("tile_image") && row["tile_image"] != DBNull.Value
+                ? (byte[])row["tile_image"]
+                : null
+        };
     }
 
 
