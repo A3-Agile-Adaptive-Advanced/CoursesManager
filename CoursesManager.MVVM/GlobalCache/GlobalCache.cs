@@ -17,12 +17,12 @@ using System.Diagnostics;
 public class GlobalCache
 {
     #region Attributes
-    private readonly int _initialCapacity;
     private readonly ConcurrentDictionary<string, CacheItem> _cacheMap;
     private readonly ConcurrentDictionary<string, long> _usageOrder;
     private readonly object _lock = new object();
 
     private int _capacity;
+    private int _initialCapacity;
     private static int _permanentItemCount;
     #endregion
 
@@ -138,7 +138,7 @@ public class GlobalCache
 
     private void IncreaseCapacity()
     {
-        _capacity = _initialCapacity * 2;
+        _capacity = _initialCapacity + _capacity;
     }
 
     private void DecreaseCapacity()
