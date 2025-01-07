@@ -1,4 +1,5 @@
 ﻿using CoursesManager.MVVM.Data;
+using CoursesManager.MVVM.Navigation.FactoryWrappers;
 
 namespace CoursesManager.MVVM.Navigation;
 
@@ -6,9 +7,10 @@ public class NavigationService : INavigationService
 {
     public NavigationStore NavigationStore { get; } = new();
 
-    private readonly Stack<ViewModel> _forwardViewModels = new();
+    private readonly Stack<IViewModelFactoryWrapper> _forwardFactories = new();
+    private readonly Stack<IViewModelFactoryWrapper> _backwardFactories = new();
 
-    private readonly Stack<ViewModel> _backwardViewModels = new();
+    private IViewModelFactoryWrapper? _currentViewModelFactoryWrapper;
 
     public void NavigateTo<TViewModel>() where TViewModel : ViewModel
     {
@@ -22,41 +24,49 @@ public class NavigationService : INavigationService
             throw new InvalidOperationException($"No factory registered for {typeof(TViewModel).Name}");
         }
 
-        _forwardViewModels.Clear();
+        _forwardFactories.Clear();
 
-        if (NavigationStore.CurrentViewModel is not null)
+        if (_currentViewModelFactoryWrapper is not null)
         {
-            _backwardViewModels.Push(NavigationStore.CurrentViewModel);
+            _backwardFactories.Push(_currentViewModelFactoryWrapper);
         }
 
-        var existingViewModel = _backwardViewModels.OfType<TViewModel>().FirstOrDefault();
+        _currentViewModelFactoryWrapper = CreateViewModelFactoryWrapper<TViewModel>(factory, parameter);
 
-        NavigationStore.CurrentViewModel = existingViewModel ?? CreateViewModel<TViewModel>(factory, parameter);
+        NavigationStore.CurrentViewModel = _currentViewModelFactoryWrapper.Create();
     }
 
-    private ViewModel CreateViewModel<TViewModel>(Delegate factory, object? parameter) where TViewModel : ViewModel
+    private IViewModelFactoryWrapper CreateViewModelFactoryWrapper<TViewModel>(Delegate factory, object? parameter) where TViewModel : ViewModel
     {
         if (typeof(ViewModelWithNavigation).IsAssignableFrom(typeof(TViewModel)))
         {
             if (factory is Func<object?, NavigationService, ViewModelWithNavigation> viewModelWithNavigationFactoryWithParams)
             {
-                return viewModelWithNavigationFactoryWithParams(parameter, this);
+                return new ViewModelWithNavigationFactoryWithParamsWrapper(
+                    viewModelWithNavigationFactoryWithParams,
+                    parameter,
+                    this);
             }
 
             if (factory is Func<INavigationService, ViewModelWithNavigation> viewModelWithNavigationFactory)
             {
-                return viewModelWithNavigationFactory(this);
+                return new ViewModelWithNavigationFactoryWrapper(
+                    viewModelWithNavigationFactory,
+                    this);
             }
         }
 
-        if (factory is Func<ViewModel> simpleFactory)
+        if (factory is Func<ViewModel> simpleViewModelFactory)
         {
-            return simpleFactory();
+            return new SimpleViewModelFactory(
+                simpleViewModelFactory);
         }
 
-        if (factory is Func<object?, ViewModel> simpleFactoryWithParams)
+        if (factory is Func<object?, ViewModel> simpleViewModelFactoryWithParams)
         {
-            return simpleFactoryWithParams(parameter);
+            return new SimpleViewModelFactoryWithParams(
+                simpleViewModelFactoryWithParams,
+                parameter);
         }
 
         throw new InvalidOperationException($"Invalid factory type for {typeof(TViewModel).Name}");
@@ -66,33 +76,31 @@ public class NavigationService : INavigationService
     {
         if (!CanGoBack()) return;
 
-        if (NavigationStore.CurrentViewModel is not null)
-        {
-            _forwardViewModels.Push(NavigationStore.CurrentViewModel);
-        }
+        if (_currentViewModelFactoryWrapper is not null) _forwardFactories.Push(_currentViewModelFactoryWrapper);
 
-        NavigationStore.CurrentViewModel = _backwardViewModels.Pop();
+        _currentViewModelFactoryWrapper = _backwardFactories.Pop();
+
+        NavigationStore.CurrentViewModel = _currentViewModelFactoryWrapper.Create();
     }
 
     public void GoBackAndClearForward()
     {
         GoBack();
-        _forwardViewModels.Clear();
+        _forwardFactories.Clear();
     }
 
-    public bool CanGoBack() => _backwardViewModels.Any();
+    public bool CanGoBack() => _backwardFactories.Count != 0;
 
     public void GoForward()
     {
         if (!CanGoForward()) return;
 
-        if (NavigationStore.CurrentViewModel is not null)
-        {
-            _backwardViewModels.Push(NavigationStore.CurrentViewModel);
-        }
+        if (_currentViewModelFactoryWrapper is not null) _backwardFactories.Push(_currentViewModelFactoryWrapper);
 
-        NavigationStore.CurrentViewModel = _forwardViewModels.Pop();
+        _currentViewModelFactoryWrapper = _forwardFactories.Pop();
+
+        NavigationStore.CurrentViewModel = _currentViewModelFactoryWrapper.Create();
     }
 
-    public bool CanGoForward() => _forwardViewModels.Any();
+    public bool CanGoForward() => _forwardFactories.Count != 0;
 }

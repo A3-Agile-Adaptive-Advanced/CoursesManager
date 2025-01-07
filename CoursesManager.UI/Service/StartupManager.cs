@@ -1,6 +1,8 @@
 ﻿using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Enums;
+using CoursesManager.UI.Factory;
+using CoursesManager.UI.Messages;
 using CoursesManager.UI.ViewModels;
 using CoursesManager.UI.ViewModels.Courses;
 
@@ -13,8 +15,10 @@ namespace CoursesManager.UI.Service
         private readonly INavigationService _navigationService;
 
         private readonly IMessageBroker _messageBroker;
+        private readonly RepositoryFactory _repositoryFactory;
 
-        public StartupManager(IConfigurationService configurationService, INavigationService navigationService, IMessageBroker messageBroker)
+        public StartupManager(IConfigurationService configurationService, INavigationService navigationService,
+            IMessageBroker messageBroker)
         {
             _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
@@ -59,6 +63,5 @@ namespace CoursesManager.UI.Service
 
             _navigationService.NavigateTo<CoursesManagerViewModel>();
         }
-
     }
 }

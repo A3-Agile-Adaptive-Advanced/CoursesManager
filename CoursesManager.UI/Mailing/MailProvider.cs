@@ -13,16 +13,18 @@ using CoursesManager.MVVM.Exceptions;
 using CoursesManager.MVVM.Mail.MailService;
 using System.Text.RegularExpressions;
 
-
 namespace CoursesManager.UI.Mailing
 {
     public class MailProvider : IMailProvider
     {
         #region Services
+
         private readonly IMailService _mailService;
         private readonly ITemplateRepository _templateRepository;
         private readonly ICertificateRepository _certificateRepository;
-        #endregion
+
+        #endregion Services
+
         #region Attributes
         #endregion
 
@@ -222,7 +224,6 @@ namespace CoursesManager.UI.Mailing
             certificate.StudentCode = student.Id;
             certificate.CourseCode = course.Code;
             _certificateRepository.Add(certificate);
-
         }
         #endregion
         private class ProcessResult

@@ -1,4 +1,5 @@
-﻿using CoursesManager.MVVM.Dialogs;
+﻿using System.Collections.ObjectModel;
+using CoursesManager.MVVM.Dialogs;
 using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Models;
@@ -162,8 +163,11 @@ namespace CoursesManager.Tests.Students
         {
             // Arrange
             var student = new Student { Id = 1, FirstName = "John" };
-            _registrationRepositoryMock.Setup(repo => repo.GetAllRegistrationsByStudent(It.IsAny<Student>()))
-                .Returns(new List<Registration>());
+            _registrationRepositoryMock.Setup(repo => repo.GetAll()).Returns(new ObservableCollection<Registration>());
+
+            _registrationRepositoryMock
+                .Setup(repo => repo.GetAllRegistrationsByStudent(It.IsAny<Student>()))
+                .Returns((Student student) => new List<Registration>());
 
             _viewModel.SelectedStudent = student;
 
@@ -185,13 +189,13 @@ namespace CoursesManager.Tests.Students
         public void ToggleIsDeletedCommand_ShouldFilterOnlyDeletedStudents()
         {
             // Arrange
-            var students = new List<Student>
+            var students = new ObservableCollection<Student>
             {
                 new Student { Id = 1, FirstName = "DeletedStudent", IsDeleted = true },
                 new Student { Id = 2, FirstName = "ActiveStudent", IsDeleted = false }
             };
 
-            _studentRepositoryMock.Setup(repo => repo.GetDeletedStudents()).Returns(students);
+            _studentRepositoryMock.Setup(repo => repo.GetDeletedStudents()).Returns(students.ToList());
             _studentRepositoryMock.Setup(repo => repo.GetAll()).Returns(students);
             _viewModel.IsToggled = false;
 
@@ -204,6 +208,34 @@ namespace CoursesManager.Tests.Students
 
             Assert.That(deletedStudents.Count, Is.EqualTo(1));
             Assert.That(deletedStudents.First().IsDeleted, Is.True);
+        }
+
+
+        [Test]
+        public void CheckboxChangedCommand_ShouldUpdateRegistration_WhenCheckboxesAreUpdated()
+        {
+            // Arrange
+            var registration = new Registration { Id = 1, StudentId = 1, CourseId = 1, PaymentStatus = false, IsAchieved = false };
+
+            _registrationRepositoryMock
+                .Setup(repo => repo.GetAllRegistrationsByStudent(It.IsAny<Student>()))
+                .Returns((Student student) => [ registration ]);
+
+            var course = new Course { Id = 1, Name = "Math" };
+            var payment = new CourseStudentPayment(course, registration) { IsPaid = true, IsAchieved = true };
+            _viewModel.SelectedStudent = new Student { Id = 1 };
+
+            // Act
+            _viewModel.CheckboxChangedCommand.Execute(payment);
+
+            // Assert
+            _registrationRepositoryMock.Verify(repo =>
+                repo.Update(It.Is<Registration>(
+                    r => r.StudentId == 1 &&
+                         r.CourseId == 1 &&
+                         r.PaymentStatus == true &&
+                         r.IsAchieved == true)),
+                Times.Once);
         }
     }
 }

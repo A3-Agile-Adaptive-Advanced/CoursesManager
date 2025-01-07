@@ -1,8 +1,8 @@
 ﻿using CoursesManager.MVVM.Messages;
-using CoursesManager.UI.Messages;
 using System.Collections;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using CoursesManager.MVVM.Messages.DefaultMessages;
 
 namespace CoursesManager.MVVM.Data;
 
@@ -28,7 +28,7 @@ public abstract class ViewModel : IsObservable, INotifyDataErrorInfo
 
     public IEnumerable GetErrors(string? propertyName)
     {
-        if (propertyName is not null && _allErrors.ContainsKey(propertyName)) return _allErrors[propertyName];
+        if (propertyName is not null && _allErrors.TryGetValue(propertyName, out var errors)) return errors;
 
         return new List<string>();
     }
@@ -55,16 +55,16 @@ public abstract class ViewModel : IsObservable, INotifyDataErrorInfo
 
     public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 
-    public async Task ExecuteWithOverlayAsync(IMessageBroker _messageBroker, Func<Task> action)
+    public async Task ExecuteWithOverlayAsync(IMessageBroker messageBroker, Func<Task> action)
     {
-        _messageBroker.Publish(new OverlayActivationMessage(true));
+        messageBroker.Publish(new OverlayActivationMessage(true));
         try
         {
             await action();
         }
         finally
         {
-            _messageBroker.Publish(new OverlayActivationMessage(false));
+            messageBroker.Publish(new OverlayActivationMessage(false));
         }
     }
 }

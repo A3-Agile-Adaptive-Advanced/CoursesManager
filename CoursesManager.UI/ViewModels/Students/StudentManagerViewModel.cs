@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Windows.Input;
 using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Data;
@@ -26,7 +27,22 @@ namespace CoursesManager.UI.ViewModels.Students
         private readonly IStudentRepository _studentRepository;
         private readonly ICourseRepository _courseRepository;
         private readonly IRegistrationRepository _registrationRepository;
-        public ObservableCollection<Student> Students { get; set; }
+
+        private ObservableCollection<Student> _students;
+
+        public ObservableCollection<Student> Students
+        {
+            get => _students;
+            set
+            {
+                if (_students is not null) _students.CollectionChanged -= StudentsChanged;
+
+                SetProperty(ref _students, value);
+
+                if (_students is not null) _students.CollectionChanged += StudentsChanged;
+            }
+        }
+
         public ObservableCollection<Student> FilteredStudentRecords { get; set; }
         public ICommand EditStudentCommand { get; }
 
@@ -35,7 +51,11 @@ namespace CoursesManager.UI.ViewModels.Students
         public string SearchText
         {
             get => _searchText;
-            set => SetProperty(ref _searchText, value);
+            set
+            {
+                SetProperty(ref _searchText, value);
+                _ = FilterStudentRecords();
+            }
         }
 
         private Student _selectedStudent;
@@ -93,6 +113,8 @@ namespace CoursesManager.UI.ViewModels.Students
             IMessageBroker messageBroker,
             INavigationService navigationService) : base(navigationService)
         {
+            ViewTitle = "Cursisten beheer";
+
             _messageBroker = messageBroker;
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
             _studentRepository = studentRepository ?? throw new ArgumentNullException(nameof(studentRepository));
@@ -109,48 +131,37 @@ namespace CoursesManager.UI.ViewModels.Students
             AddStudentCommand = new RelayCommand(OpenAddStudentPopup);
             EditStudentCommand = new RelayCommand<Student>(OpenEditStudentPopup, s => s != null);
             DeleteStudentCommand = new RelayCommand<Student>(OpenDeleteStudentPopup, s => s != null);
-            SearchCommand = new RelayCommand(FilterStudentRecords);
+            //SearchCommand = new RelayCommand(FilterStudentRecords);
             StudentDetailCommand = new RelayCommand(OpenStudentDetailViewModel);
             CheckboxChangedCommand = new RelayCommand<CourseStudentPayment>(OnCheckboxChanged);
             ToggleIsDeletedCommand = new RelayCommand(() => FilterStudentRecords());
-            ViewTitle = "Cursisten beheer";
         }
 
         public void LoadStudents()
         {
-            Students = new ObservableCollection<Student>(_studentRepository.GetNotDeletedStudents() ??
-                                                         new List<Student>());
+            Students = new ObservableCollection<Student>(_studentRepository.GetNotDeletedStudents());
             FilteredStudentRecords = new ObservableCollection<Student>(Students);
         }
 
-        private void FilterStudentRecords()
+        private void StudentsChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(SearchText))
-            {
-                FilteredStudentRecords = new ObservableCollection<Student>(Students);
-            }
-            else
-            {
-                var searchTerm = SearchText.Trim().ToLower();
-                var filtered = Students.Where(s => s.TableFilter().ToLower().Contains(searchTerm)).ToList();
-                FilteredStudentRecords = new ObservableCollection<Student>(filtered);
-            }
+            FilterStudentRecords();
+        }
 
-            if (!IsToggled)
-            {
-                List<Student> filtered = new List<Student>();
-                var students = _studentRepository.GetAll();
-                foreach (var student in students)
-                {
-                    if (student.IsDeleted)
-                    {
-                        filtered.Add(student);
-                    }
-                }
+        private async Task FilterStudentRecords()
+        {
+            var searchTerm = (string.IsNullOrWhiteSpace(SearchText)
+                    ? String.Empty
+                    : SearchText
+                ).ToLower().Replace(" ", "");
 
-                FilteredStudentRecords = new ObservableCollection<Student>(filtered);
+            var filtered = await Task.Run(() =>
+                Students.Where(student =>
+                    (string.IsNullOrWhiteSpace(searchTerm) || student.GenerateFilterString()
+                        .Contains(searchTerm, StringComparison.CurrentCultureIgnoreCase))
+                    && student.IsDeleted != IsToggled).ToList());
 
-            }
+            FilteredStudentRecords = new ObservableCollection<Student>(filtered);
 
             OnPropertyChanged(nameof(FilteredStudentRecords));
         }

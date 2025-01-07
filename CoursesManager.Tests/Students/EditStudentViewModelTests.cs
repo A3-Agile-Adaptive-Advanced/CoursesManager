@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections.ObjectModel;
+using System.Reflection;
 using Moq;
 using CoursesManager.UI.Models;
 using CoursesManager.MVVM.Dialogs;
@@ -54,20 +55,20 @@ namespace CoursesManager.Tests.Students
 
             _studentRepositoryMock
                 .Setup(repo => repo.GetAll())
-                .Returns(new List<Student>
+                .Returns(new ObservableCollection<Student>
                 {
                     new Student { Email = "existing@example.com" }
                 });
 
             _courseRepositoryMock.Setup(repo => repo.GetAll())
-                .Returns(new List<Course>
+                .Returns(new ObservableCollection<Course>
                 {
                     new Course { Id = 1, Name = "Math", IsActive = true},
                     new Course { Id = 2, Name = "Science", IsActive = true }
                 });
 
             _registrationRepositoryMock.Setup(repo => repo.GetAll())
-                .Returns(new List<Registration>
+                .Returns(new ObservableCollection<Registration>
                 {
                     new Registration { StudentId = 1, CourseId = 1 }
                 });

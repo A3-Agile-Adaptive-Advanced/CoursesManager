@@ -31,7 +31,7 @@
                     <ColumnDefinition Width="50" />
                 </Grid.ColumnDefinitions>
 
-                <rs:SearchBox Grid.Column="1" SearchCommand="{Binding SearchCommand}" Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Loaded="SearchBox_Loaded" />
+                <rs:SearchBox Grid.Column="1" SearchCommand="{Binding SearchCommand}" Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 <TextBlock Grid.Column="6" HorizontalAlignment="Right" 
                    VerticalAlignment="Center" 
                    FontWeight="Bold" 
