@@ -99,6 +99,8 @@ namespace CoursesManager.UI.Views.Controls.CoursesCalendar
                 DrawDays();
 
                 OnDateChangedCommand?.Execute(this);
+
+                DrawItems();
             }
         }
 
@@ -149,7 +151,6 @@ namespace CoursesManager.UI.Views.Controls.CoursesCalendar
             }
 
             PlaceDaysInGrid();
-            DrawItems();
         }
 
         public void DrawItems()
@@ -307,7 +308,7 @@ namespace CoursesManager.UI.Views.Controls.CoursesCalendar
             }
         }
 
-        private void OnCoursesUpdated(ObservableCollection<Course> courses) => DrawDays();
+        private void OnCoursesUpdated(ObservableCollection<Course> courses) => DrawItems();
 
         private void PreviousYearButton_OnClick(object sender, RoutedEventArgs e)
             => SelectedDate = SelectedDate.AddYears(-1);
@@ -322,8 +323,10 @@ namespace CoursesManager.UI.Views.Controls.CoursesCalendar
 
         private void OnDaySelected(object sender, MouseButtonEventArgs e)
         {
-            if (sender is CalendarDay clickedDay)
-                OnDaySelectedCommand?.Execute(clickedDay);
+            if (sender is CalendarDay selectedDay)
+            {
+                OnDaySelectedCommand?.Execute(selectedDay);
+            }
         }
     }
 }

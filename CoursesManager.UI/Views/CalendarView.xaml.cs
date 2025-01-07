@@ -10,6 +10,7 @@ namespace CoursesManager.UI.Views
         public CalendarView()
         {
             InitializeComponent();
+            CustomCalendar.DrawDays();
         }
     }
 }
