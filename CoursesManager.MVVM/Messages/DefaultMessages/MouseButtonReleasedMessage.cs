@@ -1,4 +1,4 @@
-﻿namespace CoursesManager.MVVM.Messages
+﻿namespace CoursesManager.MVVM.Messages.DefaultMessages
 {
     public class MouseButtonReleasedMessage : BaseMessage<MouseButtonReleasedMessage>
     {

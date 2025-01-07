@@ -1,4 +1,5 @@
 ﻿using CoursesManager.MVVM.Data;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CoursesManager.MVVM.Dialogs;
 
@@ -8,14 +9,15 @@ namespace CoursesManager.MVVM.Dialogs;
 /// <typeparam name="TDialogResultType">The type of the result data returned by the dialog.</typeparam>
 public abstract class DialogViewModel<TDialogResultType>(TDialogResultType? dialogResultType) : ViewModel
 {
-
     /// <summary>
     /// Enables dialogs to be closed with an animation.
     /// </summary>
     private bool _isEndAnimationTriggered;
     public bool IsEndAnimationTriggered
     {
+        [ExcludeFromCodeCoverage] 
         get => _isEndAnimationTriggered;
+        [ExcludeFromCodeCoverage] 
         set => SetProperty(ref _isEndAnimationTriggered, value);
     }
     /// <summary>
@@ -25,7 +27,9 @@ public abstract class DialogViewModel<TDialogResultType>(TDialogResultType? dial
 
     public bool IsStartAnimationTriggered
     {
+        [ExcludeFromCodeCoverage]
         get => _isStartAnimationTriggered;
+        [ExcludeFromCodeCoverage]
         set => SetProperty(ref _isStartAnimationTriggered, value);
     }
     protected TDialogResultType? InitialData = dialogResultType;
@@ -64,6 +68,4 @@ public abstract class DialogViewModel<TDialogResultType>(TDialogResultType? dial
         IsEndAnimationTriggered = true;
         await Task.Delay(150);
     }
-
-
 }

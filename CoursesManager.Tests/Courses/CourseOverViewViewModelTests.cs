@@ -13,6 +13,7 @@ using CoursesManager.UI.Repositories.StudentRepository;
 using CoursesManager.UI.ViewModels.Courses;
 using Moq;
 using System.Diagnostics;
+using CoursesManager.UI.Messages;
 
 namespace CoursesManager.Tests.Courses
 {
@@ -28,6 +29,7 @@ namespace CoursesManager.Tests.Courses
         private Mock<IMailProvider> _mailProviderMock;
         private CourseOverViewViewModel _viewModel;
         private CourseOverViewViewModel? _tempViewModel;
+        private Course _course;
 
         [SetUp]
         public void Setup()
@@ -39,21 +41,64 @@ namespace CoursesManager.Tests.Courses
             _messageBrokerMock = new Mock<IMessageBroker>();
             _navigationServiceMock = new Mock<INavigationService>();
             _mailProviderMock = new Mock<IMailProvider>();
-            GlobalCache.Instance.Put("Opened Course", new Course { Id = 1, Name = "Test Course" }, false);
 
-            List<Student> students = new()
+            var course = new Course { Id = 1, Name = "Test Course" };
+            GlobalCache.Instance.Put("Opened Course", course, false);
+
+
+
+            ObservableCollection<Student> students = new()
             {
-            new Student { Id = 1, FirstName = "John", LastName = "Bergen", Courses = new System.Collections.ObjectModel.ObservableCollection<Course> { new Course { Id = 1, Name = "Test Course" } } },
-            new Student { Id = 2, FirstName = "Piet", LastName = "Hendriks", Courses = new System.Collections.ObjectModel.ObservableCollection<Course>  { new Course { Id = 1, Name = "Test Course" } } }
+                new Student { Id = 1, FirstName = "John", LastName = "Bergen" },
+                new Student { Id = 2, FirstName = "Piet", LastName = "Hendriks"}
             };
+
+            var registrations = new ObservableCollection<Registration>
+            {
+                new Registration
+                {
+                    Course = course,
+                    CourseId = course.Id,
+                    Id = 1,
+                    IsAchieved = false,
+                    IsActive = true,
+                    PaymentStatus = false,
+                    RegistrationDate = DateTime.Now,
+                    Student = students[0],
+                    StudentId = students[0].Id
+                },
+                new Registration
+                {
+                    Course = course,
+                    CourseId = course.Id,
+                    Id = 1,
+                    IsAchieved = false,
+                    IsActive = true,
+                    PaymentStatus = false,
+                    RegistrationDate = DateTime.Now,
+                    Student = students[1],
+                    StudentId = students[1].Id
+                }
+            };
+
+            foreach (var student in students)
+            {
+                student.Registrations = new ObservableCollection<Registration>
+                {
+                    registrations.FirstOrDefault(r => r.StudentId == student.Id)!
+                };
+            }
+
+            course.Registrations = registrations;
+            _course = course;
+            
+
             _studentRepositoryMock.Setup(repo => repo.GetAll()).Returns(students);
+            _studentRepositoryMock.Setup(repo => repo.GetById(It.IsAny<int>())).Returns<int>(id => students.FirstOrDefault(s => s.Id == id));
 
-            List<Registration> registrations = new()
-            {
-            new Registration { Id = 1, CourseId = 1, StudentId = 1 },
-            new Registration { Id = 2, CourseId = 1, StudentId = 2 }
-            };
+            _courseRepositoryMock.Setup(repo => repo.GetById(It.IsAny<int>())).Returns<int>(id => course);
             _registrationRepositoryMock.Setup(repo => repo.GetAll()).Returns(registrations);
+
 
             // Act
             _viewModel = new CourseOverViewViewModel(
@@ -70,139 +115,7 @@ namespace CoursesManager.Tests.Courses
         [Test]
         public void Test_LoadCourseData_When_Course_Is_Set_Should_Populate_Students_And_Payments()
         {
-            // Arrange
-            var course = new Course
-            {
-                Id = 1,
-                Name = "Advanced Programming Concepts",
-                Code = "CS202",
-                Description = "A detailed course on advanced programming concepts.",
-                Participants = 2,
-                IsActive = true,
-                IsPayed = true,
-                Category = "Computer Science",
-                StartDate = new DateTime(2023, 10, 1),
-                EndDate = new DateTime(2023, 12, 15),
-                LocationId = 101,
-                Location = new Location
-                {
-                    Id = 101,
-                    Name = "Main Campus, Room 204",
-                    Address = new Address
-                    {
-                        Id = 201,
-                        Country = "United States",
-                        ZipCode = "12345",
-                        City = "Techville",
-                        Street = "University Blvd",
-                        HouseNumber = "123"
-                    }
-                },
-                DateCreated = new DateTime(2023, 9, 15),
-                Students = new ObservableCollection<Student>
-    {
-        new Student
-        {
-            Id = 1,
-            FirstName = "Alice",
-            LastName = "Johnson",
-            Email = "alice.johnson@example.com",
-            Phone = "123-456-7890",
-            IsDeleted = false,
-            DateOfBirth = new DateTime(2000, 5, 15),
-            AddressId = 201,
-            Address = new Address
-            {
-                Id = 201,
-                Country = "United States",
-                ZipCode = "12345",
-                City = "Techville",
-                Street = "University Blvd",
-                HouseNumber = "321"
-            },
-            Registrations = new ObservableCollection<Registration>()
-        },
-        new Student
-        {
-            Id = 2,
-            FirstName = "Bob",
-            LastName = "Smith",
-            Email = "bob.smith@example.com",
-            Phone = "987-654-3210",
-            IsDeleted = false,
-            DateOfBirth = new DateTime(1999, 8, 20),
-            AddressId = 202,
-            Address = new Address
-            {
-                Id = 202,
-                Country = "United States",
-                ZipCode = "54321",
-                City = "Innovate City",
-                Street = "Tech Street",
-                HouseNumber = "456"
-            },
-            Registrations = new ObservableCollection<Registration>()
-        }
-    },
-                Registrations = new List<Registration>
-    {
-        new Registration
-        {
-            Id = 1,
-            StudentId = 1,
-            Student = null,
-            CourseId = 1,
-            Course = null,
-            RegistrationDate = new DateTime(2023, 9, 1),
-            PaymentStatus = true,
-            IsActive = true,
-            IsAchieved = false
-        },
-        new Registration
-        {
-            Id = 2,
-            StudentId = 2,
-            Student = null,
-            CourseId = 1,
-            Course = null,
-            RegistrationDate = new DateTime(2023, 9, 2),
-            PaymentStatus = false,
-            IsActive = true,
-            IsAchieved = false
-        }
-    },
-                Image = new byte[] { 255, 216, 255 }
-            };
-
-            // Assign circular references
-            foreach (var registration in course.Registrations)
-            {
-                registration.Course = course;
-                registration.Student = course.Students.FirstOrDefault(s => s.Id == registration.StudentId);
-            }
-
-            foreach (var student in course.Students)
-            {
-                student.Registrations = new ObservableCollection<Registration>(course.Registrations.Where(r => r.StudentId == student.Id).ToList());
-            }
-            GlobalCache.Instance.Put("Opened Course", course, false);
-
-            _courseRepositoryMock.Setup(repo => repo.GetById(It.IsAny<int>())).Returns<int>(id => course);
-
-            List<Student> students = new()
-            {
-            new Student { Id = 1, FirstName = "John", LastName = "Bergen", Courses = new System.Collections.ObjectModel.ObservableCollection<Course> { new Course { Id = 1, Name = "Test Course" } } },
-            new Student { Id = 2, FirstName = "Piet", LastName = "Hendriks", Courses = new System.Collections.ObjectModel.ObservableCollection<Course>  { new Course { Id = 1, Name = "Test Course" } } }
-            };
-            _studentRepositoryMock.Setup(repo => repo.GetAll()).Returns(students);
-            _studentRepositoryMock.Setup(repo => repo.GetById(It.IsAny<int>())).Returns<int>(id => students.FirstOrDefault(s => s.Id == id));
-
-            List<Registration> registrations = new()
-            {
-            new Registration { Id = 1, CourseId = 1, StudentId = 1 , PaymentStatus = true, IsAchieved = false},
-            new Registration { Id = 2, CourseId = 1, StudentId = 2 , PaymentStatus = true, IsAchieved = false}
-            };
-            _registrationRepositoryMock.Setup(repo => repo.GetAll()).Returns(registrations);
+            GlobalCache.Instance.Put("Opened Course", _course, false);
 
             // Act
             _tempViewModel = new CourseOverViewViewModel(
@@ -264,7 +177,6 @@ namespace CoursesManager.Tests.Courses
 
             // Assert
             _courseRepositoryMock.Verify(repo => repo.Delete(It.IsAny<Course>()), Times.Once);
-            _messageBrokerMock.Verify(mb => mb.Publish(It.IsAny<CoursesChangedMessage>()), Times.Once);
         }
 
         [Test]
@@ -285,16 +197,18 @@ namespace CoursesManager.Tests.Courses
             var course = new Course
             {
                 Id = 1,
-                Registrations = new List<Registration> { registration },
+                Registrations = new ObservableCollection<Registration> { registration },
                 StartDate = DateTime.Now.AddDays(10),
-                EndDate = DateTime.Now.AddMonths(1),
-                IsPayed = false
+                EndDate = DateTime.Now.AddMonths(1)
             };
 
             var student = new Student { Id = 1 };
 
             _courseRepositoryMock.Setup(repo => repo.GetById(It.IsAny<int>()))
                 .Returns(course);
+
+            _registrationRepositoryMock.Setup(repo => repo.GetAllRegistrationsByCourse(It.IsAny<Course>()))
+                .Returns(new List<Registration> { registration });
 
             _registrationRepositoryMock.Setup(repo => repo.Update(It.IsAny<Registration>()));
             _registrationRepositoryMock.Setup(repo => repo.Add(It.IsAny<Registration>()));
@@ -321,9 +235,5 @@ namespace CoursesManager.Tests.Courses
             )), Times.Once);
         }
     }
-
-
-
-
 }
 

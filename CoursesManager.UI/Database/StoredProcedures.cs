@@ -4,37 +4,35 @@ public static class StoredProcedures
 {
     #region Courses
 
-    public const string CoursesDeleteById = "spCourses_DeleteById";
+    public const string DeleteCourse = "spCourses_DeleteById";
+    public const string AddCourse = "spCourse_Add";
+    public const string GetAllCourses = "spCourses_GetAll";
+    public const string UpdateCourse = "spCourse_Edit";
+    public const string GetCourseById = "spCourses_GetById";
 
-    public const string CourseAdd = "spCourse_Add";
-
-    public const string CourseGetAll = "spCourse_GetAll";
-
-    public const string CourseEdit = "spCourse_Edit";
-    public const string CourseGetById = "spCourse_GetById";
-
-    #endregion
+    #endregion Courses
 
     #region Locations
 
-    public const string LocationsWithAddressesGetAll = "spLocationsWithAddresses_GetAll";
-    public const string LocationsInsert = "spLocations_Insert";
-    public const string LocationsDeleteById = "spLocations_DeleteById";
-    public const string LocationsUpdate = "spLocations_Update";
-    public const string LocationUpdate = "spLocations_Update";
+    public const string GetAllLocationsWithAddresses = "spLocationsWithAddresses_GetAll";
+    public const string AddLocation = "spLocations_Insert";
+    public const string DeleteLocation = "spLocations_DeleteById";
+    public const string UpdateLocation = "spLocations_Update";
+    public const string GetLocationWithAddressesById = "spLocationsWithAddresses_GetById";
 
-    #endregion
+    #endregion Locations
 
     #region Registrations
 
-    public const string RegistrationsGetByCourseId = "spRegistrations_GetByCourseId";
-    public const string RegistrationsGetByStudentId = "spRegistrations_GetByStudentId";
-    public const string EditRegistrations = "spRegistrations_Edit";
-    public const string AddRegistrations = "spRegistrations_Add";
+    public const string GetRegistrationsByCourseId = "spRegistrations_GetByCourseId";
+    public const string GetRegistrationsByStudentId = "spRegistrations_GetByStudentId";
+    public const string GetRegistrationById = "spRegistrations_GetById";
+    public const string EditRegistration = "spRegistrations_Edit";
+    public const string AddRegistration = "spRegistrations_Add";
     public const string GetAllRegistrations = "spRegistrations_GetAll";
-    public const string DeleteRegistrations = "spRegistrations_Delete";
+    public const string DeleteRegistration = "spRegistrations_Delete";
 
-    #endregion
+    #endregion Registrations
 
     #region Addresses
 
@@ -44,31 +42,35 @@ public static class StoredProcedures
     public const string UpdateAddress = "spAddresses_Update";
     public const string DeleteAddress = "spAddresses_Delete";
 
-    #endregion
+    #endregion Addresses
 
     #region Students
 
     public const string AddStudent = "spStudents_Add";
-    public const string EditStudent = "spStudents_Edit";
+    public const string UpdateStudent = "spStudents_Edit";
     public const string DeleteStudent = "spStudents_Delete";
     public const string GetStudentById = "spStudents_GetById";
     public const string GetAllStudents = "spStudents_GetAll";
     public const string GetNotDeletedStudents = "spStudents_GetNotDeleted";
     public const string GetDeletedStudents = "spStudents_GetDeleted";
 
-    #endregion
+    #endregion Students
 
     #region Templates
+
     public const string GetAllTemplates = "spTemplates_GetAll";
     public const string GetTemplateByName = "spTemplates_GetByName";
     public const string UpdateTemplate = "spTemplates_Update";
 
-
-    #endregion
+    #endregion Templates
 
     #region Certificates
-    public const string AddCertificate = "spCertificates_Add";
-    public const string CheckIfCertificateExists = "spCertificates_GetByStudentAndCourseCode";
 
-    #endregion
+    public const string AddCertificate = "spCertificates_Add";
+    public const string GetAllCertificates = "spCertificates_GetAll";
+    public const string GetCertificateById = "spCertificates_GetById";
+    public static string CheckIfCertificateExists = "spCertificates_GetByStudentAndCourseCode";
+
+    #endregion Certificates
+
 }

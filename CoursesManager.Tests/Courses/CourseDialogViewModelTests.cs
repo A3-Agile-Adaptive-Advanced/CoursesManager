@@ -32,7 +32,7 @@ namespace CoursesManager.Tests.Courses
             _dialogServiceMock = new Mock<IDialogService>();
 
 
-            var locations = new List<Location>
+            var locations = new ObservableCollection<Location>
             {
                 new Location { Id = 1, Name = "Test Locatie" }
             };

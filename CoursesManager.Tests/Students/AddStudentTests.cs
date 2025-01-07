@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections.ObjectModel;
+using System.Reflection;
 using CoursesManager.UI.Models;
 using CoursesManager.MVVM.Dialogs;
 using Moq;
@@ -56,7 +57,7 @@ namespace CoursesManager.Tests.Students
 
             _mockCourseRepository
                 .Setup(repo => repo.GetAll())
-                .Returns(new List<Course>
+                .Returns(new ObservableCollection<Course>
                 {
                     new Course { Id = 1, Name = "Math", IsActive = true },
                     new Course { Id = 2, Name = "Science", IsActive = true}
@@ -64,14 +65,14 @@ namespace CoursesManager.Tests.Students
 
             _mockRegistrationRepository
                 .Setup(repo => repo.GetAll())
-                .Returns(new List<Registration>
+                .Returns(new ObservableCollection<Registration>
                 {
                     new Registration { StudentId = 1, CourseId = 1 }
                 });
 
             _mockStudentRepository
                 .Setup(repo => repo.GetAll())
-                .Returns(new List<Student>
+                .Returns(new ObservableCollection<Student>
                 {
                     new Student { Email = "existing@example.com" }
                 });
@@ -105,7 +106,7 @@ namespace CoursesManager.Tests.Students
             _viewModel.SelectedCourse = "Math";
 
             // Mock the Add method to add the student to the list
-            var students = new List<Student>();
+            var students = new ObservableCollection<Student>();
             _mockStudentRepository
                 .Setup(repo => repo.Add(It.IsAny<Student>()))
                 .Callback<Student>(s => students.Add(s));

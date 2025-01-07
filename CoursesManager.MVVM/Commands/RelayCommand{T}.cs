@@ -1,4 +1,5 @@
-﻿using System.Windows.Input;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Windows.Input;
 
 namespace CoursesManager.MVVM.Commands
 {
@@ -33,9 +34,12 @@ namespace CoursesManager.MVVM.Commands
             _execute.Invoke(parameter);
         }
 
+        [ExcludeFromCodeCoverage] // Can't test CommandManager
         public event EventHandler? CanExecuteChanged
         {
+            [ExcludeFromCodeCoverage] // Can't test CommandManager
             add => CommandManager.RequerySuggested += value;
+            [ExcludeFromCodeCoverage] // Can't test CommandManager
             remove => CommandManager.RequerySuggested -= value;
         }
 
@@ -45,7 +49,7 @@ namespace CoursesManager.MVVM.Commands
 
             if (parameter is T validParameter) return CanExecute(validParameter);
 
-            throw new ArgumentException($"Invalid parameter type. Expected {typeof(T)}, but got {parameter?.GetType()}.", nameof(parameter));
+            throw new ArgumentException($"Invalid parameter type. Expected {typeof(T)}, but got {parameter.GetType()}.", nameof(parameter));
         }
 
         public bool CanExecute(T parameter)
@@ -53,6 +57,7 @@ namespace CoursesManager.MVVM.Commands
             return _canExecute == null || _canExecute(parameter);
         }
 
+        [ExcludeFromCodeCoverage] // Can't test CommandManager
         public void RaiseCanExecuteChanged()
         {
             CommandManager.InvalidateRequerySuggested();
