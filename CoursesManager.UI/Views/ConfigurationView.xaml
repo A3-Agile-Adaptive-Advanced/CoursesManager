@@ -94,6 +94,6 @@
         </Grid>
 
         <!-- Save Button -->
-        <Button Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Command="{Binding SaveCommand}" Content="Opslaan" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,20" Style="{StaticResource PrimaryButton}" />
+        <Button Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" MinWidth="100" MinHeight="50" Command="{Binding SaveCommand}" Content="Opslaan" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,20" Style="{StaticResource PrimaryButton}" />
     </Grid>
 </UserControl>

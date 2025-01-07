@@ -101,7 +101,7 @@ public partial class App : Application
         MessageBroker.Subscribe<ApplicationCloseRequestedMessage, App>(ApplicationCloseRequestedHandler, this);
 
 
-        var startupmanager = new StartupManager(ConfigurationService, NavigationService);
+        var startupmanager = new StartupManager(ConfigurationService, NavigationService, MessageBroker);
         startupmanager.CheckConfigurationOnStartup();
 
 
@@ -158,7 +158,7 @@ public partial class App : Application
 
         INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<CourseOverViewViewModel>(nav));
 
-        INavigationService.RegisterViewModelFactory(() => viewModelFactory.CreateViewModel<ConfigurationViewModel>());
+        INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<ConfigurationViewModel>(nav));
 
         INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<EditMailTemplatesViewModel>(nav));
 

@@ -262,15 +262,11 @@ namespace CoursesManager.UI.ViewModels.Courses
             );
         }
 
-        /// <summary>
-        /// Handles sending email notifications and processes results.
-        /// </summary>
-        /// <param name="sendEmailTask">The task that performs the email sending logic.</param>
+        // Due to the nature of similarity between the send mail commands this task is created to reduce duplication.
+        // For user feedback a permanent message is sent to show that sending is still being done.
+        // This is important because with larger address lists the task can take a while to complete.
         private async Task SendEmailAsync(Func<Task<List<MailResult>>> sendEmailTask)
         {
-            // Due to the nature of similarity between the send mail commands this task is created to reduce duplication.
-            // For user feedback a permanent message is sent to show that sending is still being done.
-            // This is important because with larger address lists the task can take a while to complete.
             _messageBroker.Publish(new ToastNotificationMessage(true, "E-mails versturen", ToastType.Info, true));
             List<MailResult> mailResults = new();
 
@@ -291,10 +287,8 @@ namespace CoursesManager.UI.ViewModels.Courses
             CheckMailOutcome(mailResults);
         }
 
-        /// <summary>
-        /// Processes the outcome of email-sending operations.
-        /// </summary>
-        /// <param name="mailResults">The list of mail results.</param>
+        // This method will loop over all mail-outcomes regardless of what email has been sent.
+        // To ensure user feedback each possible outcome will be shown via a toast-message.
         private void CheckMailOutcome(List<MailResult> mailResults)
         {
             if (!mailResults.Any())

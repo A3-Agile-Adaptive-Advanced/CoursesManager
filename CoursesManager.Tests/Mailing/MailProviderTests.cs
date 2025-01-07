@@ -9,6 +9,7 @@ using CoursesManager.UI.Repositories.TemplateRepository;
 using Moq;
 using System.Net.Mail;
 using MySqlX.XDevAPI.Common;
+using CoursesManager.MVVM.Exceptions;
 
 namespace CoursesManager.Tests.Mailing;
 [TestFixture]
@@ -143,28 +144,28 @@ public class MailProviderTests
         Assert.That(results.All(r => r.Outcome == MailOutcome.Success));
 
     }
-#endregion
+    #endregion
     #region Unhappy flow
-    //[Test] broken needs fixing!!!
-    //public async Task Test_Null_Certificate_Should_Throw_Exception()
-    //{
-    //    // Arrange
-    //    var course = new Course { Id = 1, Students = new ObservableCollection<Student> { new Student { Id = 1, Email = "x@x.com", Registrations = new ObservableCollection<Registration> { new Registration { CourseId = 1, IsAchieved = true } } } } };
-    //    var templateMail = new Template { Name = "CertificateMail", HtmlString = "[Cursist naam]", SubjectString = "CertificateMail" };
-    //    Template? templateCertificate = null;
+    [Test]
+    public async Task Test_Null_Certificate_Should_Throw_Exception()
+    {
+        // Arrange
+        var course = new Course { Id = 1, Students = new ObservableCollection<Student> { new Student { Id = 1, Email = "x@x.com", Registrations = new ObservableCollection<Registration> { new Registration { CourseId = 1, IsAchieved = true } } } } };
+        var templateMail = new Template { Name = "CertificateMail", HtmlString = "[Cursist naam]", SubjectString = "CertificateMail" };
+        Template? templateCertificate = null;
 
-    //    _mockTemplateRepository.Setup(repo => repo.GetTemplateByName("CertificateMail"))
-    //        .Returns(templateMail);
-    //    _mockTemplateRepository.Setup(repo => repo.GetTemplateByName("Certificate"))
-    //        .Returns(templateCertificate);
+        _mockTemplateRepository.Setup(repo => repo.GetTemplateByName("CertificateMail"))
+            .Returns(templateMail);
+        _mockTemplateRepository.Setup(repo => repo.GetTemplateByName("Certificate"))
+            .Returns(templateCertificate);
 
-    //    _mockMailService.Setup(service => service.SendMail(It.IsAny<List<MailMessage>>()))
-    //        .ReturnsAsync(new List<MailResult> { new MailResult { Outcome = MailOutcome.Success } });
+        _mockMailService.Setup(service => service.SendMail(It.IsAny<List<MailMessage>>()))
+            .ReturnsAsync(new List<MailResult> { new MailResult { Outcome = MailOutcome.Success } });
 
-    //    // Act & Assert
-    //    var exception = Assert.ThrowsAsync<InvalidOperationException>(async () => await _mailProvider.SendCertificates(course));
-    //    Assert.That(exception.Message, Is.EqualTo("Template 'Certificate' not found."));
-    //}
+        // Act & Assert
+        var exception = Assert.ThrowsAsync<TemplateNotFoundException>(async () => await _mailProvider.SendCertificates(course));
+        Assert.That(exception.Message, Is.EqualTo("Template 'Certificate' not found."));
+    }
 
     [Test]
     public async Task Test_Null_Template_Should_Throw_Exception()
@@ -185,7 +186,7 @@ public class MailProviderTests
             .ReturnsAsync(new List<MailResult> { new MailResult { Outcome = MailOutcome.Success } });
 
         // Act & Assert
-        var exception = Assert.ThrowsAsync<InvalidOperationException>(async () => await _mailProvider.SendPaymentNotifications(course));
+        var exception = Assert.ThrowsAsync<TemplateNotFoundException>(async () => await _mailProvider.SendPaymentNotifications(course));
         Assert.That(exception.Message, Is.EqualTo("Template 'PaymentMail' not found."));
     }
 

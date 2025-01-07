@@ -29,10 +29,7 @@ public class EnvManager<T>
     });
 
 
-
     public static T Values => _values.Value;
-
-
 
     private static void LoadValues(T model)
     {
