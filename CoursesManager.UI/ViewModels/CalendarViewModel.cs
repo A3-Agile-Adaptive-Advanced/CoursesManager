@@ -41,7 +41,7 @@ namespace CoursesManager.UI.ViewModels
             OnCalendarDateChangedCommand = new RelayCommand<CalendarLayout>((calendarLayout) =>
             {
                 ObservableCollection<CalendarDay> daysInCurrentView = calendarLayout.DaysInCurrentView;
-                List<Course> courses = _courseRepository.GetAllBetweenDates(daysInCurrentView.First().Date, daysInCurrentView.Last().Date);
+                ObservableCollection<Course> courses = _courseRepository.GetAllBetweenDates(daysInCurrentView.First().Date, daysInCurrentView.Last().Date);
 
                 CoursesBetweenDates.Clear();
                 foreach (Course course in courses)
@@ -50,7 +50,7 @@ namespace CoursesManager.UI.ViewModels
 
             OnDaySelectedCommand = new RelayCommand<CalendarDay>((calendarDay) =>
             {
-                List<Course> courses = _courseRepository.GetAllBetweenDates(calendarDay.Date, calendarDay.Date);
+                ObservableCollection<Course> courses = _courseRepository.GetAllBetweenDates(calendarDay.Date, calendarDay.Date);
 
                 CoursesForSelectedDay.Clear();
                 foreach (Course course in courses)

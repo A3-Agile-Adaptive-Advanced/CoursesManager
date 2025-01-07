@@ -59,9 +59,19 @@ namespace CoursesManager.UI.Repositories.CourseRepository
             }
         }
 
-        public List<Course> GetAllBetweenDates(DateTime start, DateTime end)
+        public ObservableCollection<Course> GetAllBetweenDates(DateTime start, DateTime end)
         {
-            return _courseDataAccess.GetAllBetweenDates(start, end);
+            ObservableCollection<Course> _coursesBetweenDates = new();
+
+            _courseDataAccess.GetAllBetweenDates(start, end).ForEach(c =>
+            {
+                _coursesBetweenDates.Add(c);
+                c.Location = _locationRepository.GetById(c.LocationId);
+            });
+
+            _studentRegistrationCourseAggregator.AggregateFromCourses(_coursesBetweenDates);
+
+            return _coursesBetweenDates;
         }
 
         public Course? GetById(int id)
