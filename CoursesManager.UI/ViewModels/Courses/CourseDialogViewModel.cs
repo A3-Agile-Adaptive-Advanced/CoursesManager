@@ -12,6 +12,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using CoursesManager.UI.Messages;
 
 namespace CoursesManager.UI.ViewModels.Courses
 {
@@ -80,7 +81,7 @@ namespace CoursesManager.UI.ViewModels.Courses
 
             Course.Location = Locations.FirstOrDefault(l => l.Id == Course.LocationId);
 
-            SaveCommand = new RelayCommand(ExecuteSave);
+            SaveCommand = new RelayCommand(ExecuteSave, CanExecuteSave);
             CancelCommand = new RelayCommand(ExecuteCancel);
             UploadCommand = new RelayCommand(ExecuteUpload);
         }
@@ -106,18 +107,18 @@ namespace CoursesManager.UI.ViewModels.Courses
             return missingFields;
         }
 
-        //private bool CanExecuteSave() =>
-        //    Course is not null &&
-        //    !string.IsNullOrWhiteSpace(Course.Name) &&
-        //    !string.IsNullOrWhiteSpace(Course.Code) &&
-        //    Course.StartDate != default &&
-        //    Course.EndDate != default &&
-        //    Course.Location is not null &&
-        //    !string.IsNullOrWhiteSpace(Course.Description);
-    
+        private bool CanExecuteSave() =>
+            Course is not null &&
+            !string.IsNullOrWhiteSpace(Course.Name) &&
+            !string.IsNullOrWhiteSpace(Course.Code) &&
+            Course.StartDate != default &&
+            Course.EndDate != default &&
+            Course.Location is not null &&
+            !string.IsNullOrWhiteSpace(Course.Description);
 
 
-    protected override void InvokeResponseCallback(DialogResult<Course> dialogResult)
+
+        protected override void InvokeResponseCallback(DialogResult<Course> dialogResult)
         {
             ResponseCallback?.Invoke(dialogResult);
         }
