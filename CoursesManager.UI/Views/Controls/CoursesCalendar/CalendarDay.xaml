@@ -17,9 +17,8 @@
                 <DataTrigger Binding="{Binding IsToday}" Value="true">
                     <Setter Property="Background" Value="#02008C"/>
                 </DataTrigger>
-
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="LightBlue" />
+                    <Setter Property="Background" Value="#F8F8F8" />
                 </Trigger>
             </Style.Triggers>
         </Style>

@@ -15,7 +15,7 @@
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
 
-        <rs:CalendarLayout x:Name="CustomCalendar" Courses="{Binding CoursesBetweenDates, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" OnDateChangedCommand="{Binding OnCalendarDateChangedCommand}" OnDaySelectedCommand="{Binding OnDaySelectedCommand}"/>
+        <rs:CalendarLayout x:Name="CustomCalendar" Courses="{Binding CoursesBetweenDates}" OnDateChangedCommand="{Binding OnCalendarDateChangedCommand}" OnDaySelectedCommand="{Binding OnDaySelectedCommand}"/>
 
 		<Border Grid.Column="2" MinWidth="350" Margin="0 110 0 50" Background="White" CornerRadius="15, 15, 15, 15">
 			<Grid>
@@ -49,9 +49,10 @@
 							<ItemsControl.ItemTemplate>
 								<DataTemplate>
                                 <Button Margin="20 10 20 0"
-											HorizontalAlignment="Left"
-											Style="{StaticResource IconButtonWithShadowStyle}"
-                                            >
+										HorizontalAlignment="Left"
+										Style="{StaticResource IconButtonWithShadowStyle}"
+                                        Command="{Binding DataContext.CourseOptionCommand, RelativeSource={RelativeSource AncestorType={x:Type local:CalendarView}}}"
+                                        CommandParameter="{Binding}">
                                     <Grid>
 											<Grid.ColumnDefinitions>
 												<ColumnDefinition/>
@@ -73,7 +74,7 @@
 																	 Background="Transparent" />
 
 											<Popup x:Name="popover"
-												   IsOpen="{Binding IsPopoverOpen}"
+												   IsOpen="{Binding DataContext.IsPopoverOpen, RelativeSource={RelativeSource AncestorType={x:Type local:CalendarView}}}"
 												   Placement="Left"
 												   PlacementTarget="{Binding RelativeSource={RelativeSource Mode=Self}}"
                                                    AllowsTransparency="True">

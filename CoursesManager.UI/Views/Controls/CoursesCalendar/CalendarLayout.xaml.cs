@@ -12,7 +12,7 @@ namespace CoursesManager.UI.Views.Controls.CoursesCalendar
     public partial class CalendarLayout : UserControl, INotifyPropertyChanged
     {
         private DateTime _selectedDate = new(DateTime.Today.Year, DateTime.Today.Month, 1);
-
+        private CalendarDay _selectedDay;
 
         public static readonly DependencyProperty CoursesProperty = DependencyProperty.Register(
             nameof(Courses),
@@ -164,8 +164,8 @@ namespace CoursesManager.UI.Views.Controls.CoursesCalendar
                 {
                     int eventRow = 0;
 
-                    var startDate = course.StartDate;
-                    var endDate = course.EndDate;
+                    DateTime startDate = course.StartDate;
+                    DateTime endDate = course.EndDate;
 
                     CalendarDay dayByStartDate = DaysInCurrentView.Where(day => day.Date == course.StartDate).FirstOrDefault();
                     if (dayByStartDate != null)
@@ -263,7 +263,7 @@ namespace CoursesManager.UI.Views.Controls.CoursesCalendar
                 CalendarDay _newDay = new()
                 {
                     Date = date,
-                    IsSelectedMonth = (date.Month == _selectedDate.Month)
+                    IsSelectedMonth = (date.Month == _selectedDate.Month),
                 };
 
                 _newDay.MouseLeftButtonDown += OnDaySelected;
@@ -274,7 +274,7 @@ namespace CoursesManager.UI.Views.Controls.CoursesCalendar
         private void PlaceDaysInGrid()
         {
             int row = 0;
-            foreach (var day in DaysInCurrentView)
+            foreach (CalendarDay day in DaysInCurrentView)
             {
                 // Sunday => column 6, Monday => column 0
                 int column = (day.Date.DayOfWeek == DayOfWeek.Sunday)
@@ -290,6 +290,7 @@ namespace CoursesManager.UI.Views.Controls.CoursesCalendar
                     right: 1,
                     bottom: 1
                 );
+
                 day.BorderBrush = new SolidColorBrush(Color.FromRgb(49,43,127));
 
                 DaysGrid.Children.Add(day);
