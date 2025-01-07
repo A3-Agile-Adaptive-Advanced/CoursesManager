@@ -138,7 +138,7 @@ public class GlobalCache
 
     private void IncreaseCapacity()
     {
-        _capacity = _initialCapacity + _capacity;
+        _capacity += _initialCapacity;
     }
 
     private void DecreaseCapacity()
