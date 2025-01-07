@@ -66,9 +66,6 @@ namespace CoursesManager.UI.Service
         }
 
 
-
-
-
         public Dictionary<string, string> GetDatabaseParameters()
         {
             var decryptedConfig = GetDecryptedEnvSettings();
@@ -92,7 +89,6 @@ namespace CoursesManager.UI.Service
 
             return ParseConnectionString(decryptedConfig.MailConnectionString);
         }
-
 
 
         public bool ValidateSettings()

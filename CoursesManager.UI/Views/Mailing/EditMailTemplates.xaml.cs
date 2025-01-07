@@ -17,6 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using CoursesManager.UI.Enums;
+using CoursesManager.UI.Service.PlaceholderService;
 
 namespace CoursesManager.UI.Views.Mailing
 {
@@ -30,36 +31,9 @@ namespace CoursesManager.UI.Views.Mailing
         public EditMailTemplates()
         {
             InitializeComponent();
-            var placeholders = new List<string>
-        {
+            PlaceholderService placeholderService = new();
 
-            "[Cursus naam]",
-            "[Cursus code]",
-            "[Cursus beschrijving]",
-            "[Cursus categorie]",
-            "[Cursus startdatum]",
-            "[Cursus einddatum]",
-            "[Cursus locatie naam]",
-            "[Cursus locatie land]",
-            "[Cursus locatie postcode]",
-            "[Cursus locatie stad]",
-            "[Cursus locatie straat]",
-            "[Cursus locatie huisnummer]",
-            "[Cursus locatie toevoeging]",
-
-            "[Betaal link]",
-
-            "[Cursist naam]",
-            "[Cursist email]",
-            "[Cursist telefoonnummer]",
-            "[Cursist geboortedatum]",
-            "[Cursist adres land]",
-            "[Cursist adres postcode]",
-            "[Cursist adres stad]",
-            "[Cursist adres straat]",
-            "[Cursist adres huisnummer]",
-            "[Cursist adres toevoeging]"
-        };
+            var placeholders = placeholderService.GetValidPlaceholders();
             SuggestionsList.ItemsSource = placeholders;
         }
 

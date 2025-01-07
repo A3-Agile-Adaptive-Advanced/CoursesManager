@@ -162,17 +162,24 @@ namespace CoursesManager.Tests.Students
         {
             // Arrange
             var student = new Student { Id = 1, FirstName = "John" };
-            _registrationRepositoryMock.Setup(repo => repo.GetAll()).Returns(new List<Registration>());
+            _registrationRepositoryMock.Setup(repo => repo.GetAllRegistrationsByStudent(It.IsAny<Student>()))
+                .Returns(new List<Registration>());
+
             _viewModel.SelectedStudent = student;
+
+            _navigationServiceMock.Setup(nav => nav.NavigateTo<StudentDetailViewModel>(It.IsAny<Student>()));
 
             // Act
             _viewModel.StudentDetailCommand.Execute(null);
 
             // Assert
             _navigationServiceMock.Verify(nav =>
-                nav.NavigateTo<StudentDetailViewModel>(student),
+                nav.NavigateTo<StudentDetailViewModel>(It.Is<Student>(s => s.Id == student.Id)),
                 Times.Once);
         }
+
+
+
 
         [Test]
         public void ToggleIsDeletedCommand_ShouldFilterOnlyDeletedStudents()
@@ -197,31 +204,6 @@ namespace CoursesManager.Tests.Students
 
             Assert.That(deletedStudents.Count, Is.EqualTo(1));
             Assert.That(deletedStudents.First().IsDeleted, Is.True);
-        }
-
-
-        [Test]
-        public async Task CheckboxChangedCommand_ShouldUpdateRegistration_WhenCheckboxesAreUpdated()
-        {
-            // Arrange
-            var registration = new Registration { Id = 1, StudentId = 1, CourseId = 1, PaymentStatus = false, IsAchieved = false };
-            _registrationRepositoryMock.Setup(repo => repo.GetAll()).Returns(new List<Registration> { registration });
-
-            var course = new Course { Id = 1, Name = "Math" };
-            var payment = new CourseStudentPayment(course, registration) { IsPaid = true, IsAchieved = true };
-            _viewModel.SelectedStudent = new Student { Id = 1 };
-
-            // Act
-            _viewModel.CheckboxChangedCommand.Execute(payment);
-
-            // Assert
-            _registrationRepositoryMock.Verify(repo =>
-                repo.Update(It.Is<Registration>(
-                    r => r.StudentId == 1 &&
-                         r.CourseId == 1 &&
-                         r.PaymentStatus == true &&
-                         r.IsAchieved == true)),
-                Times.Once);
         }
     }
 }

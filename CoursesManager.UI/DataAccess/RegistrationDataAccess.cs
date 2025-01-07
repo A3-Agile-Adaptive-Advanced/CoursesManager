@@ -14,7 +14,7 @@ public class RegistrationDataAccess : BaseDataAccess<Registration>
         {
             return ExecuteProcedure(StoredProcedures.RegistrationsGetByCourseId, new MySqlParameter("@p_courseId", courseId)).Select(row => new Registration
             {
-                Id = Convert.ToInt32(row["id"]),
+                Id = Convert.ToInt32(row["registration_id"]),
                 CourseId = Convert.ToInt32(row["course_id"]),
                 StudentId = Convert.ToInt32(row["student_id"]),
                 RegistrationDate = Convert.ToDateTime(row["registration_date"]),
@@ -26,6 +26,38 @@ public class RegistrationDataAccess : BaseDataAccess<Registration>
         catch (MySqlException ex)
         {
             throw new InvalidOperationException(ex.Message, ex);
+        }
+    }
+
+    public List<Registration> GetAllRegistrationsByStudent(int studentId)
+    {
+        try
+        {
+            return ExecuteProcedure(StoredProcedures.RegistrationsGetByStudentId, new MySqlParameter("@p_studentId", studentId)).Select(row => new Registration
+            {
+                Id = Convert.ToInt32(row["registration_id"]),
+                CourseId = Convert.ToInt32(row["course_id"]),
+                StudentId = Convert.ToInt32(row["student_id"]),
+                RegistrationDate = Convert.ToDateTime(row["registration_date"]),
+                PaymentStatus = Convert.ToBoolean(row["payment_status"]),
+                IsAchieved = Convert.ToBoolean(row["is_achieved"]),
+                IsActive = Convert.ToBoolean(row["is_active"]),
+                Course = new Course
+                {
+                    Id = Convert.ToInt32(row["course_id"]),
+                    Name = Convert.ToString(row["name"])
+                }
+            }).ToList();
+        }
+        catch (MySqlException ex)
+        {
+            LogUtil.Error($"MySQL error in get registration by student: {ex.Message}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            LogUtil.Error($"General error in get registration by student: {ex.Message}");
+            throw;
         }
     }
 

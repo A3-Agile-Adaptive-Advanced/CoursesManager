@@ -111,4 +111,10 @@ public class RegistrationRepository : BaseRepository, IRegistrationRepository
 
         return _registrationDataAccess.GetAllRegistrationsByCourse(course.Id);
     }
+    public List<Registration> GetAllRegistrationsByStudent(Student student)
+    {
+        ArgumentNullException.ThrowIfNull(student);
+
+        return _registrationDataAccess.GetAllRegistrationsByStudent(student.Id);
+    }
 }

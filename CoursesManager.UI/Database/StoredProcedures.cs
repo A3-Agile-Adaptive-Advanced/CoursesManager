@@ -11,6 +11,7 @@ public static class StoredProcedures
     public const string CourseGetAll = "spCourse_GetAll";
 
     public const string CourseEdit = "spCourse_Edit";
+    public const string CourseGetById = "spCourse_GetById";
 
     public const string GetCoursesBetweenDates = "spCourse_GetBetweenDates";
 
@@ -69,6 +70,7 @@ public static class StoredProcedures
 
     #region Certificates
     public const string AddCertificate = "spCertificates_Add";
+    public const string CheckIfCertificateExists = "spCertificates_GetByStudentAndCourseCode";
 
     #endregion
 }
