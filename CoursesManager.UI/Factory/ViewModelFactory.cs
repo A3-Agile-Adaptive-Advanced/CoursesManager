@@ -68,9 +68,6 @@ namespace CoursesManager.UI.Factory
         {
             return typeof(T) switch
             {
-                Type vmType when vmType == typeof(ConfigurationViewModel) =>
-                    new ConfigurationViewModel(_configurationService) as T,
-
                 _ => throw new ArgumentException($"Unknown ViewModel type: {typeof(T)}")
             };
         }
@@ -97,8 +94,8 @@ namespace CoursesManager.UI.Factory
                     new CoursesManagerViewModel(_courseRepository, _messageBroker, _dialogService, navigationService) as T,
                 Type vmType when vmType == typeof(EditMailTemplatesViewModel) =>
                     new EditMailTemplatesViewModel(_templateRepository, _dialogService, _messageBroker, _placeholderService, _textHandlerService, navigationService) as T,
-
-
+                Type vmType when vmType == typeof(ConfigurationViewModel) =>
+                    new ConfigurationViewModel(_configurationService, navigationService, _messageBroker) as T,
 
                 // Add other view model cases here...
                 _ => throw new ArgumentException($"Unknown ViewModel type: {typeof(T)}")

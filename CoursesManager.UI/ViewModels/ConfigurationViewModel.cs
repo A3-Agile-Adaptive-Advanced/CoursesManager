@@ -3,16 +3,19 @@ using System.Windows;
 using System.Windows.Input;
 using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Data;
+using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
+using CoursesManager.UI.Enums;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Service;
 
 namespace CoursesManager.UI.ViewModels
 {
-    public class ConfigurationViewModel : ViewModel
+    public class ConfigurationViewModel : ViewModelWithNavigation
     {
         private readonly IConfigurationService _configurationService;
-
+        private readonly INavigationService _navigationService;
+        private readonly IMessageBroker _messageBroker;
 
 
         private string _dbServer;
@@ -42,7 +45,6 @@ namespace CoursesManager.UI.ViewModels
             get => _dbPassword;
             set => SetProperty(ref _dbPassword, value);
         }
-
 
 
         private string _dbName;
@@ -81,8 +83,6 @@ namespace CoursesManager.UI.ViewModels
             set => SetProperty(ref _mailPassword, value);
         }
 
-        
-
         private EnvModel _appConfig;
         public EnvModel AppConfig
         {
@@ -92,16 +92,21 @@ namespace CoursesManager.UI.ViewModels
 
         public ICommand SaveCommand { get; }
 
-        public ConfigurationViewModel(IConfigurationService configurationService)
+        public ConfigurationViewModel(IConfigurationService configurationService, INavigationService navigationService, IMessageBroker messageBroker) : base(navigationService)
         {
             _configurationService = configurationService;
+            _navigationService = navigationService;
+            _messageBroker = messageBroker;
             
             InitializeSettings();
             SaveCommand = new RelayCommand(ValidateAndSave);
 
             if (!CanSave() || !_configurationService.ValidateSettings())
             {
-                MessageBox.Show("Instellingen zijn ongeldig. Controleer de ingevoerde waarden.");
+                _messageBroker.Publish(new ToastNotificationMessage(
+                    true,
+                    "Instellingen succesvol ongeldig!",
+                    ToastType.Confirmation));
             }
         }
 
@@ -124,13 +129,17 @@ namespace CoursesManager.UI.ViewModels
             Console.WriteLine($"MailServer: {MailServer}, MailPort: {MailPort}, MailUser: {MailUser}, MailPassword: {MailPassword}");
         }
 
-        public void ValidateAndSave()
+        public async void ValidateAndSave()
         {
             try
             {
                 if (!CanSave())
                 {
-                    MessageBox.Show("Instellingen zijn ongeldig. Controleer de ingevoerde waarden.");
+                    await Task.Delay(5000);
+                    _messageBroker.Publish(new ToastNotificationMessage(
+                        true,
+                        "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.",
+                        ToastType.Error));
                 }
 
                 var dbParams = new Dictionary<string, string>
@@ -155,7 +164,10 @@ namespace CoursesManager.UI.ViewModels
 
                 if (!_configurationService.ValidateSettings())
                 {
-                    MessageBox.Show("Instellingen zijn ongeldig. Controleer de ingevoerde waarden.");
+                    _messageBroker.Publish(new ToastNotificationMessage(
+                        true,
+                        "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.",
+                        ToastType.Error));
                     INavigationService.CanNavigate = false;
                     return;
                 }
@@ -163,7 +175,14 @@ namespace CoursesManager.UI.ViewModels
                 INavigationService.CanNavigate = true;
 
 
-                MessageBox.Show("Instellingen succesvol opgeslagen!");
+                _messageBroker.Publish(new ToastNotificationMessage(
+                    true,
+                    "Instellingen succesvol opgeslagen!",
+                    ToastType.Confirmation));
+
+
+                _navigationService.NavigateTo<CoursesManagerViewModel>();
+
             }
             catch (Exception ex)
             {

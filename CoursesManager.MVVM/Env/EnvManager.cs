@@ -18,7 +18,6 @@ public class EnvManager<T>
             return model;
         }
 
-
         DotEnv.Fluent()
             .WithExceptions()
             .WithEnvFiles(envfiles.ToArray())
@@ -27,7 +26,6 @@ public class EnvManager<T>
         LoadValues(model);
         return model;
     });
-
 
 
     public static T Values => _values.Value;

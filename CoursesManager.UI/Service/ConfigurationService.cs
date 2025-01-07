@@ -98,7 +98,7 @@ namespace CoursesManager.UI.Service
         public bool ValidateSettings()
         {
 
-            var envFilePath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+            var envFilePath = Path.Combine(EnvManager<EnvModel>.EnvFolderPath, ".env");
             if (!File.Exists(envFilePath))
             {
                 Console.WriteLine("Geen .env-bestand gevonden. Gebruiker moet instellingen invullen.");
