@@ -55,7 +55,7 @@ namespace CoursesManager.UI.DataAccess
             return addressId;
         }
 
-    public void Update(Address address)
+        public void Update(Address address)
         {
             try
             {
