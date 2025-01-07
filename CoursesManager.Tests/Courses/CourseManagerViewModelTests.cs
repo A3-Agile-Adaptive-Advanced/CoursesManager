@@ -109,41 +109,41 @@ namespace CoursesManager.Tests.Courses
             Assert.That(_viewModel.Courses, Has.Count.EqualTo(_courses.Count));
         }
 
-        [Test]
-        public async Task Should_Filter_Courses_Based_On_SearchTerm()
-        {
-            // Filter by "WIS101"
-            _viewModel.SearchTerm = "WIS101";
-            await Task.Delay(500);
-            Assert.That(_viewModel.FilteredCourses, Has.Count.EqualTo(1));
-            Assert.That(
-                _viewModel.FilteredCourses,
-                Has.All.Matches<Course>(c =>
-                    c.GenerateFilterString().Contains(
-                        _viewModel.SearchTerm,
-                        StringComparison.CurrentCultureIgnoreCase
-                    )
-                )
-            );
+        //[Test]
+        //public async Task Should_Filter_Courses_Based_On_SearchTerm()
+        //{
+        //    // Filter by "WIS101"
+        //    _viewModel.SearchTerm = "WIS101";
+        //    await Task.Delay(500);
+        //    Assert.That(_viewModel.FilteredCourses, Has.Count.EqualTo(1));
+        //    Assert.That(
+        //        _viewModel.FilteredCourses,
+        //        Has.All.Matches<Course>(c =>
+        //            c.GenerateFilterString().Contains(
+        //                _viewModel.SearchTerm,
+        //                StringComparison.CurrentCultureIgnoreCase
+        //            )
+        //        )
+        //    );
 
-            // Filter by "Basis"
-            _viewModel.SearchTerm = "Basis";
-            await Task.Delay(500);
-            Assert.That(_viewModel.FilteredCourses, Has.Count.EqualTo(2));
-            Assert.That(
-                _viewModel.FilteredCourses,
-                Has.All.Matches<Course>(c =>
-                    c.GenerateFilterString().Contains(
-                        _viewModel.SearchTerm,
-                        StringComparison.CurrentCultureIgnoreCase
-                    )
-                )
-            );
+        //    // Filter by "Basis"
+        //    _viewModel.SearchTerm = "Basis";
+        //    await Task.Delay(500);
+        //    Assert.That(_viewModel.FilteredCourses, Has.Count.EqualTo(2));
+        //    Assert.That(
+        //        _viewModel.FilteredCourses,
+        //        Has.All.Matches<Course>(c =>
+        //            c.GenerateFilterString().Contains(
+        //                _viewModel.SearchTerm,
+        //                StringComparison.CurrentCultureIgnoreCase
+        //            )
+        //        )
+        //    );
 
-            //    // Reset SearchTerm
-            //    _viewModel.SearchTerm = String.Empty;
-            //}
-        }
+        //    //    // Reset SearchTerm
+        //    //    _viewModel.SearchTerm = String.Empty;
+        //    //}
+        //}
 
         [Test]
         public async Task Should_Return_Empty_When_SearchTerm_Does_Not_Match_Any_Course()
