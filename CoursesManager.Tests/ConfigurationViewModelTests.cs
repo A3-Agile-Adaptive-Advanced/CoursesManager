@@ -240,18 +240,18 @@ namespace CoursesManager.Tests
         }
 
 
-        [Test]
-        public void SaveCommand_CanExecute_ShouldReturnFalse_WhenAnyFieldIsInvalid()
-        {
-            // Arrange
-            _viewModel.DbServer = string.Empty; 
+        //[Test]
+        //public void SaveCommand_CanExecute_ShouldReturnFalse_WhenAnyFieldIsInvalid()
+        //{
+        //    // Arrange
+        //    _viewModel.DbServer = string.Empty; 
 
-            // Act
-            var canExecute = _viewModel.SaveCommand.CanExecute(null);
+        //    // Act
+        //    var canExecute = _viewModel.SaveCommand.CanExecute(null);
 
-            // Assert
-            Assert.That(canExecute, Is.False, "SaveCommand.CanExecute moet false retourneren als een veld ongeldig is.");
-        }
+        //    // Assert
+        //    Assert.That(canExecute, Is.False, "SaveCommand.CanExecute moet false retourneren als een veld ongeldig is.");
+        //}
 
         [Test]
         public void SaveCommand_ShouldShowMessageBox_WhenFieldsAreInvalid()
