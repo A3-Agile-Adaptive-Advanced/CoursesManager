@@ -66,5 +66,9 @@ namespace CoursesManager.UI.Repositories.RegistrationRepository
         {
             throw new NotImplementedException();
         }
+        public List<Registration> GetAllRegistrationsByStudent(Student student)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
