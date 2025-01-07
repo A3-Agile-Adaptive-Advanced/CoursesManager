@@ -1,23 +1,10 @@
-﻿using CoursesManager.MVVM.Data;
-using CoursesManager.UI.ViewModels.Courses;
+﻿using CoursesManager.UI.Enums;
+using CoursesManager.UI.Service.PlaceholderService;
 using CoursesManager.UI.ViewModels.Mailing;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using CoursesManager.UI.Enums;
-using CoursesManager.UI.Service.PlaceholderService;
 
 namespace CoursesManager.UI.Views.Mailing
 {
