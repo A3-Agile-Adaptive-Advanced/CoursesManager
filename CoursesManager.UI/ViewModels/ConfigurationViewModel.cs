@@ -17,7 +17,6 @@ namespace CoursesManager.UI.ViewModels
         private readonly IMessageBroker _messageBroker;
         private readonly INavigationService _navigationService;
 
-
         private string _dbServer;
         public string DbServer
         {
@@ -102,7 +101,15 @@ namespace CoursesManager.UI.ViewModels
             
             
             InitializeSettings();
-            SaveCommand = new RelayCommand(ValidateAndSave, CanSave);
+            SaveCommand = new RelayCommand(ValidateAndSave);
+
+            if (!CanSave() || !_configurationService.ValidateSettings())
+            {
+                _messageBroker.Publish(new ToastNotificationMessage(
+                    true,
+                    "Instellingen zijn ongeldig!",
+                    ToastType.Info));
+            }
         }
 
         public void InitializeSettings()
@@ -124,14 +131,17 @@ namespace CoursesManager.UI.ViewModels
             Console.WriteLine($"MailServer: {MailServer}, MailPort: {MailPort}, MailUser: {MailUser}, MailPassword: {MailPassword}");
         }
 
-        public void ValidateAndSave()
+        public async void ValidateAndSave()
         {
             try
             {
                 if (!CanSave())
                 {
-                    _messageBroker.Publish(new ToastNotificationMessage(true,
-                        "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.", ToastType.Warning)); return;
+                    await Task.Delay(5000);
+                    _messageBroker.Publish(new ToastNotificationMessage(
+                        true,
+                        "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.",
+                        ToastType.Error));
                 }
 
                 var dbParams = new Dictionary<string, string>
@@ -156,8 +166,10 @@ namespace CoursesManager.UI.ViewModels
 
                 if (!_configurationService.ValidateSettings())
                 {
-                    _messageBroker.Publish(new ToastNotificationMessage(true,
-                        "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.", ToastType.Warning));
+                    _messageBroker.Publish(new ToastNotificationMessage(
+                        true,
+                        "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.",
+                        ToastType.Error));
                     INavigationService.CanNavigate = false;
                     return;
                 }
@@ -165,10 +177,14 @@ namespace CoursesManager.UI.ViewModels
                 INavigationService.CanNavigate = true;
 
 
-                _messageBroker.Publish(new ToastNotificationMessage(true,
-                    "Instellingen succesvol opgeslagen!", ToastType.Confirmation));
+                _messageBroker.Publish(new ToastNotificationMessage(
+                    true,
+                    "Instellingen succesvol opgeslagen!",
+                    ToastType.Info));
+
 
                 _navigationService.NavigateTo<CoursesManagerViewModel>();
+
             }
             catch (Exception ex)
             {
