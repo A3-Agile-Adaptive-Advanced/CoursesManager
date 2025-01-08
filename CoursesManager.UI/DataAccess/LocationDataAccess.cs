@@ -1,6 +1,7 @@
 ﻿using CoursesManager.UI.Database;
 using CoursesManager.UI.Models;
 using MySql.Data.MySqlClient;
+using System.Data;
 
 namespace CoursesManager.UI.DataAccess;
 
@@ -10,10 +11,19 @@ public class LocationDataAccess : BaseDataAccess<Location>
     {
         try
         {
+            var outputParameter = new MySqlParameter("@p_id", MySqlDbType.Int32)
+            {
+                Direction = ParameterDirection.Output
+            };
+
             ExecuteNonProcedure(StoredProcedures.AddLocation, [
                 new MySqlParameter("@p_name", location.Name),
-                new MySqlParameter("@p_address_id", location.Address.Id)
+                new MySqlParameter("@p_address_id", location.Address.Id),
+                outputParameter
             ]);
+
+            location.Id = Convert.ToInt32(outputParameter.Value);
+
             LogUtil.Log("Location added successfully.");
         }
         catch (MySqlException ex)

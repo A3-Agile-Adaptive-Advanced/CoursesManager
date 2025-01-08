@@ -49,6 +49,8 @@ namespace CoursesManager.UI.ViewModels.Mailing
 
         public EditMailTemplatesViewModel(ITemplateRepository templateRepository, IDialogService dialogService, IMessageBroker messageBroker, IPlaceholderService placeholderService, ITextHandlerService textHandlerService, INavigationService navigationService) : base(navigationService)
         {
+            ViewTitle = "Template editor";
+
             _templateRepository = templateRepository;
             _navigationService = navigationService;
             _messageBroker = messageBroker;
