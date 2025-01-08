@@ -21,7 +21,7 @@
 
         <Style x:Key="DayLabelBorderStyle" TargetType="Border">
             <Setter Property="BorderBrush" Value="{StaticResource PrimaryGradient}" />
-            <Setter Property="BorderThickness" Value="0.5,0,0.5,0" />
+            <Setter Property="BorderThickness" Value="1,0,1,0" />
         </Style>
     </UserControl.Resources>
 

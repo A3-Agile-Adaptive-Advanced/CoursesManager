@@ -14,12 +14,12 @@
                 <DataTrigger Binding="{Binding IsSelectedMonth}" Value="false">
                     <Setter Property="Background" Value="#EEEEEE" />
                 </DataTrigger>
-                <DataTrigger Binding="{Binding IsToday}" Value="true">
-                    <Setter Property="Background" Value="#02008C"/>
-                </DataTrigger>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="#F8F8F8" />
                 </Trigger>
+                <DataTrigger Binding="{Binding IsToday}" Value="true">
+                    <Setter Property="Background" Value="#02008C"/>
+                </DataTrigger>
             </Style.Triggers>
         </Style>
 
