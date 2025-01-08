@@ -139,7 +139,7 @@ namespace CoursesManager.UI.ViewModels.Students
 
         public void LoadStudents()
         {
-            Students = new ObservableCollection<Student>(_studentRepository.GetNotDeletedStudents());
+            Students = new ObservableCollection<Student>(_studentRepository.GetAll());
             FilteredStudentRecords = new ObservableCollection<Student>(Students);
         }
 
