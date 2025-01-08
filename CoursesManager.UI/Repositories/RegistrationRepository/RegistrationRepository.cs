@@ -46,7 +46,7 @@ public class RegistrationRepository : BaseRepository<Registration>, IRegistratio
             {
                 _registrationDataAccess.GetAll().ForEach(_registrations.Add);
 
-                _studentRegistrationCourseAggregator.AggregateFromRegistratios(_registrations);
+                _studentRegistrationCourseAggregator.AggregateFromRegistrations(_registrations);
             }
 
             return _registrations;
@@ -76,6 +76,8 @@ public class RegistrationRepository : BaseRepository<Registration>, IRegistratio
         {
             _registrationDataAccess.Add(registration);
             _registrations.Add(registration);
+
+            _studentRegistrationCourseAggregator.AggregateNewRegistration(registration);
         }
     }
 
@@ -109,6 +111,8 @@ public class RegistrationRepository : BaseRepository<Registration>, IRegistratio
             var item = GetById(id) ?? throw new InvalidOperationException($"Registration with id: {id} does not exist.");
 
             _registrations.Remove(item);
+
+            _studentRegistrationCourseAggregator.DeleteRegistration(item);
         }
     }
 

@@ -1,6 +1,7 @@
 ﻿using CoursesManager.UI.Models;
 using MySql.Data.MySqlClient;
 using CoursesManager.UI.Database;
+using System.Data;
 
 namespace CoursesManager.UI.DataAccess
 {
@@ -70,6 +71,11 @@ namespace CoursesManager.UI.DataAccess
                 }
                 student.AddressId = addressId; // Assign FK to the student
 
+                var outputParameter = new MySqlParameter("@p_id", MySqlDbType.Int32)
+                {
+                    Direction = ParameterDirection.Output
+                };
+
                 // Step 2: Add the student with the retrieved address ID
                 var parameters = new MySqlParameter[]
                 {
@@ -83,9 +89,13 @@ namespace CoursesManager.UI.DataAccess
                     new MySqlParameter("@p_created_at", DateTime.Now),
                     new MySqlParameter("@p_updated_at", DateTime.Now),
                     new MySqlParameter("@p_insertion", student.Insertion ?? (object)DBNull.Value),
-                    new MySqlParameter("@p_date_of_birth", student.DateOfBirth.Date)                 };
+                    new MySqlParameter("@p_date_of_birth", student.DateOfBirth.Date),
+                    outputParameter
+                };
 
                 ExecuteNonProcedure(StoredProcedures.AddStudent, parameters);
+
+                student.Id = Convert.ToInt32(outputParameter.Value);
 
                 LogUtil.Log($"Student added successfully with Address ID: {addressId}");
             }
