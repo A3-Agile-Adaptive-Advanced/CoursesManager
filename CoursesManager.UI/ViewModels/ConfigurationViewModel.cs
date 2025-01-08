@@ -107,8 +107,8 @@ namespace CoursesManager.UI.ViewModels
             {
                 _messageBroker.Publish(new ToastNotificationMessage(
                     true,
-                    "Instellingen succesvol ongeldig!",
-                    ToastType.Confirmation));
+                    "Instellingen succesvol opgeslagen!",
+                    ToastType.Info));
             }
         }
 
@@ -180,7 +180,7 @@ namespace CoursesManager.UI.ViewModels
                 _messageBroker.Publish(new ToastNotificationMessage(
                     true,
                     "Instellingen succesvol opgeslagen!",
-                    ToastType.Confirmation));
+                    ToastType.Info));
 
 
                 _navigationService.NavigateTo<CoursesManagerViewModel>();
