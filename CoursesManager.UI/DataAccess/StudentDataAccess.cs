@@ -181,8 +181,6 @@ namespace CoursesManager.UI.DataAccess
 
         protected Student FillDataModel(Dictionary<string, object?> row)
         {
-            LogUtil.Info($"Processing row: {string.Join(", ", row.Select(kvp => $"{kvp.Key}={kvp.Value}"))}");
-
             var student = new Student
             {
                 Id = row.ContainsKey("id") && row["id"] != null ? Convert.ToInt32(row["id"]) : 0,

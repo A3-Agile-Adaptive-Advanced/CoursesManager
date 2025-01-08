@@ -26,6 +26,27 @@ public class CourseDataAccess : BaseDataAccess<Course>
         }
     }
 
+    public List<Course> GetAllBetweenDates(DateTime start, DateTime end)
+    {
+        try
+        {
+            List<Dictionary<string, object?>> results = ExecuteProcedure(
+                StoredProcedures.GetCoursesBetweenDates, 
+                new MySqlParameter("@p_startDate", start),
+                new MySqlParameter("@p_endDate", end)
+            );
+
+            List<Course> models = results.Select(MapToCourse).ToList();
+
+            return models;
+        }
+        catch (Exception ex)
+        {
+            LogUtil.Error($"Error in GetAllBetweenDates: {ex.Message}");
+            throw;
+        }
+    }
+
     private static Course MapToCourse(Dictionary<string, object?> row)
     {
         return new Course
@@ -44,6 +65,7 @@ public class CourseDataAccess : BaseDataAccess<Course>
                 : null
         };
     }
+
 
     public void Add(Course course)
     {

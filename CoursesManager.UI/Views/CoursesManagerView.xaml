@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:CoursesManager.UI.Views"
              xmlns:rs="clr-namespace:CoursesManager.UI.Views.Controls"
+             xmlns:rsc="clr-namespace:CoursesManager.UI.Views.Controls.Courses"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:viewmodels="clr-namespace:CoursesManager.UI.ViewModels" 
              mc:Ignorable="d"
@@ -89,136 +90,7 @@
                 <!-- Card Template -->
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Width="325" Height="Auto" Margin="10" CornerRadius="15" Background="#FFFFFF" Padding="0 0 0 10">
-                            <Border.Effect>
-                                <DropShadowEffect Color="Black" Opacity="0.3" BlurRadius="10" ShadowDepth="5"/>
-                            </Border.Effect>
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-
-                                <Border x:Name="CardHeader" Width="325" Height="15" CornerRadius="15 15 0 0">
-                                    <Border.Style>
-                                        <Style TargetType="Border">
-                                            <Setter Property="Background" Value="#D9D9D9" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsActive}" Value="true">
-                                                    <Setter Property="Background" Value="#02008C" />
-                                                </DataTrigger>
-                                                <MultiDataTrigger>
-                                                    <MultiDataTrigger.Conditions>
-                                                        <Condition Binding="{Binding IsActive}" Value="true" />
-                                                        <Condition Binding="{Binding IsPayed}" Value="false" />
-                                                        <Condition Binding="{Binding StartDate, Converter={StaticResource StartDateToBooleanConverter}}" Value="true" />
-                                                    </MultiDataTrigger.Conditions>
-                                                    <Setter Property="Background" Value="#7C3130" />
-                                                </MultiDataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Border.Style>
-                                </Border>
-
-                                <!-- Top Section (Title, Subtitle, and Image) -->
-                                <Grid Grid.Row="1" Margin="10,10,10,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <!-- Placeholder Image -->
-
-                                    <Rectangle Width="100" Height="100" Fill="#E0E0E0" RadiusX="5" RadiusY="5" Grid.Column="0" />
-                                    <Viewbox Width="90" Height="90">
-                                        <materialDesign:PackIcon Kind="Picture" Height="90" Width="90" VerticalAlignment="Center" Foreground="DarkGray"/>
-                                    </Viewbox>
-                                    <Viewbox Width="90" Height="90">
-                                        <Image Source="{Binding ImageAsBitmap, UpdateSourceTrigger=PropertyChanged}" Height="90" Width="90" VerticalAlignment="Center" />
-                                    </Viewbox>
-
-                                    <!-- Title and Subtitle -->
-                                    <StackPanel Grid.Column="1" Margin="15,0,0,0">
-                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16" Foreground="#02008C" TextWrapping="Wrap"/>
-                                        <TextBlock Text="{Binding Code}" FontSize="14" Foreground="#02008C" />
-                                        <TextBlock Text="{Binding StartDate, StringFormat={}{0:dd/MM/yyyy}}" FontSize="14" Foreground="#02008C" />
-                                    </StackPanel>
-                                </Grid>
-
-                                <!-- Middle Section (Icons) -->
-                                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10 15 10 15">
-                                    <!-- Attendees Icon with Count -->
-                                    <StackPanel HorizontalAlignment="Center">
-                                        <Canvas Width="32" Height="32">
-                                            <Viewbox Width="32" Height="32">
-                                                <materialDesign:PackIcon Kind="PersonGroup" Height="32" Width="32" VerticalAlignment="Center" Foreground="#02008C"/>
-                                            </Viewbox>
-                                            <Grid Canvas.Top="20" Canvas.Left="20">
-                                                <Ellipse Fill="#02008C" Width="18" Height="18"/>
-                                                <TextBlock Text="{Binding Participants}" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="white"/>
-                                            </Grid>
-                                        </Canvas>
-                                    </StackPanel>
-
-                                    <!-- Payment Status Icon -->
-                                    <StackPanel HorizontalAlignment="Center" Margin="20 0 0 0">
-                                        <Canvas Width="32" Height="32">
-                                            <Viewbox Width="32" Height="32">
-                                                <materialDesign:PackIcon Kind="CashMultiple" Height="32" Width="32" VerticalAlignment="Center" Foreground="#02008C"/>
-                                            </Viewbox>
-                                            <Grid Canvas.Top="20" Canvas.Left="20">
-                                                <Ellipse Width="18" Height="18">
-                                                    <Ellipse.Style>
-                                                        <Style TargetType="Ellipse">
-                                                            <Setter Property="Fill" Value="#02008C" />
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding IsPayed}" Value="False">
-                                                                    <Setter Property="Fill" Value="White" />
-                                                                    <Setter Property="StrokeThickness" Value="2" />
-                                                                    <Setter Property="Stroke" Value="#02008C" />
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Ellipse.Style>
-                                                </Ellipse>
-                                                <materialDesign:PackIcon Kind="Check" Height="14" Width="14" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="white"/>
-                                            </Grid>
-                                        </Canvas>
-                                    </StackPanel>
-                                </StackPanel>
-
-                                <!-- Bottom Section (More Options) -->
-                                <Button ToolTip="Cursus details" Grid.Row="3" CommandParameter="{Binding}" Command="{Binding DataContext.CourseOptionCommand, 
-                          RelativeSource={RelativeSource AncestorType=ItemsControl}}" HorizontalAlignment="Right" Width="24" Height="24" Margin="10,0,10,0" Background="Transparent" BorderThickness="0">
-                                    <Button.Style>
-                                        <Style TargetType="Button">
-                                            <Setter Property="Background" Value="Transparent"/>
-                                            <Setter Property="BorderBrush" Value="Transparent"/>
-
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="Button">
-                                                        <Grid>
-                                                            <Ellipse x:Name="HoverEllipse" Fill="Transparent" />
-                                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                        </Grid>
-
-                                                        <ControlTemplate.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter TargetName="HoverEllipse" Property="Fill" Value="#BCE6FD"/>
-                                                            </Trigger>
-                                                        </ControlTemplate.Triggers>
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </Button.Style>
-                                    <materialDesign:PackIcon Kind="DotsHorizontalCircle" Height="20" Width="20" VerticalAlignment="Center" Foreground="#02008C"/>
-                                </Button>
-                            </Grid>
-                        </Border>
+                        <rsc:CourseCard />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
