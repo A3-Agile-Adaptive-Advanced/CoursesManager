@@ -7,13 +7,13 @@ using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Dialogs.ViewModels;
 using CoursesManager.UI.Enums;
+using CoursesManager.UI.Messages;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.TemplateRepository;
 using CoursesManager.UI.Service.PlaceholderService;
 using CoursesManager.UI.Service.TextHandlerService;
 using System.Windows.Documents;
 using System.Windows.Input;
-using CoursesManager.UI.Messages;
 
 namespace CoursesManager.UI.ViewModels.Mailing
 {
