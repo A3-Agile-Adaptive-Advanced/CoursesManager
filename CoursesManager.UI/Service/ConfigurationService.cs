@@ -26,7 +26,6 @@ namespace CoursesManager.UI.Service
             var mailConnectionString = BuildConnectionString(mailParams);
 
 
-
             EnvManager<EnvModel>.Values.ConnectionString = _encryptionService.Encrypt(dbConnectionString);
             EnvManager<EnvModel>.Values.MailConnectionString = _encryptionService.Encrypt(mailConnectionString);
 
