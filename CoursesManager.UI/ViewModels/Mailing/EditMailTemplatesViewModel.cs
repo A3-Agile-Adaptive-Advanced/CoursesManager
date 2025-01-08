@@ -13,11 +13,6 @@ using CoursesManager.UI.Service.PlaceholderService;
 using CoursesManager.UI.Service.TextHandlerService;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using CoursesManager.MVVM.Mail.MailService;
-using CoursesManager.UI.Enums;
-using MySql.Data.MySqlClient;
-using CoursesManager.MVVM.Exceptions;
 using CoursesManager.UI.Messages;
 
 namespace CoursesManager.UI.ViewModels.Mailing
@@ -54,6 +49,8 @@ namespace CoursesManager.UI.ViewModels.Mailing
 
         public EditMailTemplatesViewModel(ITemplateRepository templateRepository, IDialogService dialogService, IMessageBroker messageBroker, IPlaceholderService placeholderService, ITextHandlerService textHandlerService, INavigationService navigationService) : base(navigationService)
         {
+            ViewTitle = "Template editor";
+
             _templateRepository = templateRepository;
             _navigationService = navigationService;
             _messageBroker = messageBroker;

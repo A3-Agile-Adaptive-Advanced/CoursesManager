@@ -28,6 +28,10 @@ namespace CoursesManager.UI.DataAccess
                         "A certificate already exists for this student and course combination.");
                 }
 
+                var outputParameter = new MySqlParameter("@p_id", MySqlDbType.Int32)
+                {
+                    Direction = ParameterDirection.Output
+                };
 
                 string procedureName = StoredProcedures.AddCertificate;
 
@@ -35,7 +39,10 @@ namespace CoursesManager.UI.DataAccess
                     new MySqlParameter("@p_pdf_html", certificate.PdfString),
                     new MySqlParameter("@p_student_code", certificate.StudentCode),
                     new MySqlParameter("@p_course_code", certificate.CourseCode),
-                    new MySqlParameter("@p_created_at", DateTime.Now)]);
+                    new MySqlParameter("@p_created_at", DateTime.Now),
+                    outputParameter]);
+
+                certificate.Id = Convert.ToInt32(outputParameter.Value);
             }
             catch (MySqlException ex)
             {

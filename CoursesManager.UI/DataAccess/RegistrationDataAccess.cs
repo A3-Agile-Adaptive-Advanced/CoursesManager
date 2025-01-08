@@ -1,4 +1,5 @@
-﻿using CoursesManager.UI.Models;
+﻿using System.Data;
+using CoursesManager.UI.Models;
 using MySql.Data.MySqlClient;
 using CoursesManager.UI.Database;
 
@@ -66,6 +67,11 @@ public class RegistrationDataAccess : BaseDataAccess<Registration>
     {
         try
         {
+            var outputParameter = new MySqlParameter("@p_id", MySqlDbType.Int32)
+            {
+                Direction = ParameterDirection.Output
+            };
+
             ExecuteNonProcedure(
                 StoredProcedures.AddRegistration,
                 new MySqlParameter("@p_is_achieved", registration.IsAchieved),
@@ -73,8 +79,11 @@ public class RegistrationDataAccess : BaseDataAccess<Registration>
                 new MySqlParameter("@p_payment_status", registration.PaymentStatus),
                 new MySqlParameter("@p_registration_date", registration.RegistrationDate),
                 new MySqlParameter("@p_student_id", registration.StudentId),
-                new MySqlParameter("@p_course_id", registration.CourseId)
+                new MySqlParameter("@p_course_id", registration.CourseId),
+                outputParameter
             );
+
+            registration.Id = Convert.ToInt32(outputParameter.Value);
 
             LogUtil.Log($"Registration added successfully for Student ID: {registration.StudentId}, Course ID: {registration.CourseId}");
         }
