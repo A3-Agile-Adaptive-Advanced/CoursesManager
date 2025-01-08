@@ -107,7 +107,7 @@ namespace CoursesManager.UI.ViewModels
             {
                 _messageBroker.Publish(new ToastNotificationMessage(
                     true,
-                    "Instellingen succesvol opgeslagen!",
+                    "Instellingen zijn ongeldig!",
                     ToastType.Info));
             }
         }
