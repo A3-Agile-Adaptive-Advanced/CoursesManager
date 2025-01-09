@@ -175,7 +175,6 @@ public class GlobalCache
         if (ReferenceEquals(collection1, collection2)) return false;
 
         return !(collection1.GetType() == collection2.GetType());
-
     }
 
     // Private class to handle all possible objects inside the cache in a universal matter.

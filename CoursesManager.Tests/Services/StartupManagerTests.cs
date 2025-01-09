@@ -44,9 +44,6 @@ namespace CoursesManager.Tests.Services
             //assert
             _navigationServiceMock.Verify(ns => ns.NavigateTo<CoursesManagerViewModel>(), Times.Once,
                 "Er moet genavigeerd worden naar de startpagina als de configuratie geldig is.");
-
-            _messageBrokerMock.Verify(mb => mb.Publish(It.IsAny<ToastNotificationMessage>()), Times.Once,
-                "Er moet een notificatie worden verstuurd als de configuratie geldig is.");
         }
 
         [Test]

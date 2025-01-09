@@ -63,8 +63,6 @@ public class AddStudentViewModel : StudentViewModelBase, INotifyPropertyChanged
         // Add the registration to the repository.
         _registrationRepository.Add(registration);
 
-        await ShowDialogAsync(DialogType.Notify, "Student succesvol toegevoegd", "Succes");
-
         // Trigger the StudentAdded event for any listeners.
         StudentAdded?.Invoke(this, Student);
 

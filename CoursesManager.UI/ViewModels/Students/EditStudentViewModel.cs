@@ -32,17 +32,12 @@ namespace CoursesManager.UI.ViewModels.Students
                 return;
             }
 
-            var result = await ShowDialogAsync(DialogType.Confirmation, "Wilt u de wijzigingen opslaan?", "Bevestiging");
-            if (result)
-            {
-                UpdateStudentDetails();
-                UpdateRegistrations();
-                await ShowDialogAsync(DialogType.Notify, "Cursist succesvol opgeslagen.", "Succes");
+            UpdateStudentDetails();
+            UpdateRegistrations();
 
-                await TriggerEndAnimationAsync();
+            await TriggerEndAnimationAsync();
 
-                InvokeResponseCallback(DialogResult<Student>.Builder().SetSuccess(Student, "Success").Build());
-            }
+            InvokeResponseCallback(DialogResult<Student>.Builder().SetSuccess(Student, "Success").Build());
         }
         private void UpdateStudentDetails()
         {
