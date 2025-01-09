@@ -8,6 +8,8 @@ using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Dialogs.ViewModels;
+using CoursesManager.UI.Enums;
+using CoursesManager.UI.Messages;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Repositories.RegistrationRepository;
@@ -225,12 +227,8 @@ namespace CoursesManager.UI.ViewModels.Students
                 await ExecuteWithOverlayAsync(_messageBroker, async () =>
                 {
                     {
-                        await _dialogService.ShowDialogAsync<NotifyDialogViewModel, DialogResultType>(
-                            new DialogResultType
-                            {
-                                DialogTitle = "Error",
-                                DialogText = "Geen student geselecteerd om te bewerken."
-                            });
+                        _messageBroker.Publish(new ToastNotificationMessage(true,
+                            "Geen student geselecteerd om te bewerken.", ToastType.Warning));
                         return;
                     }
                 });
