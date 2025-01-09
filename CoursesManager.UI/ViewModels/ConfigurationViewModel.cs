@@ -130,12 +130,12 @@ namespace CoursesManager.UI.ViewModels
 
         public async void ValidateAndSave()
         {
+            _messageBroker.Publish(new ToastNotificationMessage(
+                true,
+                "Opslaan",
+                ToastType.Info, true));
             try
             {
-                _messageBroker.Publish(new ToastNotificationMessage(
-                    true,
-                    "Opslaan",
-                    ToastType.Info, true));
 
                 if (!CanSave())
                 {
