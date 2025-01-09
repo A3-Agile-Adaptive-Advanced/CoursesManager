@@ -340,9 +340,15 @@ namespace CoursesManager.UI.Views.Controls.CoursesCalendar
 
             foreach (CalendarDay day in DaysGrid.Children.OfType<CalendarDay>())
             {
+                if (day.IsToday)
+                    day.DateTextBlockCircle.Stroke = (day == selectedDay)
+                    ? WhiteColorBrush
+                    : BlueColorBrush;
+
                 day.Border.Background = (day == selectedDay)
                     ? BlueColorBrush
                     : WhiteColorBrush;
+
                 day.DateTextBlock.Foreground = (day == selectedDay)
                     ? WhiteColorBrush
                     : BlueColorBrush;
