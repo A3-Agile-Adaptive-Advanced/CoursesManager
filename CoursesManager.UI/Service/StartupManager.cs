@@ -47,6 +47,7 @@ namespace CoursesManager.UI.Service
 
         private void OpenConfigurationUi()
         {
+
             _navigationService.NavigateTo<ConfigurationViewModel>();
         }
 

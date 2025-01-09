@@ -101,25 +101,15 @@ namespace CoursesManager.UI.ViewModels
             
             
             InitializeSettings();
-            SaveCommand = new AsyncRelayCommand(ValidateAndSave);
+            SaveCommand = new RelayCommand(ValidateAndSave);
 
-            OnInitialized();
-        }
-        public async Task InitializeAsync()
-        {
-            // Perform your async operations here
-            if (!await CanSaveAsync() || !_configurationService.ValidateSettings())
+            if (!CanSave() || !_configurationService.ValidateSettings())
             {
                 _messageBroker.Publish(new ToastNotificationMessage(
                     true,
                     "Instellingen zijn ongeldig!",
                     ToastType.Info));
             }
-        }
-
-        public async Task OnInitialized()
-        {
-            await InitializeAsync();
         }
 
         public void InitializeSettings()
@@ -138,15 +128,65 @@ namespace CoursesManager.UI.ViewModels
             MailPassword = mailParams.TryGetValue("Password", out var mailPassword) ? mailPassword : string.Empty;
             }
 
-        public async Task ValidateAndSave()
+        public async void ValidateAndSave()
         {
-           _messageBroker.Publish(new ToastNotificationMessage(
+            _messageBroker.Publish(new ToastNotificationMessage(
                 true,
                 "Opslaan",
                 ToastType.Info, true));
             try
             {
-                await Task.Run(() => SavingLogic());
+
+                if (!CanSave())
+                {
+                    await Task.Delay(5000);
+                    _messageBroker.Publish(new ToastNotificationMessage(
+                        true,
+                        "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.",
+                        ToastType.Error));
+                }
+                
+                var dbParams = new Dictionary<string, string>
+                {
+                    { "Server", DbServer },
+                    { "Port", DbPort },
+                    { "User", DbUser },
+                    { "Password", DbPassword },
+                    { "Database", DbName }
+                };
+
+                var mailParams = new Dictionary<string, string>
+                {
+                    { "Server", MailServer },
+                    { "Port", MailPort },
+                    { "User", MailUser },
+                    { "Password", MailPassword }
+                };
+
+                // Save encrypted data
+                _configurationService.SaveEnvSettings(dbParams, mailParams);
+
+                if (!_configurationService.ValidateSettings())
+                {
+                    _messageBroker.Publish(new ToastNotificationMessage(
+                        true,
+                        "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.",
+                        ToastType.Error));
+                    INavigationService.CanNavigate = false;
+                    return;
+                }
+
+                INavigationService.CanNavigate = true;
+
+
+                _messageBroker.Publish(new ToastNotificationMessage(
+                    true,
+                    "Instellingen succesvol opgeslagen!",
+                    ToastType.Confirmation));
+
+
+                _navigationService.NavigateTo<CoursesManagerViewModel>();
+
             }
             catch (Exception ex)
             {
@@ -155,64 +195,7 @@ namespace CoursesManager.UI.ViewModels
                     $"Fout bij opslaan, neem contact op met de systeembeheerder.", ToastType.Error));
             }
         }
-
-        private async Task SavingLogic()
-        {
-            if (!await CanSaveAsync())
-            {
-                _messageBroker.Publish(new ToastNotificationMessage(
-                    true,
-                    "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.",
-                    ToastType.Error));
-            }
-
-            var dbParams = new Dictionary<string, string>
-            {
-                { "Server", DbServer },
-                { "Port", DbPort },
-                { "User", DbUser },
-                { "Password", DbPassword },
-                { "Database", DbName }
-            };
-
-            var mailParams = new Dictionary<string, string>
-            {
-                { "Server", MailServer },
-                { "Port", MailPort },
-                { "User", MailUser },
-                { "Password", MailPassword }
-            };
-
-            // Save encrypted data
-            await Task.Run(() => _configurationService.SaveEnvSettings(dbParams, mailParams));
-
-            if (!_configurationService.ValidateSettings())
-            {
-                _messageBroker.Publish(new ToastNotificationMessage(
-                    true,
-                    "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.",
-                    ToastType.Error));
-                INavigationService.CanNavigate = false;
-                return;
-            }
-
-            INavigationService.CanNavigate = true;
-
-
-            _messageBroker.Publish(new ToastNotificationMessage(
-                true,
-                "Instellingen succesvol opgeslagen!",
-                ToastType.Confirmation));
-
-
-            _navigationService.NavigateTo<CoursesManagerViewModel>();
-        }
-
-        public async Task<bool> CanSaveAsync()
-        {
-            return await Task.Run(() => CanSave());
-        }
-
+       
         private bool CanSave()
         {
             return !string.IsNullOrWhiteSpace(DbServer) &&
