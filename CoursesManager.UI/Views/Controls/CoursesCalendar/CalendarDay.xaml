@@ -17,9 +17,6 @@
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="#F8F8F8" />
                 </Trigger>
-                <DataTrigger Binding="{Binding IsToday}" Value="true">
-                    <Setter Property="Background" Value="#02008C"/>
-                </DataTrigger>
             </Style.Triggers>
         </Style>
 
@@ -34,9 +31,6 @@
                 <DataTrigger Binding="{Binding IsSelectedMonth}" Value="false">
                     <Setter Property="Foreground" Value="#A2A2A6"/>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding IsToday}" Value="true">
-                    <Setter Property="Foreground" Value="White"/>
-                </DataTrigger>
             </Style.Triggers>
         </Style>
     </UserControl.Resources>
@@ -50,9 +44,28 @@
             </Grid.ColumnDefinitions>
 
             <!-- Day Number -->
-            <TextBlock x:Name="DateTextBlock"
-                       Text="{Binding Date, StringFormat='{}{0:dd}'}"
-                       Style="{StaticResource CalendarDayTextBlockStyle}" />
+            <StackPanel HorizontalAlignment="Center">
+                <Canvas>
+                    <TextBlock x:Name="DateTextBlock"
+                               Text="{Binding Date, StringFormat='{}{0:dd}'}"
+                               Style="{StaticResource CalendarDayTextBlockStyle}" 
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                    <Ellipse x:Name="DateTextBlockCircle" Width="24" Height="24" Canvas.Left="-4.5" Canvas.Top="-3.5">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="Transparent" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsToday}" Value="True">
+                                        <Setter Property="StrokeThickness" Value="2" />
+                                        <Setter Property="Stroke" Value="#02008C" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                </Canvas>
+            </StackPanel>
 
             <Grid x:Name="Items" Grid.Column="1">
                 <Grid.RowDefinitions>
