@@ -216,6 +216,8 @@ namespace CoursesManager.UI.ViewModels.Students
 
                 if (dialogResult?.Outcome == DialogOutcome.Success)
                 {
+                    _messageBroker.Publish(new ToastNotificationMessage(true,
+                        "Sstudent succesvol toegevoegd.", ToastType.Confirmation));
                     LoadStudents();
                 }
             });
@@ -263,12 +265,8 @@ namespace CoursesManager.UI.ViewModels.Students
                     student.IsDeleted = true;
                     student.DeletedAt = DateTime.Now;
                     _studentRepository.Update(student);
-                    await _dialogService.ShowDialogAsync<NotifyDialogViewModel, DialogResultType>(
-                        new DialogResultType
-                        {
-                            DialogTitle = "Informatie",
-                            DialogText = "Cursist succesvol verwijderd."
-                        });
+                    _messageBroker.Publish(new ToastNotificationMessage(true,
+                        "Sstudent succesvol verwijderd.", ToastType.Confirmation));
 
                     LoadStudents();
                 }
