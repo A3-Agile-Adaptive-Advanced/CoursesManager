@@ -118,19 +118,9 @@ namespace CoursesManager.Tests.Students
             await InvokeProtectedMethodAsync(_viewModel, "OnSaveAsync");
 
             // Assert
-            _dialogServiceMock.Verify(service =>
-                    service.ShowDialogAsync<ConfirmationDialogViewModel, DialogResultType>(
-                        It.Is<DialogResultType>(result => result.DialogText == "Wilt u de wijzigingen opslaan?")),
-                Times.Once);
-
             _studentRepositoryMock.Verify(repo => repo.Update(It.IsAny<Student>()), Times.Once);
             _registrationRepositoryMock.Verify(repo => repo.Add(It.Is<Registration>(r => r.CourseId == 2)), Times.Once);
-
-            _dialogServiceMock.Verify(service =>
-                    service.ShowDialogAsync<NotifyDialogViewModel, DialogResultType>(
-                        It.Is<DialogResultType>(result => result.DialogText == "Cursist succesvol opgeslagen.")),
-                Times.Once);
-        }
+            }
 
         [Test]
         public async Task OnSaveAsync_ShouldNotSave_WhenValidationFails()

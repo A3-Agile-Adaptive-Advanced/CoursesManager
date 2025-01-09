@@ -119,15 +119,17 @@ namespace CoursesManager.UI.ViewModels
             MailPort = mailParams.TryGetValue("Port", out var mailPort) ? mailPort : string.Empty;
             MailUser = mailParams.TryGetValue("User", out var mailUser) ? mailUser : string.Empty;
             MailPassword = mailParams.TryGetValue("Password", out var mailPassword) ? mailPassword : string.Empty;
-
-            Console.WriteLine($"DbServer: {DbServer}, DbPort: {DbPort}, DbUser: {DbUser}, DbPassword: {DbPassword}, DbName: {DbName}");
-            Console.WriteLine($"MailServer: {MailServer}, MailPort: {MailPort}, MailUser: {MailUser}, MailPassword: {MailPassword}");
-        }
+            }
 
         public async void ValidateAndSave()
         {
+            _messageBroker.Publish(new ToastNotificationMessage(
+                true,
+                "Opslaan",
+                ToastType.Info, true));
             try
             {
+
                 if (!CanSave())
                 {
                     await Task.Delay(5000);
@@ -136,7 +138,7 @@ namespace CoursesManager.UI.ViewModels
                         "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.",
                         ToastType.Error));
                 }
-
+                
                 var dbParams = new Dictionary<string, string>
                 {
                     { "Server", DbServer },
@@ -173,7 +175,7 @@ namespace CoursesManager.UI.ViewModels
                 _messageBroker.Publish(new ToastNotificationMessage(
                     true,
                     "Instellingen succesvol opgeslagen!",
-                    ToastType.Info));
+                    ToastType.Confirmation));
 
 
                 _navigationService.NavigateTo<CoursesManagerViewModel>();
@@ -181,8 +183,9 @@ namespace CoursesManager.UI.ViewModels
             }
             catch (Exception ex)
             {
+                LogUtil.Log(ex.Message);
                 _messageBroker.Publish(new ToastNotificationMessage(true,
-                    $"Fout bij opslaan: {ex.Message}", ToastType.Error));
+                    $"Fout bij opslaan, neem contact op met de systeembeheerder.", ToastType.Error));
             }
         }
        
