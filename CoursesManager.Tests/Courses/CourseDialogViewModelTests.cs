@@ -1,20 +1,14 @@
-﻿using NUnit.Framework;
-using Moq;
-using CoursesManager.UI.ViewModels.Courses;
+﻿using CoursesManager.MVVM.Dialogs;
+using CoursesManager.MVVM.Messages;
+using CoursesManager.UI.Messages;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Repositories.LocationRepository;
-using CoursesManager.UI.Dialogs.Windows;
+using CoursesManager.UI.ViewModels.Courses;
+using Moq;
 using System.Collections.ObjectModel;
-using System.Windows.Media.Imaging;
-using CoursesManager.MVVM.Dialogs;
-using CoursesManager.MVVM.Messages;
-using Microsoft.Win32;
-using CoursesManager.UI.Dialogs.ResultTypes;
-using CoursesManager.UI.Dialogs.ViewModels;
-using CoursesManager.UI.Service;
 using CoursesManager.UI.Enums;
-using CoursesManager.UI.Messages;
+using CoursesManager.MVVM.Messages;
 
 
 namespace CoursesManager.Tests.Courses
@@ -164,10 +158,6 @@ namespace CoursesManager.Tests.Courses
             _courseRepositoryMock.Verify(repo => repo.Update(It.IsAny<Course>()), Times.Once, "De Update-methode van de repository moet één keer worden aangeroepen voor een bestaande cursus.");
         }
 
-
-
-
-
         [Test]
         public void Constructor_ShouldThrowException_WhenDependenciesAreNull()
         {
@@ -306,5 +296,32 @@ namespace CoursesManager.Tests.Courses
             // Assert
             Assert.That(canExecute, Is.False, "SaveCommand.CanExecute moet false retourneren als de einddatum vóór de startdatum ligt.");
         }
+
+        //[Test]
+
+        //public void SaveCommand_ShouldPublicWarningToast_WhenMissingFieldsIsTrue()
+        //{
+        //    // arrange
+        //    _viewModel.Course.Name = "";
+        //    _viewModel.Course.Code = "Test";
+        //    _viewModel.Course.StartDate = default;
+        //    _viewModel.Course.EndDate = default;
+        //    _viewModel.Course.Location = null;
+        //    _viewModel.Course.Description = "";
+
+        //    //act
+        //    _viewModel.SaveCommand.Execute(null);
+
+        //    // assert
+        //    _messageBrokerMock.Verify(
+        //        broker => broker.Publish(It.Is<ToastNotificationMessage>(msg =>
+        //            msg.IsError == true &&
+        //            msg.Message.Contains("De volgende velden ontbreken") &&
+        //            msg.ToastType == ToastType.Warning
+        //        )),
+        //        Times.Once,
+        //        "Een waarschuwingsmelding moet worden gepubliceerd als verplichte velden ontbreken."
+        //    );
+        //}
     }
 }

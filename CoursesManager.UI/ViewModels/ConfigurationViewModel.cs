@@ -83,13 +83,6 @@ namespace CoursesManager.UI.ViewModels
             set => SetProperty(ref _mailPassword, value);
         }
 
-        private EnvModel _appConfig;
-        public EnvModel AppConfig
-        {
-            get => _appConfig;
-            set => SetProperty(ref _appConfig, value);
-        }
-
         public ICommand SaveCommand { get; }
 
         public ConfigurationViewModel(IConfigurationService configurationService, IMessageBroker messageBroker, INavigationService navigationService) : base(navigationService)
