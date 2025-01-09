@@ -11,6 +11,9 @@ namespace CoursesManager.UI.Views.Controls.CoursesCalendar
 {
     public partial class CalendarLayout : UserControl, INotifyPropertyChanged
     {
+        private static readonly SolidColorBrush BlueColorBrush = new SolidColorBrush(Color.FromRgb(49, 43, 127));
+        private static readonly SolidColorBrush WhiteColorBrush = new SolidColorBrush(Colors.White);
+
         private DateTime _selectedDate = new(DateTime.Today.Year, DateTime.Today.Month, 1);
         private CalendarDay _selectedDay;
 
@@ -258,8 +261,16 @@ namespace CoursesManager.UI.Views.Controls.CoursesCalendar
 
         private void AddDaysToCollection(DateTime startDate, DateTime endDate)
         {
-            for (DateTime date = startDate; date <= endDate; date = date.AddDays(1)) 
+            for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
             {
+                if (_selectedDay != null && date.Date == _selectedDay.Date)
+                {
+                    _selectedDay.Items.Children.Clear();
+                    DaysInCurrentView.Add(_selectedDay);
+
+                    continue;
+                }
+
                 CalendarDay _newDay = new()
                 {
                     Date = date,
@@ -291,7 +302,7 @@ namespace CoursesManager.UI.Views.Controls.CoursesCalendar
                     bottom: 1
                 );
 
-                day.BorderBrush = new SolidColorBrush(Color.FromRgb(49,43,127));
+                day.BorderBrush = new SolidColorBrush(Color.FromRgb(49, 43, 127));
 
                 DaysGrid.Children.Add(day);
 
@@ -324,10 +335,27 @@ namespace CoursesManager.UI.Views.Controls.CoursesCalendar
 
         private void OnDaySelected(object sender, MouseButtonEventArgs e)
         {
-            if (sender is CalendarDay selectedDay)
+            if (sender is not CalendarDay selectedDay)
+                return;
+
+            foreach (CalendarDay day in DaysGrid.Children.OfType<CalendarDay>())
             {
-                OnDaySelectedCommand?.Execute(selectedDay);
+                if (day.IsToday)
+                    day.DateTextBlockCircle.Stroke = (day == selectedDay)
+                    ? WhiteColorBrush
+                    : BlueColorBrush;
+
+                day.Border.Background = (day == selectedDay)
+                    ? BlueColorBrush
+                    : WhiteColorBrush;
+
+                day.DateTextBlock.Foreground = (day == selectedDay)
+                    ? WhiteColorBrush
+                    : BlueColorBrush;
             }
+
+            _selectedDay = selectedDay;
+            OnDaySelectedCommand?.Execute(selectedDay);
         }
     }
 }
