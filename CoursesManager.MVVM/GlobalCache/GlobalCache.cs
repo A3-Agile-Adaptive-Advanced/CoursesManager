@@ -9,16 +9,20 @@ using System.Diagnostics;
 /// Class to store both permanent and non-permanent objects at runtime to be accessed throughout the whole application.
 /// This class implements the LCU principle while using validation of the entered objects to make sure only that what should be removed will be removed.
 /// The permanent items do not allow removal, but can be updated if the same type is entered into a permanent slot.
+/// This is the only place to change the size of the cache, in the static 'Lazy<GlobalCache>' the initial capacity is set to 10, if the application
+/// ever needs to exceed this capacity then this is the place the change it from 10 to the required size.
+/// Do note that this may impact performance, additional performance checks maybe required by a cache of significant bigger size.
+/// Current statistics when testing with 100 concurrent calls to the put method is on average 3.5ms. When calling both get and put its 4ms.
 /// </summary>
 public class GlobalCache
 {
     #region Attributes
-    private readonly int _initialCapacity;
     private readonly ConcurrentDictionary<string, CacheItem> _cacheMap;
     private readonly ConcurrentDictionary<string, long> _usageOrder;
     private readonly object _lock = new object();
 
     private int _capacity;
+    private int _initialCapacity;
     private static int _permanentItemCount;
     #endregion
 
@@ -134,7 +138,7 @@ public class GlobalCache
 
     private void IncreaseCapacity()
     {
-        _capacity = _initialCapacity * 2;
+        _capacity += _initialCapacity;
     }
 
     private void DecreaseCapacity()
@@ -171,7 +175,6 @@ public class GlobalCache
         if (ReferenceEquals(collection1, collection2)) return false;
 
         return !(collection1.GetType() == collection2.GetType());
-
     }
 
     // Private class to handle all possible objects inside the cache in a universal matter.

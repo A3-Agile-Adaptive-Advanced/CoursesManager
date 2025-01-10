@@ -26,7 +26,6 @@ namespace CoursesManager.UI.Service
             var mailConnectionString = BuildConnectionString(mailParams);
 
 
-
             EnvManager<EnvModel>.Values.ConnectionString = _encryptionService.Encrypt(dbConnectionString);
             EnvManager<EnvModel>.Values.MailConnectionString = _encryptionService.Encrypt(mailConnectionString);
 
@@ -94,7 +93,7 @@ namespace CoursesManager.UI.Service
         public bool ValidateSettings()
         {
 
-            var envFilePath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+            var envFilePath = Path.Combine(EnvManager<EnvModel>.EnvFolderPath, ".env");
             if (!File.Exists(envFilePath))
             {
                 Console.WriteLine("Geen .env-bestand gevonden. Gebruiker moet instellingen invullen.");

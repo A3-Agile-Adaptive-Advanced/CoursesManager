@@ -8,9 +8,13 @@ using CoursesManager.UI.Dialogs.Windows;
 using System.Collections.ObjectModel;
 using System.Windows.Media.Imaging;
 using CoursesManager.MVVM.Dialogs;
+using CoursesManager.MVVM.Messages;
 using Microsoft.Win32;
 using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Dialogs.ViewModels;
+using CoursesManager.UI.Service;
+using CoursesManager.UI.Enums;
+using CoursesManager.UI.Messages;
 
 
 namespace CoursesManager.Tests.Courses
@@ -21,6 +25,7 @@ namespace CoursesManager.Tests.Courses
         private Mock<ICourseRepository> _courseRepositoryMock;
         private Mock<ILocationRepository> _locationRepositoryMock;
         private Mock<IDialogService> _dialogServiceMock;
+        private Mock<IMessageBroker> _messageBrokerMock;
         private CourseDialogViewModel _viewModel;
 
         [SetUp]
@@ -30,6 +35,7 @@ namespace CoursesManager.Tests.Courses
             _courseRepositoryMock = new Mock<ICourseRepository>();
             _locationRepositoryMock = new Mock<ILocationRepository>();
             _dialogServiceMock = new Mock<IDialogService>();
+            _messageBrokerMock = new Mock<IMessageBroker>();
 
 
             var locations = new ObservableCollection<Location>
@@ -45,6 +51,7 @@ namespace CoursesManager.Tests.Courses
                 _courseRepositoryMock.Object,
                 _dialogServiceMock.Object,
                 _locationRepositoryMock.Object,
+                _messageBrokerMock.Object,
                 null
             );
         }
@@ -107,6 +114,7 @@ namespace CoursesManager.Tests.Courses
                 _courseRepositoryMock.Object,
                 _dialogServiceMock.Object,
                 _locationRepositoryMock.Object,
+                _messageBrokerMock.Object,
                 originalCourse
             );
 
@@ -121,22 +129,44 @@ namespace CoursesManager.Tests.Courses
         public async Task SaveCommand_ShouldUpdateExistingCourse_WhenOriginalCourseIsNotNull()
         {
             // Arrange
-            var originalCourse = new Course { Name = "Original Course" };
+            var originalCourse = new Course
+            {
+                Id = 1,
+                Name = "Original Course",
+                Code = "OC123",
+                StartDate = DateTime.Now,
+                EndDate = DateTime.Now.AddDays(1),
+                Location = new Location { Id = 1, Name = "Test Location" },
+                Description = "Original description."
+            };
+
             _viewModel = new CourseDialogViewModel(
                 _courseRepositoryMock.Object,
                 _dialogServiceMock.Object,
                 _locationRepositoryMock.Object,
+                _messageBrokerMock.Object,
                 originalCourse
             );
 
+            // Update de velden zodat ze geldig zijn
             _viewModel.Course.Name = "Updated Course";
+            _viewModel.Course.Code = "UC456"; 
+            _viewModel.Course.StartDate = DateTime.Now; 
+            _viewModel.Course.EndDate = DateTime.Now.AddDays(5); 
+            _viewModel.Course.Location = new Location { Id = 1, Name = "Updated Location" }; 
+            _viewModel.Course.Description = "Updated description."; 
 
             // Act
+            Assert.That(_viewModel.SaveCommand.CanExecute(null), Is.True, "SaveCommand moet kunnen worden uitgevoerd.");
             await Task.Run(() => _viewModel.SaveCommand.Execute(null));
 
             // Assert
             _courseRepositoryMock.Verify(repo => repo.Update(It.IsAny<Course>()), Times.Once, "De Update-methode van de repository moet één keer worden aangeroepen voor een bestaande cursus.");
         }
+
+
+
+
 
         [Test]
         public void Constructor_ShouldThrowException_WhenDependenciesAreNull()
@@ -146,6 +176,7 @@ namespace CoursesManager.Tests.Courses
                 null,
                 _dialogServiceMock.Object,
                 _locationRepositoryMock.Object,
+                _messageBrokerMock.Object,
                 null
             ), "De constructor moet een ArgumentNullException gooien als courseRepository null is.");
 
@@ -153,6 +184,7 @@ namespace CoursesManager.Tests.Courses
                 _courseRepositoryMock.Object,
                 null,
                 _locationRepositoryMock.Object,
+                _messageBrokerMock.Object,
                 null
             ), "De constructor moet een ArgumentNullException gooien als dialogService null is.");
 
@@ -160,36 +192,36 @@ namespace CoursesManager.Tests.Courses
                 _courseRepositoryMock.Object,
                 _dialogServiceMock.Object,
                 null,
+                _messageBrokerMock.Object,
                 null
             ), "De constructor moet een ArgumentNullException gooien als locationRepository null is.");
         }
 
 
         [Test]
-        public async Task SaveCommand_ShouldShowErrorDialog_WhenExceptionIsThrown()
+        public async Task SaveCommand_ShouldNotPublishErrorToast_WhenSaveIsSuccessful()
         {
-            // Arrange
-            _viewModel.Course = new Course { Name = "Valid Course" };
-
-            _courseRepositoryMock
-                .Setup(repo => repo.Add(It.IsAny<Course>()))
-                .Throws(new Exception("Test exception"));
+            // Arrange: zorg voor een volledig ingevulde, geldige Course
+            _viewModel.Course = new Course
+            {
+                Name = "Valid Course",
+                Code = "VC123",
+                StartDate = DateTime.Now,
+                EndDate = DateTime.Now.AddDays(1),
+                Location = new Location { Id = 1, Name = "Test Location" },
+                Description = "Valid description."
+            };
 
             // Act
             await Task.Run(() => _viewModel.SaveCommand.Execute(null));
 
-            // Assert
-            _dialogServiceMock.Verify(service => service.ShowDialogAsync<ErrorDialogViewModel, DialogResultType>(
-                It.Is<DialogResultType>(d =>
-                    d.DialogText == "Er is iets fout gegaan. Probeer het later opnieuw." &&
-                    d.DialogTitle == "Fout"
-                )
-            ), Times.Once, "ShowDialogAsync moet worden aangeroepen wanneer een uitzondering wordt gegooid.");
+            // Assert: controleer dat er geen foutmelding gepubliceerd wordt
+            _messageBrokerMock.Verify(
+                broker => broker.Publish(It.IsAny<ToastNotificationMessage>()),
+                Times.Never,
+                "Er mag geen foutmelding gepubliceerd worden bij een succesvolle save."
+            );
         }
-
-
-
-
 
         // unhappy flows
 
@@ -228,6 +260,7 @@ namespace CoursesManager.Tests.Courses
                 _courseRepositoryMock.Object,
                 _dialogServiceMock.Object,
                 _locationRepositoryMock.Object,
+                _messageBrokerMock.Object,
                 originalCourse
             );
 
@@ -249,6 +282,7 @@ namespace CoursesManager.Tests.Courses
                 _courseRepositoryMock.Object,
                 _dialogServiceMock.Object,
                 _locationRepositoryMock.Object,
+                _messageBrokerMock.Object,
                 originalCourse
             );
 

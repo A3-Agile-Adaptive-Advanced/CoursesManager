@@ -319,7 +319,8 @@ namespace CoursesManager.UI.ViewModels.Courses
 
                 if (dialogResult.Outcome == DialogOutcome.Success)
                 {
-                    _messageBroker.Publish(new CoursesChangedMessage());
+                    _messageBroker.Publish(new ToastNotificationMessage(true,
+                        "Cursus succesvol gewijzigd", ToastType.Confirmation));
                     CurrentCourse = dialogResult.Data;
                 }
 

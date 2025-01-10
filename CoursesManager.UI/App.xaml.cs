@@ -105,11 +105,13 @@ public partial class App : Application
 
         DialogService.RegisterDialog<TemplatePreviewDialogViewModel, TemplatePreviewDialogWindow, DialogResultType>((initial) => new TemplatePreviewDialogViewModel(initial, MessageBroker));
 
-        DialogService.RegisterDialog<CourseDialogViewModel, CourseDialogWindow, Course>((initial) => new CourseDialogViewModel(RepositoryFactory.CourseRepository, DialogService, RepositoryFactory.LocationRepository, initial));
+        DialogService.RegisterDialog<CourseDialogViewModel, CourseDialogWindow, Course>((initial) => new CourseDialogViewModel(RepositoryFactory.CourseRepository, DialogService, RepositoryFactory.LocationRepository, MessageBroker, initial));
     }
 
     private void RegisterViewModels(ViewModelFactory viewModelFactory)
     {
+        INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<CalendarViewModel>(nav));
+
         StudentManagerViewModel? smvm = null;
 
         INavigationService.RegisterViewModelFactory((nav) =>

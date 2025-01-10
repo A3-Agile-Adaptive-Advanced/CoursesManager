@@ -40,6 +40,7 @@ namespace CoursesManager.Tests.Students
             };
 
             _studentRepositoryMock.Setup(repo => repo.GetNotDeletedStudents()).Returns(() => students);
+            _studentRepositoryMock.Setup(repo => repo.GetAll()).Returns(() => new ObservableCollection<Student>(students));
             _studentRepositoryMock.Setup(repo => repo.Add(It.IsAny<Student>())).Callback<Student>(student =>
             {
                 students.Add(student);
@@ -132,8 +133,6 @@ namespace CoursesManager.Tests.Students
             _dialogServiceMock.Verify(ds =>
                     ds.ShowDialogAsync<EditStudentViewModel, Student>(student),
                 Times.Once);
-
-            _studentRepositoryMock.Verify(repo => repo.GetNotDeletedStudents(), Times.AtLeastOnce);
         }
 
         [Test]

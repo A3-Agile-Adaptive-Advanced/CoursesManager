@@ -1,7 +1,9 @@
 ﻿using CoursesManager.MVVM.Commands;
 using CoursesManager.MVVM.Dialogs;
+using CoursesManager.MVVM.Messages;
 using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Dialogs.ViewModels;
+using CoursesManager.UI.Enums;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Repositories.LocationRepository;
@@ -10,6 +12,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using CoursesManager.UI.Messages;
 
 namespace CoursesManager.UI.ViewModels.Courses
 {
@@ -18,10 +21,12 @@ namespace CoursesManager.UI.ViewModels.Courses
         private readonly ICourseRepository _courseRepository;
         private readonly IDialogService _dialogService;
         private readonly ILocationRepository _locationRepository;
+        private readonly IMessageBroker _messageBroker;
 
         private Course? OriginalCourse { get; }
 
         private BitmapImage? _imageSource;
+
         public BitmapImage? ImageSource
         {
             get => _imageSource;
@@ -29,6 +34,7 @@ namespace CoursesManager.UI.ViewModels.Courses
         }
 
         private Course? _course;
+
         public Course? Course
         {
             get => _course;
@@ -44,16 +50,18 @@ namespace CoursesManager.UI.ViewModels.Courses
 
         public ObservableCollection<Location> Locations { get; set; }
 
-        public CourseDialogViewModel(ICourseRepository courseRepository, IDialogService dialogService, ILocationRepository locationRepository, Course? course) : base(course)
+        public CourseDialogViewModel(ICourseRepository courseRepository, IDialogService dialogService,
+            ILocationRepository locationRepository, IMessageBroker messageBroker, Course? course) : base(course)
         {
             _courseRepository = courseRepository ?? throw new ArgumentNullException(nameof(courseRepository));
             _locationRepository = locationRepository ?? throw new ArgumentNullException(nameof(locationRepository));
             _dialogService = dialogService ?? throw new ArgumentNullException(nameof(dialogService));
+            _messageBroker = messageBroker ?? throw new ArgumentNullException(nameof(messageBroker));
 
             IsStartAnimationTriggered = true;
 
             OriginalCourse = course;
-            
+
             Locations = GetLocations();
 
             Course = course != null
@@ -73,9 +81,9 @@ namespace CoursesManager.UI.ViewModels.Courses
 
             Course.Location = Locations.FirstOrDefault(l => l.Id == Course.LocationId);
 
-            SaveCommand = new RelayCommand(ExecuteSave,CanExecuteSave);
+            SaveCommand = new RelayCommand(ExecuteSave, CanExecuteSave);
             CancelCommand = new RelayCommand(ExecuteCancel);
-            UploadCommand = new RelayCommand(UploadImage);
+            UploadCommand = new RelayCommand(ExecuteUpload);
         }
 
         private ObservableCollection<Location> GetLocations()
@@ -83,14 +91,32 @@ namespace CoursesManager.UI.ViewModels.Courses
             return new ObservableCollection<Location>(_locationRepository.GetAll());
         }
 
+        private List<string> GetMissingFields()
+        {
+            var missingFields = new List<string>();
+
+            if (Course == null) return missingFields;
+
+            if (string.IsNullOrWhiteSpace(Course.Name)) missingFields.Add("Naam");
+            if (string.IsNullOrWhiteSpace(Course.Code)) missingFields.Add("Code");
+            if (Course.StartDate == default) missingFields.Add("Startdatum");
+            if (Course.EndDate == default) missingFields.Add("Einddatum");
+            if (Course.Location == null) missingFields.Add("Locatie");
+            if (string.IsNullOrWhiteSpace(Course.Description)) missingFields.Add("Beschrijving");
+
+            return missingFields;
+        }
+
         private bool CanExecuteSave() =>
-                Course is not null &&
-                !string.IsNullOrWhiteSpace(Course.Name) &&
-                !string.IsNullOrWhiteSpace(Course.Code) &&
-                Course.StartDate != default &&
-                Course.EndDate != default &&
-                Course.Location is not null &&
-                !string.IsNullOrWhiteSpace(Course.Description);
+            Course is not null &&
+            !string.IsNullOrWhiteSpace(Course.Name) &&
+            !string.IsNullOrWhiteSpace(Course.Code) &&
+            Course.StartDate != default &&
+            Course.EndDate != default &&
+            Course.Location is not null &&
+            !string.IsNullOrWhiteSpace(Course.Description);
+
+
 
         protected override void InvokeResponseCallback(DialogResult<Course> dialogResult)
         {
@@ -104,6 +130,17 @@ namespace CoursesManager.UI.ViewModels.Courses
                 throw new InvalidOperationException("Cursusgegevens ontbreken. Opslaan is niet mogelijk.");
             }
 
+            var missingFields = GetMissingFields();
+            if (missingFields.Any())
+            {
+                var message = "De volgende velden ontbreken: " + string.Join(", ", missingFields);
+                _messageBroker.Publish(new ToastNotificationMessage(
+                    true,
+                    message,
+                    ToastType.Warning));
+                return;
+            }
+
             _ = OnSaveAsync();
         }
 
@@ -114,11 +151,12 @@ namespace CoursesManager.UI.ViewModels.Courses
             {
                 if (Course == null)
                 {
-                    throw new InvalidOperationException("Course mag niet null zijn bij het uploaden van een afbeelding.");
+                    throw new InvalidOperationException("Course mag niet null zijn bij het opslaan.");
                 }
 
                 if (Course.Location != null) Course.LocationId = Course.Location.Id;
 
+                // comment momentje
                 if (OriginalCourse == null)
                 {
                     _courseRepository.Add(Course);
@@ -127,7 +165,6 @@ namespace CoursesManager.UI.ViewModels.Courses
                 {
                     _courseRepository.Update(Course);
                 }
-
 
                 var successDialogResult = DialogResult<Course>.Builder()
                     .SetSuccess(
@@ -142,8 +179,6 @@ namespace CoursesManager.UI.ViewModels.Courses
             }
             catch (Exception ex)
             {
-                LogUtil.Error($"Error in OnSaveAsync: {ex.Message}");
-
                 await _dialogService.ShowDialogAsync<ErrorDialogViewModel, DialogResultType>(new DialogResultType
                 {
                     DialogText = "Er is iets fout gegaan. Probeer het later opnieuw.",
@@ -151,6 +186,7 @@ namespace CoursesManager.UI.ViewModels.Courses
                 });
             }
         }
+
 
 
 
@@ -167,27 +203,49 @@ namespace CoursesManager.UI.ViewModels.Courses
 
         private void ExecuteCancel() => _ = OnCancel();
 
-        private void UploadImage()
+        private bool UploadImage()
         {
-            var openDialog = new OpenFileDialog
+            try
             {
-                Filter = "Image Files|*.bmp;*.jpg;*.png",
-                FilterIndex = 1
-            };
+                var openDialog = new OpenFileDialog
+                {
+                    Filter = "Image Files|*.bmp;*.jpg;*.png",
+                    FilterIndex = 1
+                };
 
-            if (openDialog.ShowDialog() == true)
+                if (openDialog.ShowDialog() == true)
+                {
+
+                    var bitmap = new BitmapImage(new Uri(openDialog.FileName));
+
+
+                    Course!.Image = ConvertImageToByteArray(bitmap);
+
+
+                    ImageSource = bitmap;
+                    return true;
+                }
+
+                return false;
+            }
+            catch
             {
-
-                var bitmap = new BitmapImage(new Uri(openDialog.FileName));
-
-              
-                Course!.Image = ConvertImageToByteArray(bitmap);
-
-
-                ImageSource = bitmap;
+                return false;
             }
         }
 
+        private void ExecuteUpload()
+        {
+            var result = UploadImage();
+            if (!result)
+            {
+                _messageBroker.Publish(new ToastNotificationMessage(
+                    true,
+                    "Upload mislukt of geannuleerd.",
+                    ToastType.Warning
+                ));
+            }
+        }
 
 
         public static byte[] ConvertImageToByteArray(BitmapImage image)

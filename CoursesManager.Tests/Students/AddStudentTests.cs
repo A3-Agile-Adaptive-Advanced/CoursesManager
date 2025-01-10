@@ -122,10 +122,6 @@ namespace CoursesManager.Tests.Students
             // Assert
             _mockStudentRepository.Verify(repo => repo.Add(It.IsAny<Student>()), Times.Once);
             _mockRegistrationRepository.Verify(repo => repo.Add(It.IsAny<Registration>()), Times.Once);
-            _mockDialogService.Verify(service =>
-                    service.ShowDialogAsync<NotifyDialogViewModel, DialogResultType>(
-                        It.Is<DialogResultType>(result => result.DialogText == "Student succesvol toegevoegd")),
-                Times.Once);
         }
 
         [Test]

@@ -9,7 +9,8 @@ public static class StoredProcedures
     public const string GetAllCourses = "spCourses_GetAll";
     public const string UpdateCourse = "spCourse_Edit";
     public const string GetCourseById = "spCourses_GetById";
-
+    public const string GetCoursesBetweenDates = "spCourse_GetBetweenDates";
+    
     #endregion Courses
 
     #region Locations

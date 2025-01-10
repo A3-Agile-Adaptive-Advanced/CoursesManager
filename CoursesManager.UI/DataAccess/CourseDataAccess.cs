@@ -1,6 +1,7 @@
 ﻿using CoursesManager.UI.Models;
 using MySql.Data.MySqlClient;
 using CoursesManager.UI.Database;
+using System.Data;
 
 namespace CoursesManager.UI.DataAccess;
 
@@ -25,6 +26,27 @@ public class CourseDataAccess : BaseDataAccess<Course>
         }
     }
 
+    public List<Course> GetAllBetweenDates(DateTime start, DateTime end)
+    {
+        try
+        {
+            List<Dictionary<string, object?>> results = ExecuteProcedure(
+                StoredProcedures.GetCoursesBetweenDates, 
+                new MySqlParameter("@p_startDate", start),
+                new MySqlParameter("@p_endDate", end)
+            );
+
+            List<Course> models = results.Select(MapToCourse).ToList();
+
+            return models;
+        }
+        catch (Exception ex)
+        {
+            LogUtil.Error($"Error in GetAllBetweenDates: {ex.Message}");
+            throw;
+        }
+    }
+
     private static Course MapToCourse(Dictionary<string, object?> row)
     {
         return new Course
@@ -44,10 +66,16 @@ public class CourseDataAccess : BaseDataAccess<Course>
         };
     }
 
+
     public void Add(Course course)
     {
         try
         {
+            var outputParameter = new MySqlParameter("@p_id", MySqlDbType.Int32)
+            {
+                Direction = ParameterDirection.Output
+            };
+
             ExecuteNonProcedure(
                 StoredProcedures.AddCourse,
                 new MySqlParameter("@p_coursename", course.Name),
@@ -57,8 +85,11 @@ public class CourseDataAccess : BaseDataAccess<Course>
                 new MySqlParameter("@p_begindate", course.StartDate),
                 new MySqlParameter("@p_enddate", course.EndDate),
                 new MySqlParameter("@p_description", course.Description),
-                new MySqlParameter("@p_tile_image", course.Image != null ? course.Image : DBNull.Value)
+                new MySqlParameter("@p_tile_image", course.Image != null ? course.Image : DBNull.Value),
+                outputParameter
             );
+
+            course.Id = Convert.ToInt32(outputParameter.Value);
 
             LogUtil.Log("Stored procedure executed successfully.");
         }

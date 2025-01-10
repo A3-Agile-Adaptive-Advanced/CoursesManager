@@ -22,9 +22,8 @@ namespace CoursesManager.UI.DataAccess
             }
             catch (MySqlException ex)
             {
-                Console.WriteLine("MYSQL");
                 LogUtil.Error($"Error executing procedure '{procedureName}': {ex.Message}");
-                throw new DataAccessException("Something went wrong while accessing the database");
+                throw new DataAccessException("Something went wrong while accessing the database", ex);
             }
 
 
@@ -45,7 +44,7 @@ namespace CoursesManager.UI.DataAccess
             catch (MySqlException ex)
             {
                 LogUtil.Error(ex.Message);
-                throw new DataAccessException("Something went wrong while accessing the database");
+                throw new DataAccessException("Something went wrong while accessing the database", ex);
             }
         }
 

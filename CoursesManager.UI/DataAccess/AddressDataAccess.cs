@@ -70,7 +70,7 @@ namespace CoursesManager.UI.DataAccess
             }
         }
 
-    public void Update(Address address)
+        public void Update(Address address)
         {
             try
             {

@@ -17,7 +17,6 @@ namespace CoursesManager.UI.ViewModels
         private readonly IMessageBroker _messageBroker;
         private readonly INavigationService _navigationService;
 
-
         private string _dbServer;
         public string DbServer
         {
@@ -102,7 +101,15 @@ namespace CoursesManager.UI.ViewModels
             
             
             InitializeSettings();
-            SaveCommand = new RelayCommand(ValidateAndSave, CanSave);
+            SaveCommand = new RelayCommand(ValidateAndSave);
+
+            if (!CanSave() || !_configurationService.ValidateSettings())
+            {
+                _messageBroker.Publish(new ToastNotificationMessage(
+                    true,
+                    "Instellingen zijn ongeldig!",
+                    ToastType.Info));
+            }
         }
 
         public void InitializeSettings()
@@ -119,21 +126,26 @@ namespace CoursesManager.UI.ViewModels
             MailPort = mailParams.TryGetValue("Port", out var mailPort) ? mailPort : string.Empty;
             MailUser = mailParams.TryGetValue("User", out var mailUser) ? mailUser : string.Empty;
             MailPassword = mailParams.TryGetValue("Password", out var mailPassword) ? mailPassword : string.Empty;
+            }
 
-            Console.WriteLine($"DbServer: {DbServer}, DbPort: {DbPort}, DbUser: {DbUser}, DbPassword: {DbPassword}, DbName: {DbName}");
-            Console.WriteLine($"MailServer: {MailServer}, MailPort: {MailPort}, MailUser: {MailUser}, MailPassword: {MailPassword}");
-        }
-
-        public void ValidateAndSave()
+        public async void ValidateAndSave()
         {
+            _messageBroker.Publish(new ToastNotificationMessage(
+                true,
+                "Opslaan",
+                ToastType.Info, true));
             try
             {
+
                 if (!CanSave())
                 {
-                    _messageBroker.Publish(new ToastNotificationMessage(true,
-                        "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.", ToastType.Warning)); return;
+                    await Task.Delay(5000);
+                    _messageBroker.Publish(new ToastNotificationMessage(
+                        true,
+                        "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.",
+                        ToastType.Error));
                 }
-
+                
                 var dbParams = new Dictionary<string, string>
                 {
                     { "Server", DbServer },
@@ -156,8 +168,10 @@ namespace CoursesManager.UI.ViewModels
 
                 if (!_configurationService.ValidateSettings())
                 {
-                    _messageBroker.Publish(new ToastNotificationMessage(true,
-                        "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.", ToastType.Warning));
+                    _messageBroker.Publish(new ToastNotificationMessage(
+                        true,
+                        "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.",
+                        ToastType.Error));
                     INavigationService.CanNavigate = false;
                     return;
                 }
@@ -165,15 +179,20 @@ namespace CoursesManager.UI.ViewModels
                 INavigationService.CanNavigate = true;
 
 
-                _messageBroker.Publish(new ToastNotificationMessage(true,
-                    "Instellingen succesvol opgeslagen!", ToastType.Confirmation));
+                _messageBroker.Publish(new ToastNotificationMessage(
+                    true,
+                    "Instellingen succesvol opgeslagen!",
+                    ToastType.Confirmation));
+
 
                 _navigationService.NavigateTo<CoursesManagerViewModel>();
+
             }
             catch (Exception ex)
             {
+                LogUtil.Log(ex.Message);
                 _messageBroker.Publish(new ToastNotificationMessage(true,
-                    $"Fout bij opslaan: {ex.Message}", ToastType.Error));
+                    $"Fout bij opslaan, neem contact op met de systeembeheerder.", ToastType.Error));
             }
         }
        
