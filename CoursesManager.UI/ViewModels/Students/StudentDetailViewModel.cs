@@ -74,30 +74,18 @@ namespace CoursesManager.UI.ViewModels.Students
         {
             if (Student == null)
             {
-                Debug.WriteLine("Student is null in LoadStudentDetails.");
                 return;
             }
 
             var registrations = _registrationRepository.GetAll().Where(r => r.StudentId == Student.Id);
-            if (registrations == null)
-            {
-                Debug.WriteLine("Registrations are null in LoadStudentDetails.");
-                return;
-            }
+
             CourseDetails.Clear();
 
             foreach (var registration in registrations)
             {
-                if (registration.Course == null)
-                {
-                    Debug.WriteLine($"Registration with Id {registration.Id} has no associated course.");
-                    continue;
-                }
-
                 CourseDetails.Add(new CourseStudentPayment(registration.Course, registration));
             }
 
-            Debug.WriteLine($"CourseDetails populated with {CourseDetails.Count} items.");
             OnPropertyChanged(nameof(CourseDetails));
         }
 

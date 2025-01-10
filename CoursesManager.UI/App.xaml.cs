@@ -19,6 +19,7 @@ using CoursesManager.UI.Mailing;
 using CoursesManager.UI.Service.PlaceholderService;
 using CoursesManager.UI.Service.TextHandlerService;
 using CoursesManager.MVVM.Messages.DefaultMessages;
+using CoursesManager.UI.Services;
 
 namespace CoursesManager.UI;
 
@@ -33,7 +34,6 @@ public partial class App : Application
     public static IPlaceholderService PlaceholderService { get; set; } = new PlaceholderService();
     public static ITextHandlerService TextHandlerService { get; set; } = new TextHandlerService();
     public static IMailProvider MailProvider { get; set; } = new MailProvider(MailService, RepositoryFactory.TemplateRepository, RepositoryFactory.CertificateRepository);
-
     public static IConfigurationService ConfigurationService { get; set; } = new ConfigurationService(new EncryptionService("SmpjQzNZMWdCdW11bTlER2owdFRzOHIzQUpWWmhYQ0U="));
 
     protected override void OnStartup(StartupEventArgs e)
@@ -61,9 +61,7 @@ public partial class App : Application
             TextHandlerService,
             MailProvider);
 
-
         // Register ViewModel
-
         RegisterViewModels(viewModelFactory);
 
         // Register Dialogs
@@ -74,6 +72,9 @@ public partial class App : Application
 
         var startupManager = new StartupManager(ConfigurationService, NavigationService, MessageBroker);
         startupManager.CheckConfigurationOnStartup();
+
+        // Start the StudentCleanupService
+        StartStudentCleanupService();
 
         mw.Show();
     }
@@ -130,6 +131,12 @@ public partial class App : Application
         INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<ConfigurationViewModel>(nav));
 
         INavigationService.RegisterViewModelFactory((nav) => viewModelFactory.CreateViewModel<EditMailTemplatesViewModel>(nav));
+    }
+
+    private void StartStudentCleanupService()
+    {
+        var studentCleanupService = new StudentCleanupService(RepositoryFactory.StudentRepository);
+        studentCleanupService.CleanupDeletedStudents();
     }
 
     /// <summary>

@@ -131,7 +131,7 @@ namespace CoursesManager.Tests.Students
         [Test]
         public async Task Save_InvalidEmailFormat_ShowsError()
         {
-            // Arrange
+           
             BuildWindowForTestScenario(
                 firstName: addedStudent.FirstName,
                 lastName: addedStudent.LastName,
