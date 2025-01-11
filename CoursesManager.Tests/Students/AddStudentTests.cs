@@ -117,7 +117,7 @@ namespace CoursesManager.Tests.Students
                 .Returns(students);
 
             // Act
-            await InvokeProtectedMethodAsync(_viewModel, "OnSaveAsync");
+            _viewModel.SaveCommand.Execute(null);
 
             // Assert
             _mockStudentRepository.Verify(repo => repo.Add(It.IsAny<Student>()), Times.Once);
@@ -144,7 +144,7 @@ namespace CoursesManager.Tests.Students
             _viewModel.SelectedCourse = "Math";
 
             // Act
-            await InvokeProtectedMethodAsync(_viewModel, "OnSaveAsync");
+            _viewModel.SaveCommand.Execute(null);
 
             // Assert
             _mockStudentRepository.Verify(repo => repo.Add(It.IsAny<Student>()), Times.Never);
@@ -179,7 +179,8 @@ namespace CoursesManager.Tests.Students
             _viewModel.SelectedCourse = "InvalidCourse";
 
             // Act
-            await InvokeProtectedMethodAsync(_viewModel, "OnSaveAsync");
+            _viewModel.SaveCommand.Execute(null);
+
 
             // Assert
             _mockStudentRepository.Verify(repo => repo.Add(It.IsAny<Student>()), Times.Never);
@@ -222,8 +223,8 @@ namespace CoursesManager.Tests.Students
                 .Setup(ds => ds.ShowDialogAsync<NotifyDialogViewModel, DialogResultType>(
                     It.Is<DialogResultType>(result => result.DialogText == errorMessage)))
                 .ReturnsAsync(DialogResult<DialogResultType>.Builder().SetFailure(errorMessage).Build());
-
-            await InvokeProtectedMethodAsync(_viewModel, "OnSaveAsync");
+            
+            _viewModel.SaveCommand.Execute(null);
 
             // Assert
             _mockStudentRepository.Verify(repo => repo.Add(It.IsAny<Student>()), Times.Never);
@@ -257,7 +258,7 @@ namespace CoursesManager.Tests.Students
             );
 
             // Act
-            await InvokeProtectedMethodAsync(_viewModel, "OnSaveAsync");
+            _viewModel.SaveCommand.Execute(null);
 
             // Assert
             _mockStudentRepository.Verify(repo => repo.Add(It.IsAny<Student>()), Times.Never);
@@ -398,19 +399,6 @@ namespace CoursesManager.Tests.Students
                 }
             };
             _viewModel.ParentWindow = window;
-        }
-
-        private async Task InvokeProtectedMethodAsync(object instance, string methodName)
-        {
-            var method = instance.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
-            if (method != null)
-            {
-                var task = (Task?)method.Invoke(instance, null);
-                if (task != null)
-                {
-                    await task;
-                }
-            }
         }
     }
 }

@@ -115,7 +115,7 @@ namespace CoursesManager.Tests.Students
                 .ReturnsAsync(DialogResult<DialogResultType>.Builder().SetSuccess(new DialogResultType(), "Notification").Build());
 
             // Act
-            await InvokeProtectedMethodAsync(_viewModel, "OnSaveAsync");
+            _viewModel.SaveCommand.Execute(null);
 
             // Assert
             _studentRepositoryMock.Verify(repo => repo.Update(It.IsAny<Student>()), Times.Once);
@@ -150,7 +150,7 @@ namespace CoursesManager.Tests.Students
                 .ReturnsAsync(DialogResult<DialogResultType>.Builder().SetFailure(errorMessage).Build());
 
             // Act
-            await InvokeProtectedMethodAsync(_viewModel, "OnSaveAsync");
+            _viewModel.SaveCommand.Execute(null);
 
             // Assert
             _studentRepositoryMock.Verify(repo => repo.Update(It.IsAny<Student>()), Times.Never);
@@ -294,16 +294,6 @@ namespace CoursesManager.Tests.Students
                 }
             };
             _viewModel.ParentWindow = window;
-        }
-
-        private async Task InvokeProtectedMethodAsync(object instance, string methodName)
-        {
-            var method = instance.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic);
-            if (method != null)
-            {
-                var task = (Task)method.Invoke(instance, null);
-                await task;
-            }
         }
     }
 }
