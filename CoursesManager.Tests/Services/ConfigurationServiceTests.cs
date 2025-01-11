@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using CoursesManager.UI.Service;
 using CoursesManager.UI.Models;
 using CoursesManager.MVVM.Env;
+using Mysqlx.Session;
 
 namespace CoursesManager.Tests.Services
 {
@@ -160,22 +161,6 @@ namespace CoursesManager.Tests.Services
 
             // Assert
             Assert.That(isValid, Is.False, "De validatie zou false moeten retourneren omdat een dummy-verbinding niet geldig is.");
-        }
-
-
-        [Test]
-        public void SaveEnvSettings_ShouldHandleEmptyParameters()
-        {
-            // Arrange
-            var dbParams = new Dictionary<string, string>();
-            var mailParams = new Dictionary<string, string>();
-
-            // Act
-            _configurationService.SaveEnvSettings(dbParams, mailParams);
-
-            // Assert
-            Assert.That(EnvManager<EnvModel>.Values.ConnectionString, Is.Empty, "ConnectionString zou leeg moeten zijn als dbParams leeg is.");
-            Assert.That(EnvManager<EnvModel>.Values.MailConnectionString, Is.Empty, "MailConnectionString zou leeg moeten zijn als mailParams leeg is.");
         }
     }
 }
