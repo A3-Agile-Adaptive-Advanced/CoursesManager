@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using CoursesManager.UI.Service;
 using CoursesManager.UI.Models;
+using CoursesManager.MVVM.Env;
 
 namespace CoursesManager.Tests.Services
 {
@@ -12,38 +13,19 @@ namespace CoursesManager.Tests.Services
         private ConfigurationService _configurationService;
         private EncryptionService _encryptionService;
 
-        // Vervanging voor EnvManager
-        private Dictionary<string, string> _mockEnvStorage;
-
         [SetUp]
         public void Setup()
         {
-            // Genereert een vaste sleutel voor consistentie
+            // Genereert een vaste sleutel voor consistente encryptie in tests
             string testKey = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("1234567890123456"));
             _encryptionService = new EncryptionService(testKey);
             _configurationService = new ConfigurationService(_encryptionService);
-
-            // Hiermee kan testdata tijdelijk opgeslagen worden voordat het verwerkt wordt
-            _mockEnvStorage = new Dictionary<string, string>();
-        }
-
-        // Slaat een sleutel waarden op
-        private void SetMockEnv(string key, string value)
-        {
-            _mockEnvStorage[key] = value;
-        }
-
-        // Haalt een waarde op uit de mock storage op basis van een sleutel
-        private string GetMockEnv(string key)
-        {
-            return _mockEnvStorage.ContainsKey(key) ? _mockEnvStorage[key] : null;
         }
 
         [Test]
         public void SaveEnvSettings_ShouldEncryptAndSaveSettings()
         {
             // Arrange
-            // Connectie instellingen instellen
             var dbParams = new Dictionary<string, string>
             {
                 { "Server", "localhost" },
@@ -60,7 +42,6 @@ namespace CoursesManager.Tests.Services
                 { "Password", "mailpassword" }
             };
 
-            // Dit wordt gebruikt voor vegelijking en validaties
             string dbConnectionString = BuildConnectionString(dbParams);
             string mailConnectionString = BuildConnectionString(mailParams);
 
@@ -72,33 +53,20 @@ namespace CoursesManager.Tests.Services
             // Act
             _configurationService.SaveEnvSettings(dbParams, mailParams);
 
-            // Gebruik mock-opslag om encrypted waarden op te slaan
-            SetMockEnv("ConnectionString", _encryptionService.Encrypt(dbConnectionString));
-            SetMockEnv("MailConnectionString", _encryptionService.Encrypt(mailConnectionString));
-
             // Assert
-            // Controleer of de waarden juist zijn opgeslagen
-            Assert.That(_encryptionService.Decrypt(GetMockEnv("ConnectionString")), Is.EqualTo(dbConnectionString));
-            Assert.That(_encryptionService.Decrypt(GetMockEnv("MailConnectionString")), Is.EqualTo(mailConnectionString));
+            Assert.That(_encryptionService.Decrypt(EnvManager<EnvModel>.Values.ConnectionString), Is.EqualTo(dbConnectionString));
+            Assert.That(_encryptionService.Decrypt(EnvManager<EnvModel>.Values.MailConnectionString), Is.EqualTo(mailConnectionString));
         }
 
         [Test]
         public void GetDecryptedEnvSettings_ShouldReturnDecryptedValues()
         {
             // Arrange
-            string dbEncrypted = _encryptionService.Encrypt("Server=localhost;Database=TestDb;User=root;Password=password");
-            string mailEncrypted = _encryptionService.Encrypt("SMTPServer=smtp.test.com;Port=25;Username=user@test.com;Password=mailpassword");
-
-            // Gebruik mock-opslag om encrypted waarden te simuleren om vervolgens te decrypten
-            SetMockEnv("ConnectionString", dbEncrypted);
-            SetMockEnv("MailConnectionString", mailEncrypted);
+            EnvManager<EnvModel>.Values.ConnectionString = _encryptionService.Encrypt("Server=localhost;Database=TestDb;User=root;Password=password");
+            EnvManager<EnvModel>.Values.MailConnectionString = _encryptionService.Encrypt("SMTPServer=smtp.test.com;Port=25;Username=user@test.com;Password=mailpassword");
 
             // Act
-            var result = new EnvModel
-            {
-                ConnectionString = _encryptionService.Decrypt(GetMockEnv("ConnectionString")),
-                MailConnectionString = _encryptionService.Decrypt(GetMockEnv("MailConnectionString"))
-            };
+            var result = _configurationService.GetDecryptedEnvSettings();
 
             // Assert
             Assert.That(result.ConnectionString, Is.EqualTo("Server=localhost;Database=TestDb;User=root;Password=password"));
@@ -106,44 +74,108 @@ namespace CoursesManager.Tests.Services
         }
 
         [Test]
+        public void GetDatabaseParameters_ShouldReturnParsedValues()
+        {
+            // Arrange
+            EnvManager<EnvModel>.Values.ConnectionString = _encryptionService.Encrypt("Server=localhost;Database=TestDb;User=root;Password=password");
+
+            // Act
+            var dbParams = _configurationService.GetDatabaseParameters();
+
+            // Assert
+            Assert.That(dbParams["Server"], Is.EqualTo("localhost"));
+            Assert.That(dbParams["Database"], Is.EqualTo("TestDb"));
+            Assert.That(dbParams["User"], Is.EqualTo("root"));
+            Assert.That(dbParams["Password"], Is.EqualTo("password"));
+        }
+
+        [Test]
+        public void GetMailParameters_ShouldReturnParsedValues()
+        {
+            // Arrange
+            EnvManager<EnvModel>.Values.MailConnectionString = _encryptionService.Encrypt("SMTPServer=smtp.test.com;Port=25;Username=user@test.com;Password=mailpassword");
+
+            // Act
+            var mailParams = _configurationService.GetMailParameters();
+
+            // Assert
+            Assert.That(mailParams["SMTPServer"], Is.EqualTo("smtp.test.com"));
+            Assert.That(mailParams["Port"], Is.EqualTo("25"));
+            Assert.That(mailParams["Username"], Is.EqualTo("user@test.com"));
+            Assert.That(mailParams["Password"], Is.EqualTo("mailpassword"));
+        }
+
+        [Test]
+        public void GetDatabaseParameters_ShouldReturnEmpty_WhenConnectionStringIsNull()
+        {
+            // Arrange
+            EnvManager<EnvModel>.Values.ConnectionString = null;
+
+            // Act
+            var dbParams = _configurationService.GetDatabaseParameters();
+
+            // Assert
+            Assert.That(dbParams, Is.Empty, "De databaseparameters zouden leeg moeten zijn als de ConnectionString null is.");
+        }
+
+        [Test]
+        public void GetMailParameters_ShouldReturnEmpty_WhenMailConnectionStringIsNull()
+        {
+            // Arrange
+            EnvManager<EnvModel>.Values.MailConnectionString = null;
+
+            // Act
+            var mailParams = _configurationService.GetMailParameters();
+
+            // Assert
+            Assert.That(mailParams, Is.Empty, "De mailparameters zouden leeg moeten zijn als de MailConnectionString null is.");
+        }
+
+        [Test]
         public void ValidateSettings_ShouldReturnFalse_WhenNoSettingsPresent()
         {
             // Arrange
-            // Zet Connectie instellingen op null
-            SetMockEnv("ConnectionString", null);
-            SetMockEnv("MailConnectionString", null);
+            EnvManager<EnvModel>.Values.ConnectionString = null;
+            EnvManager<EnvModel>.Values.MailConnectionString = null;
 
             // Act
-            var connectionString = GetMockEnv("ConnectionString");
-            var mailConnectionString = GetMockEnv("MailConnectionString");
-
-            var isValid = !string.IsNullOrWhiteSpace(connectionString) &&
-                          !string.IsNullOrWhiteSpace(mailConnectionString);
+            var isValid = _configurationService.ValidateSettings();
 
             // Assert
-            Assert.That(isValid, Is.False);
+            Assert.That(isValid, Is.False, "De validatie zou false moeten retourneren als er geen instellingen aanwezig zijn.");
         }
 
         [Test]
         public void ValidateSettings_ShouldReturnTrue_WhenValidSettingsProvided()
         {
             // Arrange
-            string dbEncrypted = _encryptionService.Encrypt("Server=localhost;Database=TestDb;User=root;Password=password");
-            string mailEncrypted = _encryptionService.Encrypt("SMTPServer=smtp.test.com;Port=25;Username=user@test.com;Password=mailpassword");
+            var dummyConnectionString = _encryptionService.Encrypt("Server=dummy;Database=dummy;User=dummy;Password=dummy");
+            var dummyMailConnectionString = _encryptionService.Encrypt("SMTPServer=dummy.smtp.com;Port=587;Username=dummy@dummy.com;Password=dummy");
 
-            // Gebruik mock-opslag om encrypted connection settings waarden te simuleren
-            SetMockEnv("ConnectionString", dbEncrypted);
-            SetMockEnv("MailConnectionString", mailEncrypted);
+            EnvManager<EnvModel>.Values.ConnectionString = dummyConnectionString;
+            EnvManager<EnvModel>.Values.MailConnectionString = dummyMailConnectionString;
 
             // Act
-            var connectionString = _encryptionService.Decrypt(GetMockEnv("ConnectionString"));
-            var mailConnectionString = _encryptionService.Decrypt(GetMockEnv("MailConnectionString"));
-
-            var isValid = !string.IsNullOrWhiteSpace(connectionString) &&
-                          !string.IsNullOrWhiteSpace(mailConnectionString);
+            var isValid = _configurationService.ValidateSettings();
 
             // Assert
-            Assert.That(isValid, Is.True);
-        }      
+            Assert.That(isValid, Is.False, "De validatie zou false moeten retourneren omdat een dummy-verbinding niet geldig is.");
+        }
+
+
+        [Test]
+        public void SaveEnvSettings_ShouldHandleEmptyParameters()
+        {
+            // Arrange
+            var dbParams = new Dictionary<string, string>();
+            var mailParams = new Dictionary<string, string>();
+
+            // Act
+            _configurationService.SaveEnvSettings(dbParams, mailParams);
+
+            // Assert
+            Assert.That(EnvManager<EnvModel>.Values.ConnectionString, Is.Empty, "ConnectionString zou leeg moeten zijn als dbParams leeg is.");
+            Assert.That(EnvManager<EnvModel>.Values.MailConnectionString, Is.Empty, "MailConnectionString zou leeg moeten zijn als mailParams leeg is.");
+        }
     }
 }
