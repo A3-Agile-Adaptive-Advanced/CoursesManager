@@ -4,10 +4,8 @@ using CoursesManager.MVVM.Messages;
 using CoursesManager.MVVM.Navigation;
 using CoursesManager.UI.Enums;
 using CoursesManager.UI.Messages;
-using CoursesManager.UI.Models;
 using CoursesManager.UI.Service;
 using System.Windows.Input;
-using System.Windows.Navigation;
 
 namespace CoursesManager.UI.ViewModels
 {
@@ -91,8 +89,8 @@ namespace CoursesManager.UI.ViewModels
             _configurationService = configurationService;
             _messageBroker = messageBroker;
             _navigationService = navigationService;
-            
-            
+
+
             InitializeSettings();
             SaveCommand = new RelayCommand(ValidateAndSave);
 
@@ -119,7 +117,7 @@ namespace CoursesManager.UI.ViewModels
             MailPort = mailParams.TryGetValue("Port", out var mailPort) ? mailPort : string.Empty;
             MailUser = mailParams.TryGetValue("User", out var mailUser) ? mailUser : string.Empty;
             MailPassword = mailParams.TryGetValue("Password", out var mailPassword) ? mailPassword : string.Empty;
-            }
+        }
 
         public async void ValidateAndSave()
         {
@@ -129,32 +127,32 @@ namespace CoursesManager.UI.ViewModels
                 ToastType.Info, true));
             try
             {
-
                 if (!CanSave())
                 {
-                    await Task.Delay(5000);
+                    await Task.Delay(5000); // Simuleer validatiedelay
                     _messageBroker.Publish(new ToastNotificationMessage(
                         true,
                         "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.",
                         ToastType.Error));
+                    return; // Stop de methode, want er zijn fouten.
                 }
-                
+
                 var dbParams = new Dictionary<string, string>
-                {
-                    { "Server", DbServer },
-                    { "Port", DbPort },
-                    { "User", DbUser },
-                    { "Password", DbPassword },
-                    { "Database", DbName }
-                };
+        {
+            { "Server", DbServer },
+            { "Port", DbPort },
+            { "User", DbUser },
+            { "Password", DbPassword },
+            { "Database", DbName }
+        };
 
                 var mailParams = new Dictionary<string, string>
-                {
-                    { "Server", MailServer },
-                    { "Port", MailPort },
-                    { "User", MailUser },
-                    { "Password", MailPassword }
-                };
+        {
+            { "Server", MailServer },
+            { "Port", MailPort },
+            { "User", MailUser },
+            { "Password", MailPassword }
+        };
 
                 // Save encrypted data
                 _configurationService.SaveEnvSettings(dbParams, mailParams);
@@ -171,24 +169,27 @@ namespace CoursesManager.UI.ViewModels
 
                 INavigationService.CanNavigate = true;
 
-
                 _messageBroker.Publish(new ToastNotificationMessage(
                     true,
                     "Instellingen succesvol opgeslagen!",
                     ToastType.Confirmation));
 
-
                 _navigationService.NavigateTo<CoursesManagerViewModel>();
-
             }
             catch (Exception ex)
             {
-                LogUtil.Log(ex.Message);
-                _messageBroker.Publish(new ToastNotificationMessage(true,
-                    $"Fout bij opslaan, neem contact op met de systeembeheerder.", ToastType.Error));
+                // Log de fout voor de systeembeheerder
+                LogUtil.Log($"Fout bij ValidateAndSave: {ex.Message}");
+
+                // Toon een generieke foutmelding aan de gebruiker
+                _messageBroker.Publish(new ToastNotificationMessage(
+                    true,
+                    "Er is een fout opgetreden. Neem contact op met de systeembeheerder.",
+                    ToastType.Error));
             }
         }
-       
+
+
         private bool CanSave()
         {
             return !string.IsNullOrWhiteSpace(DbServer) &&

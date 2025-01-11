@@ -120,7 +120,7 @@ namespace CoursesManager.UI.ViewModels.Courses
 
         protected override void InvokeResponseCallback(DialogResult<Course> dialogResult)
         {
-            ResponseCallback?.Invoke(dialogResult);
+            ResponseCallback.Invoke(dialogResult);
         }
 
         private void ExecuteSave()
@@ -177,7 +177,7 @@ namespace CoursesManager.UI.ViewModels.Courses
 
                 InvokeResponseCallback(successDialogResult);
             }
-            catch (Exception ex)
+            catch (Exception )
             {
                 await _dialogService.ShowDialogAsync<ErrorDialogViewModel, DialogResultType>(new DialogResultType
                 {

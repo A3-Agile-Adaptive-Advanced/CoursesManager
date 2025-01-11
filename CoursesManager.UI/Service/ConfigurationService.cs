@@ -89,7 +89,6 @@ namespace CoursesManager.UI.Service
             return ParseConnectionString(decryptedConfig.MailConnectionString);
         }
 
-
         public bool ValidateSettings()
         {
 
