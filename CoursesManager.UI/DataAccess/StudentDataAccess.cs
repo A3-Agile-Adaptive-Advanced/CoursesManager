@@ -90,7 +90,8 @@ namespace CoursesManager.UI.DataAccess
                     new MySqlParameter("@p_created_at", DateTime.Now),
                     new MySqlParameter("@p_updated_at", DateTime.Now),
                     new MySqlParameter("@p_insertion", student.Insertion ?? (object)DBNull.Value),
-                    new MySqlParameter("@p_date_of_birth", student.DateOfBirth.Date)
+                    new MySqlParameter("@p_date_of_birth", student.DateOfBirth.Date),
+                    outputParameter
                 };
 
                 ExecuteNonProcedure(StoredProcedures.AddStudent, parameters);
