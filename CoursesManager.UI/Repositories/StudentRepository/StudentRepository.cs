@@ -76,7 +76,7 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
         {
             var col = GetAll();
 
-            return col.Count == 0 ? _studentDataAccess.GetNotDeletedStudents() : col.Where(s => s.IsDeleted).ToList();
+            return col.Count == 0 ? _studentDataAccess.GetDeletedStudents() : col.Where(s => s.IsDeleted).ToList();
         }
     }
 

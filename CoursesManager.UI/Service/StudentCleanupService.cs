@@ -25,7 +25,7 @@ namespace CoursesManager.UI.Services
 
             foreach (var student in students)
             {
-                if (student.DeletedAt.HasValue && student.DeletedAt.Value < maxHoldYears)
+                if (student.IsDeleted && student.DeletedAt.HasValue && student.DeletedAt.Value < maxHoldYears)
                 {
                     _studentRepository.Delete(student.Id);
                 }
