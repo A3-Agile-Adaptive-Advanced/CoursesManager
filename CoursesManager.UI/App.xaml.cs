@@ -70,7 +70,7 @@ public partial class App : Application
         // Subscribe to Application Close Messages
         MessageBroker.Subscribe<ApplicationCloseRequestedMessage, App>(ApplicationCloseRequestedHandler, this);
 
-        var startupManager = new StartupManager(ConfigurationService, NavigationService, MessageBroker);
+        var startupManager = new StartupManager(ConfigurationService, NavigationService);
         startupManager.CheckConfigurationOnStartup();
 
         // Start the StudentCleanupService
