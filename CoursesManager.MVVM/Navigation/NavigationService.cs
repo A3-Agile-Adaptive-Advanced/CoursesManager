@@ -36,6 +36,14 @@ public class NavigationService : INavigationService
         NavigationStore.CurrentViewModel = _currentViewModelFactoryWrapper.Create();
     }
 
+    /// <summary>
+    /// Creates a wrapper with the factory inside of it. This wrapper has the ability to group the given parameter with a given factory so that it can be navigated to and saved in forward and backward stacks.
+    /// </summary>
+    /// <typeparam name="TViewModel"></typeparam>
+    /// <param name="factory"></param>
+    /// <param name="parameter"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     private IViewModelFactoryWrapper CreateViewModelFactoryWrapper<TViewModel>(Delegate factory, object? parameter) where TViewModel : ViewModel
     {
         if (typeof(ViewModelWithNavigation).IsAssignableFrom(typeof(TViewModel)))
