@@ -3,8 +3,14 @@ using CoursesManager.MVVM.Navigation.FactoryWrappers;
 
 namespace CoursesManager.MVVM.Navigation;
 
+/// <summary>
+/// Provides navigation functionality, including navigating to different view models and managing navigation history.
+/// </summary>
 public class NavigationService : INavigationService
 {
+    /// <summary>
+    /// Gets the <see cref="NavigationStore"/> that manages navigation history.
+    /// </summary>
     public NavigationStore NavigationStore { get; } = new();
 
     private readonly Stack<IViewModelFactoryWrapper> _forwardFactories = new();
@@ -12,11 +18,22 @@ public class NavigationService : INavigationService
 
     private IViewModelFactoryWrapper? _currentViewModelFactoryWrapper;
 
+    /// <summary>
+    /// Navigates to the specified view model type.
+    /// </summary>
+    /// <typeparam name="TViewModel">The type of the view model to navigate to, which must be a subclass of <see cref="ViewModel"/>.</typeparam>
+    /// <exception cref="InvalidOperationException">Thrown when no factory is registered for the specified view model type.</exception>
     public void NavigateTo<TViewModel>() where TViewModel : ViewModel
     {
         NavigateTo<TViewModel>(null);
     }
 
+    /// <summary>
+    /// Navigates to the specified view model type with parameters.
+    /// </summary>
+    /// <typeparam name="TViewModel">The type of the view model to navigate to, which must be a subclass of <see cref="ViewModel"/>.</typeparam>
+    /// <param name="parameter">A parameter to pass on to a different viewmodel.</param>
+    /// <exception cref="InvalidOperationException">Thrown when no factory is registered for the specified view model type.</exception>
     public void NavigateTo<TViewModel>(object? parameter) where TViewModel : ViewModel
     {
         if (!INavigationService.ViewModelFactories.TryGetValue(typeof(TViewModel), out var factory))
@@ -80,6 +97,9 @@ public class NavigationService : INavigationService
         throw new InvalidOperationException($"Invalid factory type for {typeof(TViewModel).Name}");
     }
 
+    /// <summary>
+    /// Navigates back to the previous view model in the navigation history.
+    /// </summary>
     public void GoBack()
     {
         if (!CanGoBack()) return;
@@ -91,14 +111,24 @@ public class NavigationService : INavigationService
         NavigationStore.CurrentViewModel = _currentViewModelFactoryWrapper.Create();
     }
 
+    /// <summary>
+    /// Navigates back to the previous view model in the navigation history but also ensures you can't go forward again.
+    /// </summary>
     public void GoBackAndClearForward()
     {
         GoBack();
         _forwardFactories.Clear();
     }
 
+    /// <summary>
+    /// Determines whether it is possible to navigate back to the previous view model.
+    /// </summary>
+    /// <returns><c>true</c> if it is possible to go back; otherwise, <c>false</c>.</returns>
     public bool CanGoBack() => _backwardFactories.Count != 0;
 
+    /// <summary>
+    /// Navigates forward to the next view model in the navigation history.
+    /// </summary>
     public void GoForward()
     {
         if (!CanGoForward()) return;
@@ -110,5 +140,9 @@ public class NavigationService : INavigationService
         NavigationStore.CurrentViewModel = _currentViewModelFactoryWrapper.Create();
     }
 
+    /// <summary>
+    /// Determines whether it is possible to navigate forward to the next view model.
+    /// </summary>
+    /// <returns><c>true</c> if it is possible to go forward; otherwise, <c>false</c>.</returns>
     public bool CanGoForward() => _forwardFactories.Count != 0;
 }
