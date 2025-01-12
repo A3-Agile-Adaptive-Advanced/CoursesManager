@@ -25,8 +25,7 @@ namespace CoursesManager.Tests.Services
 
             _startupManager = new StartupManager(
                 _configurationServiceMock.Object,
-                _navigationServiceMock.Object,
-                _messageBrokerMock.Object
+                _navigationServiceMock.Object
                 );
         }
 

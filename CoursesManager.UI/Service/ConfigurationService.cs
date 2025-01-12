@@ -1,5 +1,4 @@
-﻿
-using System.IO;
+﻿using System.IO;
 using CoursesManager.MVVM.Env;
 using CoursesManager.UI.Models;
 using MySql.Data.MySqlClient;
@@ -89,7 +88,6 @@ namespace CoursesManager.UI.Service
             return ParseConnectionString(decryptedConfig.MailConnectionString);
         }
 
-
         public bool ValidateSettings()
         {
 
@@ -136,11 +134,18 @@ namespace CoursesManager.UI.Service
 
         private bool ValidateConnectionString(string connectionString)
         {
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                LogUtil.Log("ConnectionString is leeg of ongeldig.");
+                return false;
+            }
+
             return connectionString.Contains("Server=") &&
                    connectionString.Contains("Database=") &&
                    connectionString.Contains("User=") &&
                    connectionString.Contains("Password=");
         }
+
 
 
 
