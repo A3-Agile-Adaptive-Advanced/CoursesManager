@@ -9,6 +9,8 @@ using Moq;
 using System.Collections.ObjectModel;
 using CoursesManager.UI.Enums;
 using CoursesManager.MVVM.Messages;
+using CoursesManager.UI.Dialogs.ResultTypes;
+using CoursesManager.UI.Dialogs.ViewModels;
 
 
 namespace CoursesManager.Tests.Courses
@@ -213,6 +215,42 @@ namespace CoursesManager.Tests.Courses
             );
         }
 
+       
+
+        [Test]
+        public async Task SaveCommand_ShouldShowErrorDialog_WhenExceptionIsThrown()
+        {
+            // Arrange
+            _courseRepositoryMock.Setup(repo => repo.Add(It.IsAny<Course>())).Throws(new Exception("Test exception"));
+
+            _viewModel.Course = new Course
+            {
+                Name = "Valid Course",
+                Code = "VC123",
+                StartDate = DateTime.Now,
+                EndDate = DateTime.Now.AddDays(1),
+                Location = new Location { Id = 1, Name = "Test Location" },
+                Description = "Valid description."
+            };
+
+            // Act
+            await Task.Run(() => _viewModel.SaveCommand.Execute(null));
+
+            // Assert
+            _dialogServiceMock.Verify(
+                dialog => dialog.ShowDialogAsync<ErrorDialogViewModel, DialogResultType>(It.Is<DialogResultType>(result =>
+                    result.DialogText == "Er is iets fout gegaan. Probeer het later opnieuw." &&
+                    result.DialogTitle == "Fout"
+                )),
+                Times.Once,
+                "Een foutdialoog moet worden getoond als er een uitzondering wordt gegooid."
+            );
+        }
+
+
+
+
+
         // unhappy flows
 
         [Test]
@@ -238,8 +276,11 @@ namespace CoursesManager.Tests.Courses
             _viewModel.Course = null;
 
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => _viewModel.SaveCommand.Execute(null));
+            var ex = Assert.Throws<InvalidOperationException>(() => _viewModel.SaveCommand.Execute(null));
+            Assert.That(ex.Message, Is.EqualTo("Cursusgegevens ontbreken. Opslaan is niet mogelijk."));
         }
+
+
 
         [Test]
         public void CancelCommand_ShouldNotModifyOriginalCourse()
@@ -297,31 +338,5 @@ namespace CoursesManager.Tests.Courses
             Assert.That(canExecute, Is.False, "SaveCommand.CanExecute moet false retourneren als de einddatum vóór de startdatum ligt.");
         }
 
-        //[Test]
-
-        //public void SaveCommand_ShouldPublicWarningToast_WhenMissingFieldsIsTrue()
-        //{
-        //    // arrange
-        //    _viewModel.Course.Name = "";
-        //    _viewModel.Course.Code = "Test";
-        //    _viewModel.Course.StartDate = default;
-        //    _viewModel.Course.EndDate = default;
-        //    _viewModel.Course.Location = null;
-        //    _viewModel.Course.Description = "";
-
-        //    //act
-        //    _viewModel.SaveCommand.Execute(null);
-
-        //    // assert
-        //    _messageBrokerMock.Verify(
-        //        broker => broker.Publish(It.Is<ToastNotificationMessage>(msg =>
-        //            msg.IsError == true &&
-        //            msg.Message.Contains("De volgende velden ontbreken") &&
-        //            msg.ToastType == ToastType.Warning
-        //        )),
-        //        Times.Once,
-        //        "Een waarschuwingsmelding moet worden gepubliceerd als verplichte velden ontbreken."
-        //    );
-        //}
     }
 }

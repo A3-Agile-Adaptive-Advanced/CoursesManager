@@ -137,12 +137,15 @@ namespace CoursesManager.UI.ViewModels.Courses
                 _messageBroker.Publish(new ToastNotificationMessage(
                     true,
                     message,
-                    ToastType.Warning));
+                    ToastType.Warning
+                ));
                 return;
             }
 
             _ = OnSaveAsync();
         }
+
+
 
 
         private async Task OnSaveAsync()
