@@ -74,7 +74,10 @@ public partial class App : Application
         startupManager.CheckConfigurationOnStartup();
 
         // Start the StudentCleanupService
-        StartStudentCleanupService();
+        if (INavigationService.CanNavigate)
+        {
+            StartStudentCleanupService();
+        }
 
         mw.Show();
     }
