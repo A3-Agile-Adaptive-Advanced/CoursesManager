@@ -134,25 +134,25 @@ namespace CoursesManager.UI.ViewModels
                         true,
                         "Instellingen zijn ongeldig. Controleer de ingevoerde waarden.",
                         ToastType.Error));
-                    return; // Stop de methode, want er zijn fouten.
+                    return; // stop de methode, want er zijn fouten.
                 }
 
                 var dbParams = new Dictionary<string, string>
-        {
-            { "Server", DbServer },
-            { "Port", DbPort },
-            { "User", DbUser },
-            { "Password", DbPassword },
-            { "Database", DbName }
-        };
+                {
+                    { "Server", DbServer },
+                    { "Port", DbPort },
+                    { "User", DbUser },
+                    { "Password", DbPassword },
+                    { "Database", DbName }
+                };
 
-                var mailParams = new Dictionary<string, string>
-        {
-            { "Server", MailServer },
-            { "Port", MailPort },
-            { "User", MailUser },
-            { "Password", MailPassword }
-        };
+                        var mailParams = new Dictionary<string, string>
+                {
+                    { "Server", MailServer },
+                    { "Port", MailPort },
+                    { "User", MailUser },
+                    { "Password", MailPassword }
+                };
 
                 // Save encrypted data
                 _configurationService.SaveEnvSettings(dbParams, mailParams);
