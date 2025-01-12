@@ -215,7 +215,31 @@ namespace CoursesManager.Tests.Courses
             );
         }
 
-       
+        [Test]
+        public void SaveCommand_ShouldPublishWarningToast_WhenFieldsAreMissing()
+        {
+            // Arrange
+            _viewModel.Course!.Name = ""; 
+            _viewModel.Course.Code = ""; 
+            _viewModel.Course.StartDate = default; 
+            _viewModel.Course.EndDate = default; 
+            _viewModel.Course.Location = null; 
+            _viewModel.Course.Description = ""; 
+
+            // Act
+            _viewModel.SaveCommand.Execute(null);
+
+            // Assert
+            _messageBrokerMock.Verify(
+                broker => broker.Publish(It.Is<ToastNotificationMessage>(msg =>
+                        msg.ToastType == ToastType.Warning  // Controleer dat het type waarschuwing i
+                )),
+                Times.Once,
+                "Een waarschuwingsmelding moet worden gepubliceerd wanneer velden ontbreken."
+            );
+        }
+
+
 
         [Test]
         public async Task SaveCommand_ShouldShowErrorDialog_WhenExceptionIsThrown()
