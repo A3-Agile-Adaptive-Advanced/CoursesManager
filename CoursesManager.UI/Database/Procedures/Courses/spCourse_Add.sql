@@ -6,9 +6,12 @@
     IN p_isactive BOOLEAN,
     IN p_begindate DATE,
     IN p_enddate DATE,
-    IN p_description TEXT
+    IN p_description TEXT,
+    OUT p_id int
 )
 BEGIN
     INSERT INTO courses (name, code, description, location_id, is_active, start_date, end_date, created_at, updated_at)
     VALUES (p_coursename, p_coursecode, p_description, p_location_id, p_isactive, p_begindate, p_enddate, NOW(), NOW());
+    
+    SET p_id = LAST_INSERT_ID();
 END;

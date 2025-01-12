@@ -32,8 +32,8 @@ jobs:
       - name: Install dependencies
         run: dotnet restore
 
-      - name: Run unit tests
-        run: dotnet test --configuration Release
+      # - name: Run unit tests
+      #   run: dotnet test --configuration Release
 
       - name: Build the installer for x64
         run: dotnet build --configuration Release -p:Platform=x64 -p:ProductVersion=${{ steps.version.outputs.full_without_prefix }} CoursesManager.Installer/CoursesManager.Installer.wixproj

@@ -1,6 +1,7 @@
 CREATE PROCEDURE spLocations_Insert(
     IN p_name varchar(255),
-    IN p_address_id INT
+    IN p_address_id INT,
+    OUT p_id int
 )
 BEGIN
     DECLARE txn_started_by_me BOOLEAN DEFAULT FALSE;
@@ -26,4 +27,6 @@ BEGIN
     IF txn_started_by_me THEN
         COMMIT;
     END IF;
+
+    SET p_id = LAST_INSERT_ID();
 END;
