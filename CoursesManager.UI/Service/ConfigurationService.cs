@@ -1,5 +1,4 @@
-﻿
-using System.IO;
+﻿using System.IO;
 using CoursesManager.MVVM.Env;
 using CoursesManager.UI.Models;
 using MySql.Data.MySqlClient;
