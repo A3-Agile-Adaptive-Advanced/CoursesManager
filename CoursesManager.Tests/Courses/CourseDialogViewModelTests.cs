@@ -1,20 +1,16 @@
-﻿using NUnit.Framework;
-using Moq;
-using CoursesManager.UI.ViewModels.Courses;
+﻿using CoursesManager.MVVM.Dialogs;
+using CoursesManager.MVVM.Messages;
+using CoursesManager.UI.Messages;
 using CoursesManager.UI.Models;
 using CoursesManager.UI.Repositories.CourseRepository;
 using CoursesManager.UI.Repositories.LocationRepository;
-using CoursesManager.UI.Dialogs.Windows;
+using CoursesManager.UI.ViewModels.Courses;
+using Moq;
 using System.Collections.ObjectModel;
-using System.Windows.Media.Imaging;
-using CoursesManager.MVVM.Dialogs;
+using CoursesManager.UI.Enums;
 using CoursesManager.MVVM.Messages;
-using Microsoft.Win32;
 using CoursesManager.UI.Dialogs.ResultTypes;
 using CoursesManager.UI.Dialogs.ViewModels;
-using CoursesManager.UI.Service;
-using CoursesManager.UI.Enums;
-using CoursesManager.UI.Messages;
 
 
 namespace CoursesManager.Tests.Courses
@@ -164,10 +160,6 @@ namespace CoursesManager.Tests.Courses
             _courseRepositoryMock.Verify(repo => repo.Update(It.IsAny<Course>()), Times.Once, "De Update-methode van de repository moet één keer worden aangeroepen voor een bestaande cursus.");
         }
 
-
-
-
-
         [Test]
         public void Constructor_ShouldThrowException_WhenDependenciesAreNull()
         {
@@ -223,6 +215,66 @@ namespace CoursesManager.Tests.Courses
             );
         }
 
+        [Test]
+        public void SaveCommand_ShouldPublishWarningToast_WhenFieldsAreMissing()
+        {
+            // Arrange
+            _viewModel.Course!.Name = ""; 
+            _viewModel.Course.Code = ""; 
+            _viewModel.Course.StartDate = default; 
+            _viewModel.Course.EndDate = default; 
+            _viewModel.Course.Location = null; 
+            _viewModel.Course.Description = ""; 
+
+            // Act
+            _viewModel.SaveCommand.Execute(null);
+
+            // Assert
+            _messageBrokerMock.Verify(
+                broker => broker.Publish(It.Is<ToastNotificationMessage>(msg =>
+                        msg.ToastType == ToastType.Warning  // Controleer dat het type waarschuwing i
+                )),
+                Times.Once,
+                "Een waarschuwingsmelding moet worden gepubliceerd wanneer velden ontbreken."
+            );
+        }
+
+
+
+        [Test]
+        public async Task SaveCommand_ShouldShowErrorDialog_WhenExceptionIsThrown()
+        {
+            // Arrange
+            _courseRepositoryMock.Setup(repo => repo.Add(It.IsAny<Course>())).Throws(new Exception("Test exception"));
+
+            _viewModel.Course = new Course
+            {
+                Name = "Valid Course",
+                Code = "VC123",
+                StartDate = DateTime.Now,
+                EndDate = DateTime.Now.AddDays(1),
+                Location = new Location { Id = 1, Name = "Test Location" },
+                Description = "Valid description."
+            };
+
+            // Act
+            await Task.Run(() => _viewModel.SaveCommand.Execute(null));
+
+            // Assert
+            _dialogServiceMock.Verify(
+                dialog => dialog.ShowDialogAsync<ErrorDialogViewModel, DialogResultType>(It.Is<DialogResultType>(result =>
+                    result.DialogText == "Er is iets fout gegaan. Probeer het later opnieuw." &&
+                    result.DialogTitle == "Fout"
+                )),
+                Times.Once,
+                "Een foutdialoog moet worden getoond als er een uitzondering wordt gegooid."
+            );
+        }
+
+
+
+
+
         // unhappy flows
 
         [Test]
@@ -248,8 +300,11 @@ namespace CoursesManager.Tests.Courses
             _viewModel.Course = null;
 
             // Act & Assert
-            Assert.Throws<InvalidOperationException>(() => _viewModel.SaveCommand.Execute(null));
+            var ex = Assert.Throws<InvalidOperationException>(() => _viewModel.SaveCommand.Execute(null));
+            Assert.That(ex.Message, Is.EqualTo("Cursusgegevens ontbreken. Opslaan is niet mogelijk."));
         }
+
+
 
         [Test]
         public void CancelCommand_ShouldNotModifyOriginalCourse()
@@ -306,5 +361,6 @@ namespace CoursesManager.Tests.Courses
             // Assert
             Assert.That(canExecute, Is.False, "SaveCommand.CanExecute moet false retourneren als de einddatum vóór de startdatum ligt.");
         }
+
     }
 }
